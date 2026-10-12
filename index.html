@@ -151,6 +151,7 @@ dialog h3{margin:0;padding:12px 16px;background:var(--soft);border-bottom:1px so
     <button data-tab="recs">السجل</button>
     <button data-tab="boq">جدول الكميات</button>
     <button data-tab="rates">معدلات الفئات</button>
+    <button data-tab="comp">الملف الشامل</button>
   </div>
 
   <!-- ===== FORM ===== -->
@@ -159,11 +160,12 @@ dialog h3{margin:0;padding:12px 16px;background:var(--soft);border-bottom:1px so
     <fieldset id="formFs" style="border:0;padding:0;margin:0;min-width:0">
     <section class="block">
       <h2><span class="n">1</span>بيانات المخالفة</h2>
+      <div class="body" id="visitCard" hidden style="padding-bottom:0"></div>
       <div class="body grid">
         <label class="f"><span>اسم المخالف <span class="req">*</span></span><input data-k="info.name"></label>
         <label class="f"><span>رقم الهوية / رقم المنشأة الموحد <span class="req">*</span></span><input data-k="info.id" inputmode="numeric"></label>
         <label class="f">نوع المخالف<select data-k="info.ptype"></select></label>
-        <label class="f"><span>رقم المخالفة <span class="req">*</span></span><input data-k="info.no" placeholder="SWA-00000" dir="ltr" style="text-align:right"></label>
+        <label class="f"><span>رقم المخالفة <span class="req">*</span></span><input data-k="info.no" placeholder="SWA-00000" dir="ltr" style="text-align:right" list="visitList" autocomplete="off"></label><datalist id="visitList"></datalist>
         <label class="f" style="grid-column:1/-1"><span>نوع المخالفة <span class="req">*</span></span><select data-k="info.vtype"></select></label>
         <label class="f"><span>التاريخ <span class="req">*</span></span><input type="date" data-k="info.date"></label>
         <label class="f">القطاع<select data-k="info.sector"></select></label>
@@ -315,6 +317,23 @@ dialog h3{margin:0;padding:12px 16px;background:var(--soft);border-bottom:1px so
     </section>
   </div>
 
+  <!-- ===== COMPREHENSIVE ===== -->
+  <div id="tab-comp" hidden>
+    <section class="block">
+      <h2>الملف الشامل</h2>
+      <div class="body">
+        <p style="margin-top:0">عند كتابة <b>رقم المخالفة</b> (رقم الزيارة) في النموذج، تُجلب بيانات المخالفة تلقائياً من آخر ملف شامل تم رفعه. يُحفظ من الملف زيارات الوحدة الشمالية فقط (حفر الباطن، الخفجي، النعيرية، قرية العليا).</p>
+        <div class="calc" id="compInfo">جاري التحميل…</div>
+        <div class="admin-only" style="margin-top:16px">
+          <div class="sub">تحديث الملف الشامل</div>
+          <label class="f">ملف التقرير الشامل (xlsx)<input type="file" id="compFile" accept=".xlsx"></label>
+          <div class="row-actions"><button class="btn solid" id="compUpload">رفع وتحديث</button></div>
+          <div class="hint" id="compProg">الملف كبير، فالأفضل رفعه من الكمبيوتر.</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
   <!-- ===== RATES ===== -->
   <div id="tab-rates" hidden>
     <section class="block">
@@ -461,6 +480,7 @@ async function boot(){
   $("#boqHint").textContent=isAdmin?"هذه البنود تظهر للجميع في القائمة المنسدلة. عدّل ثم اضغط حفظ التغييرات. البند غير الفعّال يختفي من القائمة ولا يتأثر به أي نموذج سابق.":"قائمة بنود الاتفاقية المعتمدة. التعديل لمسؤول المنصة فقط.";
   await loadCatalogs();
   try{const d=JSON.parse(localStorage.getItem(draftKey())||"null");S=d||blank()}catch(e){S=blank()}
+  loadVisitList();
   $("#recBr").innerHTML='<option value="">الكل</option>'+opts(LISTS.branch,"");
   showForm();
 }
@@ -486,14 +506,14 @@ function fillSelects(){
     $(`[data-k="sign.${k}"]`).innerHTML='<option value="">— اختر الاسم —</option>'+l.map(n=>`<option value="${esc(n)}"${n===v?" selected":""}>${esc(n)}</option>`).join("")});
 }
 function bindFields(){document.querySelectorAll("#tab-form [data-k]").forEach(el=>{const v=get(el.dataset.k);if(el.type==="checkbox")el.checked=!!v;else if(el.tagName!=="SELECT")el.value=v??""})}
-function showForm(){fillSelects();bindFields();renderAll()}
+function showForm(){fillSelects();bindFields();renderAll();renderVisitCard()}
 document.addEventListener("input",e=>{const el=e.target;if(!el.dataset.k||!el.closest("#tab-form"))return;set(el.dataset.k,el.type==="checkbox"?el.checked:el.value);recalc()});
 document.addEventListener("change",e=>{const el=e.target;if(!el.dataset.k||el.tagName!=="SELECT"||!el.closest("#tab-form"))return;set(el.dataset.k,el.value);
-  if(el.dataset.k==="info.vtype"){const codes=VMAP[el.value]||[];const r0=S.boq[0];
-    if(S.boq.length<=1&&(!r0||!r0.code||r0.auto)){const it=cat.find(c=>c.item_code===codes[0]&&c.active);S.boq=[it?{...snap(it),q:r0?.q||1,auto:true}:{code:null,q:1}]}
-    renderBoq()}
+  if(el.dataset.k==="info.vtype"){autoBoq(el.value);renderBoq()}
   if(el.dataset.k==="lb.cat")delete S.lb.R;
   recalc()});
+function autoBoq(v){const codes=VMAP[v]||[];const r0=S.boq[0];
+  if(S.boq.length<=1&&(!r0||!r0.code||r0.auto)){const it=cat.find(c=>c.item_code===codes[0]&&c.active);S.boq=[it?{...snap(it),q:r0?.q||1,auto:true}:{code:null,q:1}]}}
 const snap=it=>({code:it.item_code,ag:it.agreement,no:it.item_no,desc:it.description,price:num(it.price)});
 
 function renderBoq(){
@@ -754,10 +774,10 @@ $("#saveRates").onclick=async()=>{
 /* ================= التبويبات ================= */
 function switchTab(t){
   document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("on",x.dataset.tab===t));
-  ["form","recs","boq","rates"].forEach(k=>$("#tab-"+k).hidden=k!==t);
+  ["form","recs","boq","rates","comp"].forEach(k=>$("#tab-"+k).hidden=k!==t);
   $("#totalbar").hidden=t!=="form";document.body.classList.toggle("has-bar",t==="form");
   window.scrollTo(0,0);
-  if(t==="form")showForm();else if(t==="recs")loadRecs();else if(t==="boq")renderCat();else renderRates();
+  if(t==="form")showForm();else if(t==="recs")loadRecs();else if(t==="boq")renderCat();else if(t==="comp")loadCompInfo();else renderRates();
 }
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
 
@@ -903,6 +923,124 @@ async function makeExcel(){
   finally{b.disabled=false}
 }
 $("#xlsBtn").onclick=()=>makeExcel();
+
+/* ===== الملف الشامل: قراءة ملف الإكسل واستخراج زيارات الوحدة الشمالية ===== */
+const COMP_BRANCHES={"محافظة حفر الباطن":"حفر الباطن","محافظة الخفجي":"الخفجي","محافظة النعيرية":"النعيرية","محافظة قرية العليا":"القرية العليا"};
+const COMP_COLS={no:"رقم الزيارة",start:"تاريخ بدء الزيارة",gov:"المحافظة",coords:"الاحداثيات",sub:"التصنيف الفرعي",insp:"اسم المفتش",vstatus:"حالة الزيارة",vid:"معرف المخالفة",status:"حالة المخالفة",prop:"نوع العقار",bnd:"رقم البند",bdesc:"وصف البند",name:"اسم المخالف",nid:"هوية المخالف",sev:"نوع المخالفة",notes:"ملاحظات المفتش"};
+function xmlDecode(s){return s.indexOf("&")<0?s:s.replace(/&(lt|gt|amp|quot|apos|#(\d+)|#x([0-9a-fA-F]+));/g,(m,n,d,h)=>n==="lt"?"<":n==="gt"?">":n==="amp"?"&":n==="quot"?'"':n==="apos"?"'":String.fromCodePoint(d?+d:parseInt(h,16)))}
+function parseShared(xml){
+  const out=[],re=/<si>([\s\S]*?)<\/si>/g,tr=/<t[^>]*>([\s\S]*?)<\/t>/g;let m;
+  while((m=re.exec(xml))){let s="",t;tr.lastIndex=0;while((t=tr.exec(m[1])))s+=t[1];out.push(xmlDecode(s))}
+  return out;
+}
+function parseComprehensive(sheetXml,ss){
+  const rowRe=/<row\b[^>]*>([\s\S]*?)<\/row>/g,cRe=/<c r="([A-Z]+)\d+"([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g;
+  let m,col=null,first=true;const visits={};let total=0;
+  const val=(attrs,inner)=>{if(!inner)return"";
+    if(/t="s"/.test(attrs)){const v=/<v>([^<]*)<\/v>/.exec(inner);return v?ss[+v[1]]:""}
+    if(/t="inlineStr"/.test(attrs)){let s="",t;const tr=/<t[^>]*>([\s\S]*?)<\/t>/g;while((t=tr.exec(inner)))s+=t[1];return xmlDecode(s)}
+    const v=/<v>([^<]*)<\/v>/.exec(inner);return v?xmlDecode(v[1]):""};
+  while((m=rowRe.exec(sheetXml))){
+    const r={};let c;cRe.lastIndex=0;
+    while((c=cRe.exec(m[1])))r[c[1]]=val(c[2],c[3]);
+    if(first){first=false;col={};for(const k in COMP_COLS){const L=Object.keys(r).find(x=>String(r[x]).trim()===COMP_COLS[k]);if(L)col[k]=L}
+      if(!col.no||!col.gov)throw new Error("الملف لا يحتوي على عمود رقم الزيارة أو المحافظة");continue}
+    total++;
+    const branch=COMP_BRANCHES[String(r[col.gov]||"").trim()];if(!branch)continue;
+    const no=String(r[col.no]||"").trim().toUpperCase();if(!no)continue;
+    const g=k=>col[k]?String(r[col[k]]??"").trim():"";
+    const item={bnd:g("bnd"),desc:g("bdesc"),vid:g("vid"),status:g("status"),sev:g("sev")};
+    if(visits[no]){if(!visits[no].items.some(x=>x.vid===item.vid&&x.desc===item.desc))visits[no].items.push(item);continue}
+    visits[no]={no,branch,start:g("start"),coords:g("coords"),sub:g("sub"),insp:g("insp"),vstatus:g("vstatus"),prop:g("prop"),name:g("name"),nid:g("nid"),notes:g("notes").slice(0,500),items:[item]};
+  }
+  return{visits,total};
+}
+/* مطابقة بند المخالفة بقائمة المخالفات في المنصة */
+function vNorm(s){s=String(s||"").replace(/[\u064B-\u0652\u0640]/g,"").replace(/[أإآ]/g,"ا").replace(/ة/g,"ه").replace(/ى/g,"ي").replace(/[^\u0621-\u064A0-9 ]/g," ");
+  const stop=new Set(["او","من","علي","على","في","الى","مع","قبل"]);return new Set(s.split(/\s+/).filter(w=>w.length>1&&!stop.has(w)))}
+function vSim(a,b){let i=0;a.forEach(w=>{if(b.has(w))i++});const u=a.size+b.size-i;return u?i/u:0}
+function matchViolation(bnd,desc,list){
+  const T=vNorm(desc),n=/^\d+$/.test(String(bnd).trim())?+bnd:0;
+  if(n>=1&&n<=list.length&&T.size&&vSim(T,vNorm(list[n-1]))>=0.3)return list[n-1];
+  if(!T.size)return n>=1&&n<=list.length?list[n-1]:"";
+  let best="",bs=0;list.forEach(v=>{const s=vSim(T,vNorm(v));if(s>bs){bs=s;best=v}});
+  return bs>=0.35?best:"";
+}
+function compDate(s){const m=/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/.exec(String(s||"").trim());if(!m)return"";let y=+m[3];if(y<100)y+=2000;return`${y}-${String(m[1]).padStart(2,"0")}-${String(m[2]).padStart(2,"0")}`}
+const PROP_CAT={"فيلا":"سكني – فيلا","شقة":"سكني – شقة","منشأة تجارية":"تجاري","منشأة حكومية":"حكومي"};
+
+/* ===== جلب بيانات الزيارة ===== */
+let visitIdx=[];
+async function loadVisitList(){
+  const all=[];for(let i=0;i<20000;i+=1000){const {data,error}=await sb.from("cost_visits").select("visit_no,violator_name").order("visit_no").range(i,i+999);if(error||!data?.length)break;all.push(...data);if(data.length<1000)break}
+  visitIdx=all;$("#visitList").innerHTML=all.map(v=>`<option value="${esc(v.visit_no)}">${esc(v.violator_name||"")}</option>`).join("");
+}
+async function lookupVisit(raw){
+  const no=String(raw||"").trim().toUpperCase();if(!/^SWA-\d+$/.test(no)||locked())return;
+  if(S.visit?.no===no)return;
+  const {data,error}=await sb.from("cost_visits").select("data").eq("visit_no",no).maybeSingle();
+  if(error){toast("تعذر البحث في الملف الشامل",4000);return}
+  if(!data){S.visit=null;renderVisitCard(no);return}
+  applyVisit(data.data);
+}
+function applyVisit(v){
+  if(S.info.name&&S.info.name!==v.name&&!confirm("استبدال البيانات الحالية ببيانات الزيارة "+v.no+"؟"))return;
+  const it=v.items?.[0]||{},d=compDate(v.start);
+  S.info.no=v.no;S.info.name=v.name||S.info.name;S.info.id=v.nid||S.info.id;if(v.branch)S.info.branch=v.branch;if(d)S.info.date=d;
+  const vt=matchViolation(it.bnd,it.desc,VIOLATIONS);if(vt){S.info.vtype=vt;autoBoq(vt)}
+  const cat=PROP_CAT[v.prop];if(cat&&rates.some(r=>r.name===cat)){S.lb.cat=cat;delete S.lb.R}
+  if(d&&!S.lb.end&&!S.lb.useMax)S.lb.end=d;
+  S.visit={no:v.no,insp:v.insp,vstatus:v.vstatus,prop:v.prop,coords:v.coords,sub:v.sub,notes:v.notes,items:v.items,matched:!!vt};
+  showForm();toast("تم جلب بيانات الزيارة "+v.no);
+}
+function renderVisitCard(miss){
+  const c=$("#visitCard");
+  if(miss){c.hidden=false;c.innerHTML=`<div class="calc" style="margin-top:0">رقم الزيارة <b dir="ltr">${esc(miss)}</b> غير موجود في الملف الشامل — أدخل البيانات يدوياً.</div>`;return}
+  const v=S.visit;if(!v||v.no!==S.info.no){c.hidden=true;return}
+  const [lat,lng]=String(v.coords||"").split(",");
+  c.hidden=false;c.innerHTML=`<div class="calc" style="margin-top:0">
+    <div class="line"><span>من الملف الشامل</span><b dir="ltr">${esc(v.no)}</b></div>
+    <div class="line"><span>المفتش</span><b>${esc(v.insp||"—")}</b></div>
+    <div class="line"><span>حالة الزيارة</span><b>${esc(v.vstatus||"—")}</b></div>
+    <div class="line"><span>نوع العقار</span><b>${esc(v.prop||"—")}</b></div>
+    ${(v.items||[]).map(x=>`<div class="line"><span>البند ${esc(x.bnd)}${x.vid?` <span dir="ltr" style="font-size:.78rem">(${esc(x.vid)})</span>`:""}</span><b style="font-weight:500">${esc(x.desc||"")}${x.status?` — ${esc(x.status)}`:""}</b></div>`).join("")}
+    ${lat&&lng?`<div class="line"><span>الموقع</span><a href="https://maps.google.com/?q=${encodeURIComponent(lat.trim()+","+lng.trim())}" target="_blank" rel="noopener">فتح على الخريطة</a></div>`:""}
+    ${v.matched?"":`<div class="rule warn">لم يتم التعرف على نوع المخالفة تلقائياً — اختره يدوياً.</div>`}
+    ${v.prop&&!PROP_CAT[v.prop]?`<div class="rule">نوع العقار "${esc(v.prop)}" — تأكد من اختيار الفئة المناسبة.</div>`:""}
+  </div>`;
+}
+$('[data-k="info.no"]').addEventListener("change",e=>lookupVisit(e.target.value));
+
+/* ===== رفع الملف الشامل (المسؤول) ===== */
+async function loadCompInfo(){
+  const {count}=await sb.from("cost_visits").select("visit_no",{count:"exact",head:true});
+  const {data}=await sb.from("cost_visits").select("updated_at").order("updated_at",{ascending:false}).limit(1);
+  $("#compInfo").innerHTML=`<div class="line"><span>عدد الزيارات المحفوظة</span><b>${count||0}</b></div><div class="line"><span>آخر تحديث</span><b>${data?.[0]?new Date(data[0].updated_at).toLocaleString("en-GB"):"لم يُرفع بعد"}</b></div>`;
+}
+$("#compUpload").onclick=async()=>{
+  const f=$("#compFile").files[0];if(!f){toast("اختر ملف التقرير الشامل أولاً");return}
+  if(!window.JSZip){toast("تعذر تحميل مكتبة الملفات، حدّث الصفحة",5000);return}
+  const b=$("#compUpload"),P=t=>$("#compProg").textContent=t;b.disabled=true;
+  try{
+    P("جاري قراءة الملف… قد يستغرق دقيقة");await new Promise(r=>setTimeout(r,50));
+    const zip=await JSZip.loadAsync(f);
+    const ssF=zip.file("xl/sharedStrings.xml");const ss=ssF?parseShared(await ssF.async("string")):[];
+    const sheetPath=Object.keys(zip.files).filter(n=>/^xl\/worksheets\/sheet\d+\.xml$/.test(n)).sort()[0];
+    if(!sheetPath)throw new Error("الملف لا يحتوي على ورقة بيانات");
+    P("جاري استخراج زيارات الوحدة الشمالية…");await new Promise(r=>setTimeout(r,50));
+    const {visits,total}=parseComprehensive(await zip.file(sheetPath).async("string"),ss);
+    const list=Object.values(visits);if(!list.length)throw new Error("لم يتم العثور على زيارات للوحدة الشمالية في الملف");
+    const now=new Date().toISOString();
+    for(let i=0;i<list.length;i+=300){
+      P(`جاري الحفظ… ${Math.min(i+300,list.length)} من ${list.length}`);
+      const {error}=await sb.from("cost_visits").upsert(list.slice(i,i+300).map(v=>({visit_no:v.no,branch:v.branch,violator_name:v.name,data:v,updated_at:now})),{onConflict:"visit_no"});
+      if(error)throw new Error(error.message);
+    }
+    P(`تم ✅ — قُرئ ${total} صف، وحُفظت ${list.length} زيارة للوحدة الشمالية.`);
+    await loadCompInfo();loadVisitList();
+  }catch(err){P("تعذر الرفع: "+(err?.message||err))}
+  finally{b.disabled=false}
+};
 
 start();
 })();
