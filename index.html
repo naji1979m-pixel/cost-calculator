@@ -169,12 +169,12 @@ dialog h3{margin:0;padding:12px 16px;background:var(--soft);border-bottom:1px so
         <label class="f"><span>رقم المخالفة <span class="req">*</span></span><input data-k="info.no" placeholder="SWA-00000" dir="ltr" style="text-align:right" list="visitList" autocomplete="off"></label><datalist id="visitList"></datalist>
         <label class="f" style="grid-column:1/-1"><span>نوع المخالفة <span class="req">*</span></span><select data-k="info.vtype"></select></label>
         <label class="f"><span>التاريخ <span class="req">*</span></span><input type="date" data-k="info.date"></label>
-        <label class="f">القطاع<input data-k="info.sector" list="sectorList" autocomplete="off"></label>
-        <label class="f">وحدة العمل<input data-k="info.unit" list="unitList" autocomplete="off"></label>
+        <label class="f">القطاع<select data-k="info.sector"></select></label>
+        <label class="f">وحدة العمل<select data-k="info.unit"></select></label>
         <label class="f">الفرع<input data-k="info.branch" list="branchList" autocomplete="off"></label>
-        <label class="f">المنطقة<input data-k="info.region" list="regionList" autocomplete="off"></label>
-        <label class="f">المحافظة<input data-k="info.gov" list="govList" autocomplete="off"></label>
-        <datalist id="sectorList"></datalist><datalist id="unitList"></datalist><datalist id="branchList"></datalist><datalist id="regionList"></datalist><datalist id="govList"></datalist>
+        <label class="f">المنطقة<select data-k="info.region"></select></label>
+        <label class="f">المحافظة<select data-k="info.gov"></select></label>
+        <datalist id="branchList"></datalist>
         <div style="grid-column:1/-1" class="row-actions"><button class="btn ghost" id="clearInfoBtn" type="button">تفريغ بيانات المخالفة</button><button class="btn ghost" id="refetchBtn" type="button">إعادة الجلب من الملف الشامل</button></div>
       </div>
     </section>
@@ -368,12 +368,12 @@ dialog h3{margin:0;padding:12px 16px;background:var(--soft);border-bottom:1px so
   <div class="body">
     <p class="hint" style="margin-top:0">يُستخدم لتعبئة النماذج الجديدة تلقائياً، ولتصفية اقتراحات أرقام المخالفات والسجل. يُحفظ على جهازك وتقدر تغيّره في أي وقت.</p>
     <div class="grid">
-      <label class="f">المنطقة<input id="scRegion" list="scRegionList" autocomplete="off"></label>
-      <label class="f">المحافظة<input id="scGov" list="scGovList" autocomplete="off" placeholder="اتركها فارغة لكل المحافظات"></label>
-      <label class="f">القطاع<input id="scSector" list="sectorList" autocomplete="off"></label>
-      <label class="f">وحدة العمل<input id="scUnit" list="unitList" autocomplete="off"></label>
+      <label class="f">المنطقة<select id="scRegion"></select></label>
+      <label class="f">المحافظة<select id="scGov"></select></label>
+      <label class="f">القطاع<select id="scSector"></select></label>
+      <label class="f">وحدة العمل<select id="scUnit"></select></label>
     </div>
-    <datalist id="scRegionList"></datalist><datalist id="scGovList"></datalist>
+    <p class="hint warn" id="scNoData" hidden>قائمة المناطق والمحافظات فاضية — يلزم رفع الملف الشامل أولاً من حساب المسؤول.</p>
     <div class="row-actions"><button class="btn solid" id="scSave">حفظ</button><button class="btn ghost" id="scCancel">إلغاء</button></div>
   </div>
 </dialog>
@@ -1002,14 +1002,20 @@ const PROP_CAT={"فيلا":"سكني – فيلا","شقة":"سكني – شقة
 /* ===== قوائم الأماكن ===== */
 let REGIONS={};
 async function loadMeta(){const {data}=await sb.from("cost_visits").select("data").eq("visit_no","__META__").maybeSingle();REGIONS=data?.data?.regions||{};fillPlaceLists()}
+function selOpts(list,cur,ph){const l=[...new Set(list)].filter(Boolean);if(cur&&!l.includes(cur))l.unshift(cur);
+  return `<option value="">${ph}</option>`+l.map(v=>`<option value="${esc(v)}"${v===cur?" selected":""}>${esc(v)}</option>`).join("")}
+function govsOf(r){return r&&REGIONS[r]?REGIONS[r]:Object.values(REGIONS).flat().sort()}
 function fillPlaceLists(){
-  const o=a=>[...new Set(a)].filter(Boolean).map(v=>`<option value="${esc(v)}">`).join("");
-  const govs=S?.info?.region&&REGIONS[S.info.region]?REGIONS[S.info.region]:Object.values(REGIONS).flat();
-  $("#sectorList").innerHTML=o(LISTS.sector);$("#unitList").innerHTML=o(LISTS.unit);
-  $("#branchList").innerHTML=o([...LISTS.branch,...govs.map(govShort)]);
-  $("#regionList").innerHTML=o(Object.keys(REGIONS));$("#govList").innerHTML=o(govs);
+  if(!S)return;const i=S.info;
+  $('[data-k="info.region"]').innerHTML=selOpts(Object.keys(REGIONS).sort(),i.region||"","— اختر المنطقة —");
+  $('[data-k="info.gov"]').innerHTML=selOpts(govsOf(i.region),i.gov||"","— اختر المحافظة —");
+  $('[data-k="info.sector"]').innerHTML=selOpts(LISTS.sector,i.sector||"","— اختر القطاع —");
+  $('[data-k="info.unit"]').innerHTML=selOpts(LISTS.unit,i.unit||"","— اختر الوحدة —");
+  $("#branchList").innerHTML=[...new Set([...LISTS.branch,...govsOf(i.region).map(govShort)])].map(v=>`<option value="${esc(v)}">`).join("");
 }
-document.addEventListener("input",e=>{if(e.target.dataset?.k==="info.region")fillPlaceLists()});
+document.addEventListener("change",e=>{const k=e.target.dataset?.k;if(!k||!S||!e.target.closest("#tab-form"))return;
+  if(k==="info.region"){if(S.info.gov&&!govsOf(S.info.region).includes(S.info.gov))S.info.gov="";const s=SECTOR_OF[S.info.region];if(s)S.info.sector=s;fillPlaceLists();bindFields()}
+  if(k==="info.gov"&&S.info.gov){S.info.branch=govShort(S.info.gov);const u=UNIT_OF[S.info.branch];if(u)S.info.unit=u;fillPlaceLists();bindFields()}});
 /* ===== جلب بيانات الزيارة ===== */
 let visitIdx=[];
 let searchT=null;
@@ -1018,14 +1024,17 @@ function renderScopeBar(){
   const s=SCOPE;$("#scopeBar").innerHTML=`<span>نطاقي: <b>${s?esc([s.sector,s.unit,s.region,s.gov?govShort(s.gov):"كل المحافظات"].filter(Boolean).join(" / ")):"غير محدد"}</b></span><button class="btn ghost" id="scopeBtn" type="button">تغيير النطاق</button>`;
   $("#scopeBtn").onclick=openScope;
 }
-function scGovs(){const r=$("#scRegion").value.trim();const g=REGIONS[r]||Object.values(REGIONS).flat();$("#scGovList").innerHTML=[...new Set(g)].map(v=>`<option value="${esc(v)}">`).join("")}
+function scGovs(cur){$("#scGov").innerHTML=selOpts(govsOf($("#scRegion").value),cur||"","كل المحافظات")}
 function openScope(){
-  $("#scRegionList").innerHTML=Object.keys(REGIONS).map(v=>`<option value="${esc(v)}">`).join("");
-  $("#scRegion").value=SCOPE?.region||"";$("#scGov").value=SCOPE?.gov||"";$("#scSector").value=SCOPE?.sector||"";$("#scUnit").value=SCOPE?.unit||"";
-  scGovs();$("#scopeDlg").showModal();
+  $("#scRegion").innerHTML=selOpts(Object.keys(REGIONS).sort(),SCOPE?.region||"","— اختر المنطقة —");
+  scGovs(SCOPE?.gov);
+  $("#scSector").innerHTML=selOpts(LISTS.sector,SCOPE?.sector||"","— اختر القطاع —");
+  $("#scUnit").innerHTML=selOpts(LISTS.unit,SCOPE?.unit||"","— اختر الوحدة —");
+  $("#scNoData").hidden=Object.keys(REGIONS).length>0;
+  $("#scopeDlg").showModal();
 }
-$("#scRegion").addEventListener("input",()=>{scGovs();const s=SECTOR_OF[$("#scRegion").value.trim()];if(s)$("#scSector").value=s});
-$("#scGov").addEventListener("input",()=>{const u=UNIT_OF[govShort($("#scGov").value)];if(u)$("#scUnit").value=u});
+$("#scRegion").addEventListener("change",()=>{scGovs("");const s=SECTOR_OF[$("#scRegion").value];if(s)$("#scSector").value=s});
+$("#scGov").addEventListener("change",()=>{const u=UNIT_OF[govShort($("#scGov").value)];if(u)$("#scUnit").value=u});
 $("#scCancel").onclick=()=>$("#scopeDlg").close();
 $("#scSave").onclick=()=>{
   SCOPE={region:$("#scRegion").value.trim(),gov:$("#scGov").value.trim(),sector:$("#scSector").value.trim(),unit:$("#scUnit").value.trim()};
