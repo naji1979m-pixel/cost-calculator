@@ -36,7 +36,7 @@ section.block>h2{margin:0;padding:11px 16px;font-size:1.02rem;font-weight:600;ba
 section.block>h2 .n{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--water);color:#fff;font-size:.8rem}
 .body{padding:14px 16px}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
-label.f{display:flex;flex-direction:column;gap:4px;font-size:.84rem;color:var(--ink2)}
+label.f,div.f{display:flex;flex-direction:column;gap:4px;font-size:.84rem;color:var(--ink2)}
 label.f .req{color:var(--warn)}
 input,select,textarea{font:inherit;font-size:.95rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:8px 10px;width:100%;min-width:0}
 select{appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:14px 55%,9px 55%;background-size:5px 5px;background-repeat:no-repeat;padding-left:28px}
@@ -98,7 +98,16 @@ dialog .body{max-height:70vh;overflow:auto}
 dialog h3{margin:0;padding:12px 16px;background:var(--soft);border-bottom:1px solid var(--line);font-size:1rem}
 [hidden]{display:none!important}
 .combo{position:relative;display:block}
-.combo input{padding-left:38px}
+.combo input{padding-left:72px}
+.combo-btn.cal{left:38px;font-size:.85rem}
+.combo-btn.cal.on{background:var(--water);color:#fff}
+.range-panel{padding:6px 12px 12px}
+.range-panel .rp-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0}
+.range-panel .rp-grid input{padding-left:10px}
+.range-panel .rp-quick{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.range-panel .rp-quick button{border:1px solid var(--line);background:var(--bg);color:var(--ink2);border-radius:999px;padding:4px 10px;font:inherit;font-size:.8rem;cursor:pointer;width:auto}
+.range-panel .rp-act{display:flex;gap:8px;margin-top:8px}
+.range-panel .rp-act .btn{width:auto;padding:6px 14px;border:1px solid var(--water)}
 .combo-btn{position:absolute;left:4px;top:50%;transform:translateY(-50%);border:none;background:var(--soft);color:var(--ink2);width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:.95rem}
 .combo-list{position:absolute;top:calc(100% + 4px);right:0;left:0;max-height:300px;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px #0003;z-index:30}
 .combo-list button{display:flex;justify-content:space-between;gap:10px;width:100%;text-align:right;border:none;border-bottom:1px solid var(--line);background:none;color:var(--ink);font:inherit;font-size:.88rem;padding:9px 12px;cursor:pointer}
@@ -175,8 +184,14 @@ dialog h3{margin:0;padding:12px 16px;background:var(--soft);border-bottom:1px so
         <label class="f"><span>اسم المخالف <span class="req">*</span></span><input data-k="info.name"></label>
         <label class="f"><span>رقم الهوية / رقم المنشأة الموحد <span class="req">*</span></span><input data-k="info.id" inputmode="numeric"></label>
         <label class="f">نوع المخالف<select data-k="info.ptype"></select></label>
-        <label class="f"><span>رقم المخالفة <span class="req">*</span></span>
-          <span class="combo"><input data-k="info.no" placeholder="اكتب الرقم أو اختر من القائمة" dir="ltr" style="text-align:right" autocomplete="off"><button type="button" class="combo-btn" id="comboBtn" aria-label="عرض القائمة">▾</button><span class="combo-list" id="comboList" hidden></span></span></label>
+        <div class="f"><span>رقم المخالفة <span class="req">*</span></span>
+          <span class="combo"><input data-k="info.no" placeholder="اكتب الرقم أو اختر من القائمة" dir="ltr" style="text-align:right" autocomplete="off"><button type="button" class="combo-btn" id="comboBtn" aria-label="عرض القائمة">▾</button><button type="button" class="combo-btn cal" id="rangeBtn" aria-label="تحديد الفترة الزمنية" title="تحديد الفترة الزمنية">📅</button><span class="combo-list" id="comboList" hidden></span>
+          <span class="combo-list range-panel" id="rangePanel" hidden>
+            <span class="cl-hint" style="padding-bottom:4px">الفترة الزمنية لأرقام المخالفات (حسب تاريخ الزيارة)</span>
+            <span class="rp-grid"><label class="f">من<input type="date" id="rgFrom"></label><label class="f">إلى<input type="date" id="rgTo"></label></span>
+            <span class="rp-quick"><button type="button" data-q="7">آخر 7 أيام</button><button type="button" data-q="30">آخر 30 يوم</button><button type="button" data-q="month">هذا الشهر</button><button type="button" data-q="year">هذه السنة</button><button type="button" data-q="all">الكل</button></span>
+            <span class="rp-act"><button type="button" class="btn solid" id="rgApply">تطبيق</button><button type="button" class="btn ghost" id="rgClose">إغلاق</button></span>
+          </span></span><span class="hint" id="rangeLbl"></span></div>
         <label class="f" style="grid-column:1/-1"><span>نوع المخالفة <span class="req">*</span></span><select data-k="info.vtype"></select></label>
         <label class="f"><span>التاريخ <span class="req">*</span></span><input type="date" data-k="info.date"></label>
         <label class="f">القطاع<select data-k="info.sector"></select></label>
@@ -1060,7 +1075,7 @@ async function loadScopeVisits(){
   if(!SCOPE?.gov&&!SCOPE?.region)return;
   const all=[];
   for(let i=0;i<6000;i+=1000){
-    let q=sb.from("cost_visits").select("visit_no,violator_name").neq("visit_no","__META__");
+    let q=sb.from("cost_visits").select("visit_no,violator_name,start:data->>start").neq("visit_no","__META__");
     q=SCOPE.gov?q.eq("branch",govShort(SCOPE.gov)):q.eq("data->>region",SCOPE.region);
     const {data,error}=await q.range(i,i+999);if(error||!data?.length)break;all.push(...data);if(data.length<1000)break;
   }
@@ -1068,11 +1083,15 @@ async function loadScopeVisits(){
 }
 async function comboItems(raw){
   const q=String(raw||"").trim().toUpperCase(),digits=q.replace(/^SWA-?/,"");
-  if(scopeVisits){return scopeVisits.filter(v=>!q||v.visit_no.replace("SWA-","").startsWith(digits)||(v.violator_name||"").includes(raw.trim())).slice(0,80)}
+  if(scopeVisits){return scopeVisits.filter(inRange).filter(v=>!q||v.visit_no.replace("SWA-","").startsWith(digits)||(v.violator_name||"").includes(raw.trim())).slice(0,80)}
   if(digits.length<3)return null;
-  const {data}=await sb.from("cost_visits").select("visit_no,violator_name").ilike("visit_no","SWA-"+digits+"%").limit(40);
-  return(data||[]).sort((a,b)=>vNum(b.visit_no)-vNum(a.visit_no));
+  const {data}=await sb.from("cost_visits").select("visit_no,violator_name,start:data->>start").ilike("visit_no","SWA-"+digits+"%").limit(60);
+  return(data||[]).filter(inRange).sort((a,b)=>vNum(b.visit_no)-vNum(a.visit_no));
 }
+let RANGE={from:"",to:""};try{RANGE=JSON.parse(localStorage.getItem("cc-range")||"null")||RANGE}catch(e){}
+function inRange(v){if(!RANGE.from&&!RANGE.to)return true;const d=compDate(v.start??v.data?.start);if(!d)return false;return(!RANGE.from||d>=RANGE.from)&&(!RANGE.to||d<=RANGE.to)}
+function rangeText(){const f=RANGE.from?dmy(RANGE.from):"",t=RANGE.to?dmy(RANGE.to):"";return f||t?`من ${f||"البداية"} إلى ${t||"اليوم"}`:""}
+function renderRangeLbl(){const t=rangeText();$("#rangeLbl").textContent=t?"الفترة: "+t:"";$("#rangeBtn").classList.toggle("on",!!t)}
 let comboT=null;
 async function openCombo(){
   const L=$("#comboList"),inp=$('[data-k="info.no"]');if(locked())return;
@@ -1080,8 +1099,9 @@ async function openCombo(){
   await loadScopeVisits();
   const items=await comboItems(inp.value);
   if(items===null){L.innerHTML='<span class="cl-hint">اكتب 3 أرقام على الأقل للبحث، أو حدد نطاقك لعرض قائمة مخالفاته.</span>';return}
-  if(!items.length){L.innerHTML='<span class="cl-hint">لا توجد نتائج — تقدر تكمل كتابة الرقم يدوياً.</span>';return}
-  L.innerHTML=(scopeVisits&&!inp.value.trim()?`<span class="cl-hint">مخالفات نطاقك (${scopeVisits.length}) — الأحدث أولاً</span>`:"")+items.map(v=>`<button type="button" data-no="${esc(v.visit_no)}"><span class="cl-no">${esc(v.visit_no)}</span><span class="cl-nm">${esc(v.violator_name||"")}</span></button>`).join("");
+  if(!items.length){L.innerHTML=`<span class="cl-hint">لا توجد نتائج${rangeText()?" ضمن الفترة "+rangeText():""} — تقدر تكمل كتابة الرقم يدوياً أو تغيّر الفترة 📅.</span>`;return}
+  const rl=rangeText();
+  L.innerHTML=(scopeVisits&&!inp.value.trim()?`<span class="cl-hint">مخالفات نطاقك (${scopeVisits.filter(inRange).length})${rl?" — "+rl:""} — الأحدث أولاً</span>`:"")+items.map(v=>`<button type="button" data-no="${esc(v.visit_no)}"><span class="cl-no">${esc(v.visit_no)}</span><span class="cl-nm">${esc(v.violator_name||"")}</span></button>`).join("");
 }
 function closeCombo(){$("#comboList").hidden=true}
 {
@@ -1093,6 +1113,16 @@ function closeCombo(){$("#comboList").hidden=true}
   $("#comboBtn").addEventListener("mousedown",e=>e.preventDefault());
   $("#comboBtn").onclick=()=>{if($("#comboList").hidden){inp.focus();openCombo()}else closeCombo()};
   $("#comboList").addEventListener("mousedown",e=>e.preventDefault());
+  const iso=d=>d.toISOString().slice(0,10);
+  $("#rangeBtn").onclick=()=>{closeCombo();const P=$("#rangePanel");P.hidden=!P.hidden;$("#rgFrom").value=RANGE.from||"";$("#rgTo").value=RANGE.to||""};
+  $("#rangePanel").querySelectorAll("[data-q]").forEach(b=>b.onclick=()=>{const n=new Date(),q=b.dataset.q;let f="",t=iso(n);
+    if(q==="7"||q==="30"){const d=new Date(n);d.setDate(d.getDate()-(+q));f=iso(d)}
+    else if(q==="month")f=iso(new Date(n.getFullYear(),n.getMonth(),1,12));else if(q==="year")f=n.getFullYear()+"-01-01";else t="";
+    $("#rgFrom").value=f;$("#rgTo").value=t});
+  $("#rgApply").onclick=()=>{RANGE={from:$("#rgFrom").value,to:$("#rgTo").value};if(RANGE.from&&RANGE.to&&RANGE.from>RANGE.to){toast("تاريخ البداية بعد النهاية");return}
+    try{localStorage.setItem("cc-range",JSON.stringify(RANGE))}catch(e){}$("#rangePanel").hidden=true;renderRangeLbl();inp.focus();openCombo()};
+  $("#rgClose").onclick=()=>$("#rangePanel").hidden=true;
+  renderRangeLbl();
   $("#comboList").addEventListener("click",e=>{const b=e.target.closest("[data-no]");if(!b)return;inp.value=b.dataset.no;S.info.no=b.dataset.no;closeCombo();lookupVisit(b.dataset.no)});
 }
 async function lookupVisit(raw,force){
