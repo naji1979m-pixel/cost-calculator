@@ -205,6 +205,7 @@ dialog h3{margin:0;padding:12px 16px;background:var(--soft);border-bottom:1px so
       <h2><span class="n">2</span>تكاليف الإصلاح</h2>
       <div class="body">
         <div class="sub">بنود جدول الكميات <span class="req warn">*</span></div>
+        <div id="boqNote"></div>
         <div class="tbl"><table class="t">
           <thead><tr><th>البند</th><th>رقم الاتفاقية</th><th>الرقم</th><th>رقم الصنف</th><th class="num">السعر الإفرادي</th><th>الكمية</th><th class="num">الإجمالي</th><th></th></tr></thead>
           <tbody id="boqRows"></tbody>
@@ -319,7 +320,7 @@ dialog h3{margin:0;padding:12px 16px;background:var(--soft);border-bottom:1px so
       <div class="body">
         <p class="hint" style="margin-top:0" id="boqHint"></p>
         <div class="tbl"><table class="t">
-          <thead><tr><th>رقم الاتفاقية</th><th>الرقم</th><th>رقم الصنف</th><th>الوصف</th><th>الوحدة</th><th class="num">السعر</th><th>فعّال</th><th></th></tr></thead>
+          <thead><tr><th>القطاع</th><th>رقم الاتفاقية</th><th>الرقم</th><th>رقم الصنف</th><th>الوصف</th><th>الوحدة</th><th class="num">السعر</th><th>فعّال</th><th></th></tr></thead>
           <tbody id="catRows"></tbody>
         </table></div>
         <div class="row-actions admin-only">
@@ -557,15 +558,20 @@ document.addEventListener("change",e=>{const el=e.target;if(!el.dataset.k||el.ta
   recalc()});
 /* قواعد خاصة لبعض المخالفات: تكلفة إصلاح ثابتة و/أو بدون منفعة مفقودة */
 const VRULES={"فتح العداد بشكل غير نظامي بعد قفله من قبل مقدم الخدمة":{fixed:115,noLoss:true,noForm:"هذه المخالفة لا يُعد لها نموذج حساب تكاليف في منصة ممتثل — تُضاف تكلفة الإصلاح (115 ريال) على العميل تلقائياً في الفاتورة."}};
+const AG_SECTOR={"701250248":"القطاع الشرقي"};
+const itemSector=it=>it?.sector||AG_SECTOR[String(it?.agreement??it?.ag??"").trim()]||"";
+const rowOk=r=>!r.code||String(r.code).startsWith("FIX-")||(r.sector||AG_SECTOR[String(r.ag||"").trim()]||"")===(S.info.sector||"");
 const codeShow=c=>String(c||"").startsWith("FIX-")?"تكلفة ثابتة":(c||"");
 const noLossNow=()=>!!VRULES[S.info.vtype]?.noLoss;
 function autoBoq(v){const codes=VMAP[v]||[];const r0=S.boq[0],rule=VRULES[v];
   if(rule?.fixed){if(S.boq.length<=1&&(!r0||!r0.code||r0.auto))S.boq=[{code:"FIX-"+rule.fixed,ag:"—",no:"—",desc:"تكلفة إصلاح ثابتة — "+v.replace(/[.،]$/,""),price:rule.fixed,q:1,auto:true}];return}
-  if(S.boq.length<=1&&(!r0||!r0.code||r0.auto)){const it=cat.find(c=>c.item_code===codes[0]&&c.active);S.boq=[it?{...snap(it),q:r0?.q||1,auto:true}:{code:null,q:1}]}}
-const snap=it=>({code:it.item_code,ag:it.agreement,no:it.item_no,desc:it.description,price:num(it.price)});
+  if(S.boq.length<=1&&(!r0||!r0.code||r0.auto)){const it=cat.find(c=>c.item_code===codes[0]&&c.active&&itemSector(c)===S.info.sector);S.boq=[it?{...snap(it),q:r0?.q||1,auto:true}:{code:null,q:1}]}}
+const snap=it=>({code:it.item_code,ag:it.agreement,no:it.item_no,desc:it.description,price:num(it.price),sector:itemSector(it)});
 
 function renderBoq(){
-  const rel=new Set(VMAP[S.info.vtype]||[]);const act=cat.filter(c=>c.active);
+  if(S.status!=="معتمد"){const before=S.boq.length;S.boq=S.boq.filter(rowOk);if(!S.boq.length)S.boq=[{code:null,q:1}];if(S.boq.length<before)toast("حُذفت بنود لا تخص قطاع "+(S.info.sector||"—"),4000)}
+  const rel=new Set(VMAP[S.info.vtype]||[]);const act=cat.filter(c=>c.active&&itemSector(c)===S.info.sector);
+  $("#boqNote").innerHTML=act.length?`<span class="hint">جدول الكميات المعروض خاص بـ ${esc(S.info.sector)}${[...new Set(act.map(c=>c.agreement))].length?" — اتفاقية "+esc([...new Set(act.map(c=>c.agreement))].join("، ")):""}</span>`:`<div class="missing" style="margin:0 0 8px">لا يوجد جدول كميات معتمد لـ ${esc(S.info.sector||"القطاع المحدد")}. اتفاقية 701250248 خاصة بالقطاع الشرقي فقط ولا يُسمح لأي قطاع آخر العمل بها.</div>`;
   const o=(c,sel)=>`<option value="${esc(c.item_code)}"${c.item_code===sel?" selected":""}>${esc((c.item_no?c.item_no+" - ":"")+c.description)} (${fmt(num(c.price))})</option>`;
   const sel=r=>{const a=[],b=[];act.forEach(c=>(rel.has(c.item_code)?a:b).push(o(c,r.code)));
     let extra=r.code&&!act.some(c=>c.item_code===r.code)?`<option value="${esc(r.code)}" selected>${esc(r.desc)} (${fmt(num(r.price))})</option>`:"";
@@ -685,6 +691,7 @@ function missingList(c){
   if(!i.date)m.push("التاريخ");
   if(!S.boq.some(r=>r.code&&num(r.q)>0))m.push("بند واحد على الأقل من جدول الكميات بكمية");
   if(S.boq.some(r=>r.code&&!(num(r.q)>0)))m.push("كمية بند في جدول الكميات");
+  if(!S.boq.every(rowOk))m.push("بنود جدول الكميات المختارة لا تخص "+(S.info.sector||"القطاع المحدد"));
   if(S.eq.some(r=>r.n&&!(num(r.c)>0&&num(r.h)>0)))m.push("العدد والوقت للمعدات المختارة");
   if(!c.noLoss&&!S.lb.cat)m.push("الفئة");
   if(!c.noLoss&&!S.lb.useMax){if(!S.lb.start)m.push("تاريخ بداية المخالفة");if(!S.lb.end)m.push("تاريخ نهاية المخالفة");if(c.bad)m.push("تاريخ النهاية يجب أن يكون بعد البداية")}
@@ -777,22 +784,23 @@ $("#recRows").addEventListener("click",async e=>{
 /* ================= جدول الكميات والمعدات والمعدلات ================= */
 const ro=()=>isAdmin?"":"disabled";
 function renderCat(){
-  $("#catRows").innerHTML=cat.map((c,k)=>`<tr data-c="${k}">
+  $("#catRows").innerHTML=cat.map((c,k)=>`<tr data-c="${k}"><td style="min-width:130px"><select data-cf="sector" ${ro()}>${selOpts(LISTS.sector,itemSector(c),"—")}</select></td>
     ${[["agreement",""],["item_no",""],["item_code",""],["description","min-width:220px"],["unit",""],["price",""]].map(([f,st])=>`<td style="${st}"><input data-cf="${f}" value="${esc(c[f])}" ${f==="price"?'type="number" step="any"':""} ${ro()}></td>`).join("")}
     <td><input type="checkbox" data-cf="active" ${c.active?"checked":""} ${ro()} style="width:auto"></td>
-    <td>${isAdmin?'<button class="x" data-cdel aria-label="حذف">×</button>':""}</td></tr>`).join("")||`<tr><td colspan="8" class="hint">لا توجد بنود.</td></tr>`;
+    <td>${isAdmin?'<button class="x" data-cdel aria-label="حذف">×</button>':""}</td></tr>`).join("")||`<tr><td colspan="9" class="hint">لا توجد بنود.</td></tr>`;
   $("#eqCatRows").innerHTML=eqCat.map((e,k)=>`<tr data-q="${k}"><td><input data-qf="name" value="${esc(e.name)}" ${ro()}></td><td style="width:140px"><input type="number" step="any" data-qf="hourly_price" value="${e.hourly_price}" ${ro()}></td><td><input type="checkbox" data-qf="active" ${e.active?"checked":""} ${ro()} style="width:auto"></td><td>${isAdmin?'<button class="x" data-qdel aria-label="حذف">×</button>':""}</td></tr>`).join("");
 }
 $("#catRows").addEventListener("input",e=>{const f=e.target.dataset.cf;if(!f)return;const c=cat[+e.target.closest("tr").dataset.c];c[f]=f==="active"?e.target.checked:e.target.value;c._dirty=true});
+$("#catRows").addEventListener("change",e=>{if(e.target.dataset.cf!=="sector")return;const c=cat[+e.target.closest("tr").dataset.c];c.sector=e.target.value;c._dirty=true});
 $("#catRows").addEventListener("click",async e=>{if(!e.target.closest("[data-cdel]"))return;const k=+e.target.closest("tr").dataset.c,c=cat[k];
   if(!confirm("حذف البند؟ (الأفضل إلغاء تفعيله بدلاً من الحذف)"))return;
   if(c.id){const {error}=await sb.from("cost_boq_items").delete().eq("id",c.id);if(error){toast("تعذر الحذف: "+error.message,5000);return}}
   cat.splice(k,1);renderCat()});
-$("#addCat").onclick=()=>{cat.push({agreement:cat[0]?.agreement||"",item_no:"",item_code:"",description:"",unit:"عدد",price:0,active:true,_dirty:true});renderCat()};
+$("#addCat").onclick=()=>{cat.push({sector:"القطاع الشرقي",agreement:cat[0]?.agreement||"",item_no:"",item_code:"",description:"",unit:"عدد",price:0,active:true,_dirty:true});renderCat()};
 $("#saveCat").onclick=async()=>{
   const rows=cat.filter(c=>c._dirty);if(!rows.length){toast("لا توجد تغييرات");return}
   if(rows.some(c=>!String(c.item_code).trim()||!String(c.description).trim())){toast("رقم الصنف والوصف مطلوبة لكل بند",4000);return}
-  const payload=rows.map(c=>({...(c.id?{id:c.id}:{}),agreement:c.agreement,item_no:c.item_no,item_code:String(c.item_code).trim(),description:c.description,unit:c.unit||"عدد",price:num(c.price),active:!!c.active}));
+  const payload=rows.map(c=>({...(c.id?{id:c.id}:{}),sector:itemSector(c)||null,agreement:c.agreement,item_no:c.item_no,item_code:String(c.item_code).trim(),description:c.description,unit:c.unit||"عدد",price:num(c.price),active:!!c.active}));
   const upd=payload.filter(p=>p.id),ins=payload.filter(p=>!p.id);
   for(const p of upd){const {error}=await sb.from("cost_boq_items").update(p).eq("id",p.id);if(error){toast("خطأ: "+error.message,5000);return}}
   if(ins.length){const {error}=await sb.from("cost_boq_items").insert(ins);if(error){toast("خطأ: "+error.message,5000);return}}
@@ -816,7 +824,7 @@ $("#pasteCancel").onclick=()=>dlg.close();
 $("#pasteOk").onclick=()=>{
   $("#pasteTxt").value.split(/\r?\n/).map(l=>l.split("\t")).filter(r=>r.join("").trim()).forEach(r=>{
     if(!r[2]&&!r[3])return;const code=(r[2]||"").trim(),ex=cat.find(c=>c.item_code===code);
-    const v={agreement:(r[0]||"").trim(),item_no:(r[1]||"").trim(),item_code:code,description:(r[3]||"").trim(),unit:(r[4]||"عدد").trim(),price:num(String(r[5]??"").replace(/,/g,"")),active:true,_dirty:true};
+    const v={sector:"القطاع الشرقي",agreement:(r[0]||"").trim(),item_no:(r[1]||"").trim(),item_code:code,description:(r[3]||"").trim(),unit:(r[4]||"عدد").trim(),price:num(String(r[5]??"").replace(/,/g,"")),active:true,_dirty:true};
     if(ex)Object.assign(ex,v);else cat.push(v)});
   renderCat();dlg.close();toast("أُضيفت البنود — اضغط حفظ التغييرات");
 };
@@ -1046,6 +1054,7 @@ function fillPlaceLists(){
   $('[data-k="info.sector"]').innerHTML=selOpts(LISTS.sector,i.sector||"","— اختر القطاع —");
 }
 document.addEventListener("change",e=>{const k=e.target.dataset?.k;if(!k||!S||!e.target.closest("#tab-form"))return;
+  if(k==="info.sector"||k==="info.region")setTimeout(()=>{renderBoq();recalc()},0);
   if(k==="info.region"){if(S.info.gov&&!govsOf(S.info.region).includes(S.info.gov)){S.info.gov="";S.info.branch=""}const s=SECTOR_OF[S.info.region];if(s)S.info.sector=s;fillPlaceLists();bindFields()}
   if(k==="info.gov"){S.info.branch=govShort(S.info.gov||"");fillPlaceLists()}});
 /* ===== جلب بيانات الزيارة ===== */
