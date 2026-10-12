@@ -195,10 +195,8 @@ dialog h3{margin:0;padding:12px 16px;background:var(--soft);border-bottom:1px so
         <label class="f" style="grid-column:1/-1"><span>نوع المخالفة <span class="req">*</span></span><select data-k="info.vtype"></select></label>
         <label class="f"><span>التاريخ <span class="req">*</span></span><input type="date" data-k="info.date"></label>
         <label class="f">القطاع<select data-k="info.sector"></select></label>
-        <label class="f">الفرع<input data-k="info.branch" list="branchList" autocomplete="off"></label>
         <label class="f">المنطقة<select data-k="info.region"></select></label>
         <label class="f">المحافظة<select data-k="info.gov"></select></label>
-        <datalist id="branchList"></datalist>
         <div style="grid-column:1/-1" class="row-actions"><button class="btn ghost" id="clearInfoBtn" type="button">تفريغ بيانات المخالفة</button><button class="btn ghost" id="refetchBtn" type="button">إعادة الجلب من الملف الشامل</button></div>
       </div>
     </section>
@@ -303,10 +301,10 @@ dialog h3{margin:0;padding:12px 16px;background:var(--soft);border-bottom:1px so
         <div class="grid" style="margin-bottom:12px">
           <label class="f">بحث<input id="recQ" placeholder="رقم المخالفة أو اسم المخالف"></label>
           <label class="f">الحالة<select id="recSt"><option value="">الكل</option><option>مسودة</option><option>معتمد</option></select></label>
-          <label class="f">الفرع<select id="recBr"><option value="">الكل</option></select></label>
+          <label class="f">المحافظة<select id="recBr"><option value="">الكل</option></select></label>
         </div>
         <div class="tbl"><table class="t">
-          <thead><tr><th>رقم المخالفة</th><th>المخالف</th><th>الفرع</th><th>الحالة</th><th class="num">الإجمالي</th><th>التاريخ</th><th>المُعد</th></tr></thead>
+          <thead><tr><th>رقم المخالفة</th><th>المخالف</th><th>المحافظة</th><th>الحالة</th><th class="num">الإجمالي</th><th>التاريخ</th><th>المُعد</th></tr></thead>
           <tbody id="recRows"></tbody>
         </table></div>
         <div class="hint" id="recInfo"></div>
@@ -1033,11 +1031,10 @@ function fillPlaceLists(){
   $('[data-k="info.region"]').innerHTML=selOpts(Object.keys(REGIONS).sort(),i.region||"","— اختر المنطقة —");
   $('[data-k="info.gov"]').innerHTML=selOpts(govsOf(i.region),i.gov||"","— اختر المحافظة —");
   $('[data-k="info.sector"]').innerHTML=selOpts(LISTS.sector,i.sector||"","— اختر القطاع —");
-  $("#branchList").innerHTML=[...new Set([...LISTS.branch,...govsOf(i.region).map(govShort)])].map(v=>`<option value="${esc(v)}">`).join("");
 }
 document.addEventListener("change",e=>{const k=e.target.dataset?.k;if(!k||!S||!e.target.closest("#tab-form"))return;
-  if(k==="info.region"){if(S.info.gov&&!govsOf(S.info.region).includes(S.info.gov))S.info.gov="";const s=SECTOR_OF[S.info.region];if(s)S.info.sector=s;fillPlaceLists();bindFields()}
-  if(k==="info.gov"&&S.info.gov){S.info.branch=govShort(S.info.gov);fillPlaceLists();bindFields()}});
+  if(k==="info.region"){if(S.info.gov&&!govsOf(S.info.region).includes(S.info.gov)){S.info.gov="";S.info.branch=""}const s=SECTOR_OF[S.info.region];if(s)S.info.sector=s;fillPlaceLists();bindFields()}
+  if(k==="info.gov"){S.info.branch=govShort(S.info.gov||"");fillPlaceLists()}});
 /* ===== جلب بيانات الزيارة ===== */
 let visitIdx=[];
 function loadVisitList(){loadMeta().then(()=>{renderScopeBar();if(!SCOPE)openScope()})}
