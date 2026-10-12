@@ -355,13 +355,15 @@ dialog h3{margin:0;padding:12px 16px;background:var(--soft);border-bottom:1px so
           <label class="f">من تاريخ<input type="date" id="lsFrom"></label>
           <label class="f">إلى تاريخ<input type="date" id="lsTo"></label>
           <label class="f">بحث<input id="lsQ" placeholder="رقم الزيارة أو اسم المخالف"></label>
+          <label class="f">المنطقة<select id="lsRegion"></select></label>
+          <label class="f">المحافظة<select id="lsGov"></select></label>
           <label class="f">الحالة<select id="lsSt"><option value="">الكل</option><option value="done">محتسبة</option><option value="todo">غير محتسبة</option></select></label>
         </div>
         <label class="check"><input type="checkbox" id="lsAll">عرض كل المخالفات الجسيمة (وليس فقط ما فيه فاقد مياه)</label>
         <div class="row-actions"><button class="btn" id="lsLoad">تحديث القائمة</button></div>
         <div class="calc" id="lsSum" style="margin-top:12px">اضغط "تحديث القائمة".</div>
         <div class="tbl" style="margin-top:12px"><table class="t">
-          <thead><tr><th>رقم الزيارة</th><th>المخالف</th><th>المخالفة</th><th>نوع العقار</th><th>التاريخ</th><th>الطريقة</th><th class="num">القيمة</th><th></th></tr></thead>
+          <thead><tr><th>رقم الزيارة</th><th>المخالف</th><th>المخالفة</th><th>المحافظة</th><th>نوع العقار</th><th>التاريخ</th><th>الطريقة</th><th class="num">القيمة</th><th></th></tr></thead>
           <tbody id="lsRows"></tbody>
         </table></div>
       </div>
@@ -1124,12 +1126,12 @@ document.addEventListener("change",e=>{const k=e.target.dataset?.k;if(!k||!S||!e
 let visitIdx=[];
 function loadVisitList(){loadMeta().then(()=>{renderScopeBar();if(!SCOPE)openScope()})}
 function renderScopeBar(){
-  const s=SCOPE;$("#scopeBar").innerHTML=`<span>نطاقي: <b>${s?esc([s.sector,s.region,s.gov?govShort(s.gov):"كل المحافظات"].filter(Boolean).join(" / ")):"غير محدد"}</b></span><button class="btn ghost" id="scopeBtn" type="button">تغيير النطاق</button>`;
+  const s=SCOPE;$("#scopeBar").innerHTML=`<span>نطاقي: <b>${s?esc(s.region?[s.sector,s.region,s.gov?govShort(s.gov):"كل المحافظات"].filter(Boolean).join(" / "):"كل المناطق والمحافظات"):"غير محدد"}</b></span><button class="btn ghost" id="scopeBtn" type="button">تغيير النطاق</button>`;
   $("#scopeBtn").onclick=openScope;
 }
-function scGovs(cur){$("#scGov").innerHTML=selOpts(govsOf($("#scRegion").value),cur||"","كل المحافظات")}
+function scGovs(cur){$("#scGov").innerHTML=selOpts($("#scRegion").value?govsOf($("#scRegion").value):[],cur||"","كل المحافظات");$("#scGov").disabled=!$("#scRegion").value}
 function openScope(){
-  $("#scRegion").innerHTML=selOpts(Object.keys(REGIONS).sort(),SCOPE?.region||"","— اختر المنطقة —");
+  $("#scRegion").innerHTML=selOpts(Object.keys(REGIONS).sort(),SCOPE?.region||"","كل المناطق");
   scGovs(SCOPE?.gov);
   $("#scNoData").hidden=Object.keys(REGIONS).length>0;
   $("#scopeDlg").showModal();
@@ -1139,7 +1141,7 @@ $("#scCancel").onclick=()=>$("#scopeDlg").close();
 $("#scSave").onclick=()=>{
   SCOPE={region:$("#scRegion").value.trim(),gov:$("#scGov").value.trim(),sector:SECTOR_OF[$("#scRegion").value.trim()]||""};
   try{localStorage.setItem("cc-scope",JSON.stringify(SCOPE))}catch(e){}
-  $("#scopeDlg").close();renderScopeBar();scopeKey="";
+  $("#scopeDlg").close();renderScopeBar();scopeKey="";lossRows=[];if(!$("#tab-loss").hidden)loadLossList();
   if(!S.id&&!S.info.name&&!S.info.no){S.info={...S.info,sector:SCOPE.sector,region:SCOPE.region,gov:SCOPE.gov,branch:SCOPE.gov?govShort(SCOPE.gov):S.info.branch};showForm()}
   toast("تم حفظ النطاق");
 };
@@ -1312,23 +1314,26 @@ function defaultParams(v){
   return{method:m,cat:RATE_PROPS[v.prop]||"سكني – فيلا",start:"",end:d,useMax:true,sewer:false,dia:ld.dia,v:1.5,h:24,months:ld.months||12,days:ld.days?String(ld.days):"",price:6,repair,insp:v.insp||"",note:v.notes||"",estimated:true};
 }
 async function loadLossList(){
-  const sum=$("#lsSum");sum.textContent="جاري التحميل…";
-  if(!SCOPE?.gov&&!SCOPE?.region){sum.textContent="حدد نطاق عملك أولاً (المنطقة والمحافظة) من زر تغيير النطاق.";$("#lsRows").innerHTML="";return}
+  const sum=$("#lsSum");sum.textContent="جاري تحميل المخالفات الجسيمة…";
   const all=[];
-  for(let i=0;i<8000;i+=1000){
-    let q=sb.from("cost_visits").select("visit_no,violator_name,data").neq("visit_no","__META__");
-    q=SCOPE.gov?q.eq("branch",govShort(SCOPE.gov)):q.eq("data->>region",SCOPE.region);
-    const {data,error}=await q.range(i,i+999);if(error){sum.textContent="تعذر التحميل: "+error.message;return}
-    if(!data?.length)break;all.push(...data);if(data.length<1000)break;
+  for(let i=0;i<40000;i+=1000){
+    let q=sb.from("cost_visits").select("visit_no,violator_name,start:data->>start,prop:data->>prop,region:data->>region,gov:data->>gov,items:data->items").neq("visit_no","__META__").contains("data",{items:[{sev:"جسيمة"}]});
+    if(SCOPE?.gov)q=q.eq("branch",govShort(SCOPE.gov));else if(SCOPE?.region)q=q.eq("data->>region",SCOPE.region);
+    const {data,error}=await q.order("visit_no").range(i,i+999);if(error){sum.textContent="تعذر التحميل: "+error.message;return}
+    if(!data?.length)break;all.push(...data);sum.textContent=`جاري التحميل… ${all.length}`;if(data.length<1000)break;
   }
-  lossRows=all.map(r=>r.data).filter(v=>v&&sevItems(v).length);
-  const {data:sv}=await sb.from("cost_losses").select("visit_no,method,value,total,updated_at").in("visit_no",lossRows.map(v=>v.no).slice(0,2000));
-  lossSaved={};(sv||[]).forEach(s=>lossSaved[s.visit_no]=s);
+  lossRows=all.map(r=>r.items?{no:r.visit_no,name:r.violator_name,start:r.start,prop:r.prop,region:r.region,gov:r.gov,items:r.items}:r.data).filter(v=>v&&sevItems(v).length);
+  lossSaved={};
+  for(let i=0;i<20000;i+=1000){const {data:sv}=await sb.from("cost_losses").select("visit_no,method,value,total,updated_at").range(i,i+999);if(!sv?.length)break;sv.forEach(s=>lossSaved[s.visit_no]=s);if(sv.length<1000)break}
+  const regs=[...new Set(lossRows.map(v=>v.region).filter(Boolean))].sort();
+  $("#lsRegion").innerHTML=selOpts(regs,SCOPE?.region&&regs.includes(SCOPE.region)?SCOPE.region:"","كل المناطق");lsGovFill(SCOPE?.gov||"");
   renderLossList();
 }
+function lsGovFill(cur){const r=$("#lsRegion").value;const g=[...new Set(lossRows.filter(v=>!r||v.region===r).map(v=>v.gov).filter(Boolean))].sort();$("#lsGov").innerHTML=selOpts(g,g.includes(cur)?cur:"","كل المحافظات")}
 function renderLossList(){
-  const f=$("#lsFrom").value,t=$("#lsTo").value,q=$("#lsQ").value.trim(),st=$("#lsSt").value,all=$("#lsAll").checked;
+  const f=$("#lsFrom").value,t=$("#lsTo").value,q=$("#lsQ").value.trim(),st=$("#lsSt").value,all=$("#lsAll").checked,rg=$("#lsRegion").value,gv=$("#lsGov").value;
   let list=lossRows.filter(v=>all||sevItems(v).some(i=>LOSS_BANDS.has(String(i.bnd).trim())));
+  if(rg)list=list.filter(v=>v.region===rg);if(gv)list=list.filter(v=>v.gov===gv);
   list=list.filter(v=>{const d=compDate(v.start);return(!f||d>=f)&&(!t||d<=t)});
   if(q)list=list.filter(v=>v.no.includes(q.toUpperCase())||(v.name||"").includes(q));
   if(st)list=list.filter(v=>st==="done"?!!lossSaved[v.no]:!lossSaved[v.no]);
@@ -1343,20 +1348,20 @@ function renderLossList(){
     <div class="line big"><span>الإجمالي (محتسب + تقديري)</span><b>${fmt(saved+estR+estL)} ريال</b></div>
     ${nL?`<div class="rule">الكسور محسوبة بافتراضات أولية (قطر حسب نوع الخط، سرعة 1.5 م/ث، تسرب 24 ساعة) إلى أن تُعدّل حسب إفادة المفتش وتُحفظ.</div>`:""}`;
   $("#lsRows").innerHTML=list.slice(0,400).map(v=>{const it=sevItems(v)[0]||{},s=lossSaved[v.no],m=s?.method||lossMethod(v);
-    return`<tr><td dir="ltr" style="text-align:right">${esc(v.no)}</td><td>${esc(v.name||"—")}</td><td style="min-width:180px;font-size:.82rem">${esc(it.bnd?it.bnd+" - ":"")}${esc(it.desc||"")}</td><td>${esc(v.prop||"")}</td><td>${dmy(compDate(v.start))}</td>
+    return`<tr><td dir="ltr" style="text-align:right">${esc(v.no)}</td><td>${esc(v.name||"—")}</td><td style="min-width:180px;font-size:.82rem">${esc(it.bnd?it.bnd+" - ":"")}${esc(it.desc||"")}</td><td>${esc(govShort(v.gov||""))}</td><td>${esc(v.prop||"")}</td><td>${dmy(compDate(v.start))}</td>
     <td><span class="status ${m==="line"?"d":"a"}">${m==="line"?"كسر / خط":"بالمعدل"}</span></td>
     <td class="num">${s?`<b>${fmt(num(s.total))}</b>`:(()=>{const p=defaultParams(v),c=calcLoss(p);return`≈ ${fmt(c.total)}${m==="line"?`<br><span class="hint" style="margin:0">${p.dia}" — ${durTxt(p)}</span>`:""}`})()}</td>
-    <td><button class="btn ${s?"ghost":""}" data-ls="${esc(v.no)}" type="button">${s?"عرض":"احتساب"}</button></td></tr>`}).join("")||`<tr><td colspan="8" class="hint">لا توجد مخالفات جسيمة ضمن الفلتر.</td></tr>`;
-  if(list.length>400)$("#lsRows").insertAdjacentHTML("beforeend",`<tr><td colspan="8" class="hint">يُعرض أول 400 — ضيّق الفترة أو استخدم البحث.</td></tr>`);
+    <td><button class="btn ${s?"ghost":""}" data-ls="${esc(v.no)}" type="button">${s?"عرض":"احتساب"}</button></td></tr>`}).join("")||`<tr><td colspan="9" class="hint">لا توجد مخالفات جسيمة ضمن الفلتر.</td></tr>`;
+  if(list.length>400)$("#lsRows").insertAdjacentHTML("beforeend",`<tr><td colspan="9" class="hint">يُعرض أول 400 — ضيّق الفترة أو استخدم البحث (الملخص يشمل الكل).</td></tr>`);
 }
-["#lsFrom","#lsTo","#lsQ","#lsSt","#lsAll"].forEach(s=>$(s).addEventListener("input",()=>lossRows.length&&renderLossList()));
+["#lsFrom","#lsTo","#lsQ","#lsSt","#lsAll","#lsGov"].forEach(s=>$(s).addEventListener("input",()=>lossRows.length&&renderLossList()));
+$("#lsRegion").addEventListener("input",()=>{lsGovFill("");renderLossList()});
 $("#lsLoad").onclick=loadLossList;
 $("#lsRows").addEventListener("click",e=>{const b=e.target.closest("[data-ls]");if(b)openLossCalc(b.dataset.ls)});
 
 async function openLossCalc(no){
   no=String(no||"").trim().toUpperCase();if(/^\d+$/.test(no))no="SWA-"+no;
-  let v=lossRows.find(x=>x.no===no);
-  if(!v){const {data}=await sb.from("cost_visits").select("data").eq("visit_no",no).maybeSingle();v=data?.data}
+  const {data:full}=await sb.from("cost_visits").select("data").eq("visit_no",no).maybeSingle();let v=full?.data||lossRows.find(x=>x.no===no);
   if(!v){toast("رقم الزيارة غير موجود في الملف الشامل",4000);return}
   const {data:s}=await sb.from("cost_losses").select("params").eq("visit_no",no).maybeSingle();
   LC={v,p:s?.params||defaultParams(v),saved:!!s};
