@@ -167,6 +167,7 @@ dialog h3{margin:0;padding:12px 16px;background:var(--soft);border-bottom:1px so
   <div class="banner" id="scopeBar" style="justify-content:space-between"></div>
   <div class="tabs" role="tablist">
     <button class="on" data-tab="form">النموذج</button>
+    <button data-tab="loss">المنفعة المفقودة</button>
     <button data-tab="recs">السجل</button>
     <button data-tab="boq">جدول الكميات</button>
     <button data-tab="rates">معدلات الفئات</button>
@@ -339,6 +340,71 @@ dialog h3{margin:0;padding:12px 16px;background:var(--soft);border-bottom:1px so
         <div class="row-actions admin-only">
           <button class="btn" id="addEqCat">+ إضافة معدة</button>
           <button class="btn solid" id="saveEqCat">حفظ التغييرات</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ===== LOST BENEFIT ===== -->
+  <div id="tab-loss" hidden>
+    <section class="block">
+      <h2>المنفعة المفقودة — المخالفات الجسيمة</h2>
+      <div class="body">
+        <p class="hint" style="margin-top:0">تعرض المخالفات <b>الجسيمة</b> التي فيها فاقد مياه ضمن نطاقك. السكني والتجاري والحكومي يُحسب <b>بالمعدل</b>، والكسور والتعديات على الخطوط تُحسب <b>هيدروليكياً</b> حسب إفادة مأمور الضبط أو المفتش الميداني.</p>
+        <div class="grid">
+          <label class="f">من تاريخ<input type="date" id="lsFrom"></label>
+          <label class="f">إلى تاريخ<input type="date" id="lsTo"></label>
+          <label class="f">بحث<input id="lsQ" placeholder="رقم الزيارة أو اسم المخالف"></label>
+          <label class="f">الحالة<select id="lsSt"><option value="">الكل</option><option value="done">محتسبة</option><option value="todo">غير محتسبة</option></select></label>
+        </div>
+        <label class="check"><input type="checkbox" id="lsAll">عرض كل المخالفات الجسيمة (وليس فقط ما فيه فاقد مياه)</label>
+        <div class="row-actions"><button class="btn" id="lsLoad">تحديث القائمة</button></div>
+        <div class="calc" id="lsSum" style="margin-top:12px">اضغط "تحديث القائمة".</div>
+        <div class="tbl" style="margin-top:12px"><table class="t">
+          <thead><tr><th>رقم الزيارة</th><th>المخالف</th><th>المخالفة</th><th>نوع العقار</th><th>التاريخ</th><th>الطريقة</th><th class="num">القيمة</th><th></th></tr></thead>
+          <tbody id="lsRows"></tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <section class="block" id="lsCalc" hidden>
+      <h2><span class="n">ح</span>احتساب المنفعة المفقودة</h2>
+      <div class="body">
+        <div class="grid">
+          <label class="f">رقم الزيارة<input id="lcNo" dir="ltr" style="text-align:right" placeholder="SWA-00000"></label>
+          <div class="f"><span>&nbsp;</span><button class="btn" id="lcFetch" type="button">جلب من الملف الشامل</button></div>
+        </div>
+        <div class="calc" id="lcInfo"></div>
+        <div class="sub">طريقة الاحتساب</div>
+        <div class="row-actions" style="margin-top:0">
+          <label class="check" style="margin:0"><input type="radio" name="lcM" value="rate">بالمعدل (سكني / تجاري / حكومي)</label>
+          <label class="check" style="margin:0"><input type="radio" name="lcM" value="line">كسر / تعدٍ على خط (حسب إفادة المفتش)</label>
+        </div>
+        <div id="lcRate" class="grid" style="margin-top:10px">
+          <label class="f">الفئة<select id="lcCat"></select></label>
+          <label class="f">بداية الفترة<input type="date" id="lcStart"></label>
+          <label class="f">نهاية الفترة<input type="date" id="lcEnd"></label>
+          <div class="f"><span>&nbsp;</span><label class="check" style="margin:0"><input type="checkbox" id="lcMax">البداية غير معروفة — الحد الأقصى</label></div>
+          <div class="f"><span>&nbsp;</span><label class="check" style="margin:0"><input type="checkbox" id="lcSewer">احتساب منفعة الصرف</label></div>
+        </div>
+        <div id="lcLine" class="grid" style="margin-top:10px">
+          <label class="f">قطر التوصيلة / الكسر (بوصة)<select id="lcDia"></select></label>
+          <label class="f">سرعة التدفق (م/ث)<input type="number" step="0.1" min="0" id="lcV" value="1.5"></label>
+          <label class="f">ساعات التشغيل يومياً<input type="number" step="0.5" min="0" max="24" id="lcH" value="24"></label>
+          <label class="f">مدة الأثر الرجعي (شهر)<input type="number" step="0.5" min="0" id="lcMonths" value="12"></label>
+          <label class="f">أو عدد الأيام (يتقدم على الأشهر)<input type="number" step="1" min="0" id="lcDays" placeholder="اختياري"></label>
+          <label class="f">سعر المتر المكعب (ريال)<input type="number" step="0.01" min="0" id="lcPrice" value="6"></label>
+          <label class="f">اسم مأمور الضبط / المفتش<input id="lcInsp"></label>
+          <label class="f" style="grid-column:1/-1">إفادة المفتش (نتائج الكشف الميداني)<textarea id="lcNote" rows="3"></textarea></label>
+        </div>
+        <div class="grid" style="margin-top:10px">
+          <label class="f">تكلفة الإصلاح (ريال)<input type="number" step="0.01" min="0" id="lcRepair"></label>
+        </div>
+        <div id="lcSteps" style="margin-top:12px"></div>
+        <div class="row-actions">
+          <button class="btn solid" id="lcSave">حفظ الاحتساب</button>
+          <button class="btn solid" id="lcPdf">تقرير الفاقد PDF</button>
+          <button class="btn ghost" id="lcClose">إغلاق</button>
         </div>
       </div>
     </section>
@@ -840,10 +906,10 @@ $("#saveRates").onclick=async()=>{
 /* ================= التبويبات ================= */
 function switchTab(t){
   document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("on",x.dataset.tab===t));
-  ["form","recs","boq","rates","comp"].forEach(k=>$("#tab-"+k).hidden=k!==t);
+  ["form","recs","boq","rates","comp","loss"].forEach(k=>$("#tab-"+k).hidden=k!==t);
   $("#totalbar").hidden=t!=="form";document.body.classList.toggle("has-bar",t==="form");
   window.scrollTo(0,0);
-  if(t==="form")showForm();else if(t==="recs")loadRecs();else if(t==="boq")renderCat();else if(t==="comp")loadCompInfo();else renderRates();
+  if(t==="form")showForm();else if(t==="recs")loadRecs();else if(t==="boq")renderCat();else if(t==="comp")loadCompInfo();else if(t==="loss"){if(!lossRows.length)loadLossList()}else renderRates();
 }
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
 
@@ -1211,6 +1277,175 @@ $("#compUpload").onclick=async()=>{
     await loadCompInfo();loadMeta();scopeKey="";
   }catch(err){P("تعذر الرفع: "+(err?.message||err))}
   finally{b.disabled=false}
+};
+
+/* ================= المنفعة المفقودة (المخالفات الجسيمة) ================= */
+const LOSS_BANDS=new Set(["1","3","4","5","6","7","8","9","10","12","13","14","15","16","22","30","31","32","33","43","44","72"]);
+const LINE_BANDS=new Set(["3","4","5","6","9","10","12","13","14","15","16","22","30","31","32","33"]);
+const RATE_PROPS={"مبنى سكني":"سكني – فيلا","فيلا":"سكني – فيلا","شقة":"سكني – شقة","قصر سكني":"سكني – فيلا","منشأة تجارية":"تجاري","مبنى متعدد الاستخدامات":"تجاري","منشأة حكومية":"حكومي"};
+const DIAS=[0.5,0.75,1,1.25,1.5,2,2.5,3,4,6,8,10,12,14,16,18,20,24];
+let lossRows=[],lossSaved={},LC=null;
+const sevItems=v=>(v.items||[]).filter(i=>i.sev==="جسيمة");
+function lossMethod(v){const it=sevItems(v)[0]||{};return LINE_BANDS.has(String(it.bnd).trim())||v.prop==="خطوط وشبكات مياه"||v.prop==="صهريج"||v.prop==="أشياب"?"line":"rate"}
+function rateOf(name){const r=rates.find(x=>x.name===name)||rates[0];return r?{name:r.name,months:num(r.max_months),monthly:num(r.monthly_m3),water:num(r.water_rate),sewer:num(r.sewer_rate)}:{name:"",months:0,monthly:0,water:0,sewer:0}}
+function calcLoss(p){
+  if(p.method==="line"){
+    const D=num(p.dia)*0.0254,A=Math.PI*D*D/4,Q=A*num(p.v),daily=Q*num(p.h)*3600,days=num(p.days)>0?num(p.days):num(p.months)*30,m3=daily*days,val=m3*num(p.price);
+    return{method:"line",D,A,Q,Ls:Q*1000,daily,days,m3,val,repair:num(p.repair),total:val+num(p.repair)};
+  }
+  const R=rateOf(p.cat);let d=0;
+  if(p.useMax)d=R.months*30;else if(p.start&&p.end){d=Math.max(1,Math.round((new Date(p.end)-new Date(p.start))/864e5))}
+  const months=Math.min(d/30,R.months),m3=R.monthly*months,water=m3*R.water,sewer=p.sewer?m3*R.sewer:0;
+  return{method:"rate",R,d,months,capped:d/30>R.months,m3,water,sewer,val:water+sewer,repair:num(p.repair),total:water+sewer+num(p.repair)};
+}
+function defaultParams(v){
+  const m=lossMethod(v),it=sevItems(v)[0]||v.items?.[0]||{},vt=matchViolation(it.bnd,it.desc,VIOLATIONS);
+  let repair="";const code=(VMAP[vt]||[])[0];const ci=cat.find(c=>c.item_code===code&&c.active&&itemSector(c)===(SECTOR_OF[v.region]||""));if(ci)repair=num(ci.price);
+  const d=compDate(v.start);
+  return{method:m,cat:RATE_PROPS[v.prop]||"سكني – فيلا",start:"",end:d,useMax:true,sewer:false,dia:m==="line"?4:1,v:1.5,h:24,months:12,days:"",price:6,repair,insp:v.insp||"",note:v.notes||""};
+}
+async function loadLossList(){
+  const sum=$("#lsSum");sum.textContent="جاري التحميل…";
+  if(!SCOPE?.gov&&!SCOPE?.region){sum.textContent="حدد نطاق عملك أولاً (المنطقة والمحافظة) من زر تغيير النطاق.";$("#lsRows").innerHTML="";return}
+  const all=[];
+  for(let i=0;i<8000;i+=1000){
+    let q=sb.from("cost_visits").select("visit_no,violator_name,data").neq("visit_no","__META__");
+    q=SCOPE.gov?q.eq("branch",govShort(SCOPE.gov)):q.eq("data->>region",SCOPE.region);
+    const {data,error}=await q.range(i,i+999);if(error){sum.textContent="تعذر التحميل: "+error.message;return}
+    if(!data?.length)break;all.push(...data);if(data.length<1000)break;
+  }
+  lossRows=all.map(r=>r.data).filter(v=>v&&sevItems(v).length);
+  const {data:sv}=await sb.from("cost_losses").select("visit_no,method,value,total,updated_at").in("visit_no",lossRows.map(v=>v.no).slice(0,2000));
+  lossSaved={};(sv||[]).forEach(s=>lossSaved[s.visit_no]=s);
+  renderLossList();
+}
+function renderLossList(){
+  const f=$("#lsFrom").value,t=$("#lsTo").value,q=$("#lsQ").value.trim(),st=$("#lsSt").value,all=$("#lsAll").checked;
+  let list=lossRows.filter(v=>all||sevItems(v).some(i=>LOSS_BANDS.has(String(i.bnd).trim())));
+  list=list.filter(v=>{const d=compDate(v.start);return(!f||d>=f)&&(!t||d<=t)});
+  if(q)list=list.filter(v=>v.no.includes(q.toUpperCase())||(v.name||"").includes(q));
+  if(st)list=list.filter(v=>st==="done"?!!lossSaved[v.no]:!lossSaved[v.no]);
+  list.sort((a,b)=>vNum(b.no)-vNum(a.no));
+  let est=0,saved=0,nSaved=0;
+  list.forEach(v=>{const s=lossSaved[v.no];if(s){saved+=num(s.total);nSaved++}else if(lossMethod(v)==="rate"){const p=defaultParams(v);est+=calcLoss(p).val}});
+  const nLine=list.filter(v=>!lossSaved[v.no]&&lossMethod(v)==="line").length;
+  $("#lsSum").innerHTML=`<div class="line"><span>عدد المخالفات الجسيمة${all?"":" التي فيها فاقد مياه"}</span><b>${list.length}</b></div>
+    <div class="line"><span>محتسبة ومحفوظة (${nSaved})</span><b>${fmt(saved)} ريال</b></div>
+    <div class="line"><span>تقدير بالمعدل للحد الأقصى — غير المحتسبة</span><b>${fmt(est)} ريال</b></div>
+    ${nLine?`<div class="rule">${nLine} مخالفة على خطوط تحتاج إفادة المفتش (القطر والسرعة والمدة) لاحتسابها.</div>`:""}`;
+  $("#lsRows").innerHTML=list.slice(0,400).map(v=>{const it=sevItems(v)[0]||{},s=lossSaved[v.no],m=s?.method||lossMethod(v);
+    return`<tr><td dir="ltr" style="text-align:right">${esc(v.no)}</td><td>${esc(v.name||"—")}</td><td style="min-width:180px;font-size:.82rem">${esc(it.bnd?it.bnd+" - ":"")}${esc(it.desc||"")}</td><td>${esc(v.prop||"")}</td><td>${dmy(compDate(v.start))}</td>
+    <td><span class="status ${m==="line"?"d":"a"}">${m==="line"?"كسر / خط":"بالمعدل"}</span></td>
+    <td class="num">${s?fmt(num(s.total)):m==="rate"?"≈ "+fmt(calcLoss(defaultParams(v)).val):"—"}</td>
+    <td><button class="btn ${s?"ghost":""}" data-ls="${esc(v.no)}" type="button">${s?"عرض":"احتساب"}</button></td></tr>`}).join("")||`<tr><td colspan="8" class="hint">لا توجد مخالفات جسيمة ضمن الفلتر.</td></tr>`;
+  if(list.length>400)$("#lsRows").insertAdjacentHTML("beforeend",`<tr><td colspan="8" class="hint">يُعرض أول 400 — ضيّق الفترة أو استخدم البحث.</td></tr>`);
+}
+["#lsFrom","#lsTo","#lsQ","#lsSt","#lsAll"].forEach(s=>$(s).addEventListener("input",()=>lossRows.length&&renderLossList()));
+$("#lsLoad").onclick=loadLossList;
+$("#lsRows").addEventListener("click",e=>{const b=e.target.closest("[data-ls]");if(b)openLossCalc(b.dataset.ls)});
+
+async function openLossCalc(no){
+  no=String(no||"").trim().toUpperCase();if(/^\d+$/.test(no))no="SWA-"+no;
+  let v=lossRows.find(x=>x.no===no);
+  if(!v){const {data}=await sb.from("cost_visits").select("data").eq("visit_no",no).maybeSingle();v=data?.data}
+  if(!v){toast("رقم الزيارة غير موجود في الملف الشامل",4000);return}
+  const {data:s}=await sb.from("cost_losses").select("params").eq("visit_no",no).maybeSingle();
+  LC={v,p:s?.params||defaultParams(v),saved:!!s};
+  $("#lsCalc").hidden=false;fillLossForm();$("#lsCalc").scrollIntoView({behavior:"smooth",block:"start"});
+}
+function fillLossForm(){
+  const {v,p}=LC,it=sevItems(v)[0]||v.items?.[0]||{};
+  $("#lcNo").value=v.no;
+  $("#lcInfo").innerHTML=`<div class="line"><span>المخالف</span><b>${esc(v.name||"—")} ${v.nid?`<span dir="ltr">(${esc(v.nid)})</span>`:""}</b></div>
+    <div class="line"><span>المخالفة</span><b style="font-weight:500">${esc(it.bnd||"")} - ${esc(it.desc||"")} — ${esc(it.sev||"")}</b></div>
+    <div class="line"><span>نوع العقار / المحافظة</span><b>${esc(v.prop||"—")} — ${esc(v.gov||"")}</b></div>
+    <div class="line"><span>تاريخ الزيارة</span><b>${dmy(compDate(v.start))}</b></div>${LC.saved?`<div class="rule">يوجد احتساب محفوظ لهذه المخالفة — أي تعديل ثم حفظ يستبدله.</div>`:""}`;
+  document.querySelectorAll('[name="lcM"]').forEach(r=>r.checked=r.value===p.method);
+  $("#lcCat").innerHTML=rates.map(r=>`<option${r.name===p.cat?" selected":""}>${esc(r.name)}</option>`).join("");
+  $("#lcStart").value=p.start||"";$("#lcEnd").value=p.end||"";$("#lcMax").checked=!!p.useMax;$("#lcSewer").checked=!!p.sewer;
+  $("#lcDia").innerHTML=DIAS.map(d=>`<option value="${d}"${num(d)===num(p.dia)?" selected":""}>${d} بوصة (${Math.round(d*25.4)} ملم)</option>`).join("");
+  $("#lcV").value=p.v;$("#lcH").value=p.h;$("#lcMonths").value=p.months;$("#lcDays").value=p.days||"";$("#lcPrice").value=p.price;$("#lcInsp").value=p.insp||"";$("#lcNote").value=p.note||"";
+  $("#lcRepair").value=p.repair===""?"":p.repair;
+  renderLossCalc();
+}
+function readLossForm(){
+  const p=LC.p;p.method=(document.querySelector('[name="lcM"]:checked')||{}).value||"rate";
+  p.cat=$("#lcCat").value;p.start=$("#lcStart").value;p.end=$("#lcEnd").value;p.useMax=$("#lcMax").checked;p.sewer=$("#lcSewer").checked;
+  p.dia=num($("#lcDia").value);p.v=num($("#lcV").value);p.h=num($("#lcH").value);p.months=num($("#lcMonths").value);p.days=$("#lcDays").value;p.price=num($("#lcPrice").value);
+  p.insp=$("#lcInsp").value;p.note=$("#lcNote").value;p.repair=$("#lcRepair").value;
+}
+function lossStepsHtml(r,p){
+  const f4=x=>(Math.round(x*1e6)/1e6).toLocaleString("en-US",{maximumFractionDigits:6});
+  const rows=r.method==="line"?[
+    ["تحويل قطر الأنبوب",`${p.dia} بوصة × 0.0254`,`${f4(r.D)} متر`,"تحويل البوصة إلى متر"],
+    ["مساحة فتحة الأنبوب","3.1416 × القطر × القطر ÷ 4",`${f4(r.A)} م²`,"مساحة المقطع الدائري"],
+    ["كمية المياه في الثانية",`المساحة × سرعة التدفق (${p.v} م/ث)`,`${f4(r.Q)} م³/ث`,`تعادل ${fmt(r.Ls)} لتر/ث`],
+    ["كمية المياه في اليوم",`التدفق × ${fmt(p.h*3600).replace(".00","")} ثانية`,`${fmt(r.daily)} م³/يوم`,`تشغيل ${p.h} ساعة يومياً`],
+    ["الفاقد خلال المدة",`الفاقد اليومي × ${fmt(r.days).replace(".00","")} يوم`,`${fmt(r.m3)} م³`,"كمية الفاقد المائي التقديرية"],
+    ["القيمة المالية",`الفاقد × ${fmt(p.price)} ريال`,`${fmt(r.val)} ريال`,"قيمة الفاقد المالي التقديرية"]
+  ]:[
+    ["الفئة والمعدل",`${esc(r.R.name)}`,`${fmt(r.R.monthly)} م³/شهر`,`بحد أقصى ${r.R.months} أشهر`],
+    ["مدة المخالفة",p.useMax?"البداية غير معروفة":`${dmy(p.start)} → ${dmy(p.end)}`,`${r.d} يوم`,`${fmt(r.months)} شهر محتسب${r.capped?" (تم التقييد بالحد الأقصى)":""}`],
+    ["الكمية المفقودة",`${fmt(r.R.monthly)} × ${fmt(r.months)}`,`${fmt(r.m3)} م³`,"الاستهلاك التقديري خلال المدة"],
+    ["قيمة المياه",`${fmt(r.m3)} × ${fmt(r.R.water)} ريال`,`${fmt(r.m3*r.R.water)} ريال`,"سعر آخر شريحة"],
+    ...(p.sewer?[["قيمة الصرف",`${fmt(r.m3)} × ${fmt(r.R.sewer)} ريال`,`${fmt(r.sewer)} ريال`,"منفعة الصرف"]]:[])
+  ];
+  return rows;
+}
+function renderLossCalc(){
+  readLossForm();const p=LC.p,r=calcLoss(p);
+  $("#lcRate").hidden=p.method!=="rate";$("#lcLine").hidden=p.method!=="line";
+  if(p.method==="rate"&&!p.useMax&&!(p.start&&p.end)){$("#lcSteps").innerHTML=`<div class="missing">أدخل بداية ونهاية الفترة، أو فعّل "الحد الأقصى".</div>`;return}
+  const rows=lossStepsHtml(r,p);
+  $("#lcSteps").innerHTML=`<div class="tbl"><table class="t"><thead><tr><th>م</th><th>الخطوة</th><th>طريقة الحساب</th><th>النتيجة</th><th>المعنى</th></tr></thead><tbody>${rows.map((x,i)=>`<tr><td>${i+1}</td><td>${x[0]}</td><td>${x[1]}</td><td class="num"><b>${x[2]}</b></td><td>${x[3]}</td></tr>`).join("")}</tbody></table></div>
+  <div class="summary" style="margin-top:10px"><div class="line"><span>الفاقد المائي التقديري</span><b>${fmt(r.m3)} م³</b></div><div class="line"><span>الفاقد المالي التقديري</span><b>${fmt(r.val)} ريال</b></div>${r.repair?`<div class="line"><span>تكلفة الإصلاح</span><b>${fmt(r.repair)} ريال</b></div>`:""}<div class="line big"><span>الإجمالي التقديري</span><b>${fmt(r.total)} ريال</b></div></div>`;
+}
+$("#lsCalc").addEventListener("input",e=>{if(e.target.id!=="lcNo"&&LC)renderLossCalc()});
+$("#lsCalc").addEventListener("change",e=>{if(e.target.id!=="lcNo"&&LC)renderLossCalc()});
+$("#lcFetch").onclick=()=>openLossCalc($("#lcNo").value);
+$("#lcClose").onclick=()=>{$("#lsCalc").hidden=true;LC=null};
+$("#lcSave").onclick=async()=>{
+  if(!LC)return;renderLossCalc();const p=LC.p,r=calcLoss(p);
+  if(p.method==="rate"&&!p.useMax&&!(p.start&&p.end)){toast("أكمل فترة المخالفة");return}
+  if(p.method==="line"&&!(p.dia>0&&p.v>0&&p.h>0&&(num(p.days)>0||p.months>0))){toast("أكمل بيانات الخط حسب إفادة المفتش");return}
+  const row={visit_no:LC.v.no,branch:govShort(LC.v.gov||""),violator_name:LC.v.name||null,method:p.method,params:p,value:+r.val.toFixed(2),total:+r.total.toFixed(2),m3:+r.m3.toFixed(2),updated_at:new Date().toISOString()};
+  const {error}=await sb.from("cost_losses").upsert(row,{onConflict:"visit_no"});
+  if(error){toast("تعذر الحفظ: "+error.message,5000);return}
+  LC.saved=true;lossSaved[LC.v.no]={visit_no:LC.v.no,method:p.method,value:row.value,total:row.total};toast("تم حفظ احتساب "+LC.v.no);
+  if(lossRows.length)renderLossList();fillLossForm();
+};
+$("#lcPdf").onclick=async()=>{
+  if(!LC)return;renderLossCalc();const p=LC.p,r=calcLoss(p),v=LC.v,it=sevItems(v)[0]||v.items?.[0]||{};
+  const [lat,lng]=String(v.coords||"").split(",");
+  const kv=(a)=>a.filter(x=>x[1]).map(x=>`<tr><th style="width:38%">${x[0]}</th><td>${esc(x[1])}</td></tr>`).join("");
+  const basis=r.method==="line"?`احتُسب الفاقد على أساس توصيلة/كسر بقطر ${p.dia} بوصة، وسرعة تدفق ${p.v} م/ث، وتشغيل ${p.h} ساعة يومياً، لمدة ${fmt(r.days).replace(".00","")} يوماً، وبقيمة ${fmt(p.price)} ريال للمتر المكعب، وذلك حسب إفادة ${esc(p.insp||"المفتش الميداني")}.`
+    :`احتُسب الفاقد بالمعدل لفئة ${esc(r.R.name)}: استهلاك تقديري ${fmt(r.R.monthly)} م³ شهرياً بحد أقصى ${r.R.months} أشهر، بسعر آخر شريحة ${fmt(r.R.water)} ريال للمتر المكعب${p.sewer?` إضافة لمنفعة الصرف ${fmt(r.R.sewer)} ريال للمتر`:""}.`;
+  const steps=lossStepsHtml(r,p);
+  $("#sheetHost").innerHTML=`<div class="sheet" style="width:794px;min-height:1123px;padding:34px 40px;font-size:11px">
+   <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #0f7ea8;padding-bottom:10px;margin-bottom:12px"><div><div style="font-size:20px;font-weight:700">تقرير احتساب المنفعة المفقودة</div><div style="font-size:12px;margin-top:2px">${esc(it.desc||"")}</div></div><img src="${LOGO}" style="height:42px"></div>
+   <p style="line-height:1.8;margin:0 0 10px">يستعرض هذا التقرير احتساب الفاقد المائي للمخالفة رقم <b dir="ltr">${esc(v.no)}</b> بحق <b>${esc(v.name||"")}</b>، وقد بلغ الفاقد المائي التقديري <b>${fmt(r.m3)} م³</b> بقيمة مالية تقديرية <b>${fmt(r.val)} ريال</b>.</p>
+   <div style="font-weight:700;font-size:13px;margin:10px 0 4px">بيانات المخالفة</div>
+   <table>${kv([["رقم الزيارة",v.no],["معرف المخالفة",it.vid],["تاريخ الزيارة",dmy(compDate(v.start))],["اسم المخالف",v.name],["هوية المخالف",v.nid],["المنطقة / المحافظة",(v.region||"")+" — "+(v.gov||"")],["الإحداثيات",lat&&lng?lat.trim()+" , "+lng.trim():""],["نوع العقار",v.prop],["وصف المخالفة",(it.bnd?it.bnd+" - ":"")+(it.desc||"")],["تصنيف المخالفة",it.sev],["حالة المخالفة",it.status],["المفتش",p.insp||v.insp]])}</table>
+   ${p.note?`<div style="font-weight:700;font-size:13px;margin:12px 0 4px">نتائج الكشف الميداني (إفادة المفتش)</div><p style="line-height:1.8;margin:0;white-space:pre-wrap">${esc(p.note)}</p>`:""}
+   <div style="font-weight:700;font-size:13px;margin:12px 0 4px">أساس احتساب الفاقد</div><p style="line-height:1.8;margin:0">${basis}</p>
+   <div style="font-weight:700;font-size:13px;margin:12px 0 4px">خطوات الحساب</div>
+   <table><tr><th>م</th><th>الخطوة</th><th>طريقة الحساب</th><th>النتيجة</th><th>المعنى</th></tr>${steps.map((x,i)=>`<tr><td>${i+1}</td><td>${x[0]}</td><td>${x[1]}</td><td><b>${x[2]}</b></td><td>${x[3]}</td></tr>`).join("")}</table>
+   <div style="font-weight:700;font-size:13px;margin:12px 0 4px">النتائج المالية</div>
+   <table>${kv([["الفاقد المائي التقديري",fmt(r.m3)+" م³"],["الفاقد المالي التقديري",fmt(r.val)+" ريال"],["تكلفة الإصلاح",r.repair?fmt(r.repair)+" ريال":""],["الإجمالي التقديري",fmt(r.total)+" ريال"]])}</table>
+   <p style="line-height:1.7;margin:12px 0 0;font-size:10px;color:#333">ملاحظة فنية: ${r.method==="line"?"التقدير مبني على القطر الاسمي وسرعة التدفق وساعات التشغيل حسب إفادة المفتش، وقد تختلف الكمية الفعلية باختلاف القطر الداخلي وضغط الشبكة ودرجة فتح التوصيلة.":"التقدير مبني على معدلات الاستهلاك المعتمدة في منظم المياه وسعر آخر شريحة، بما لا يتجاوز الحد الأقصى للفئة."} يوصى باعتماد المدخلات من الجهة الفنية المختصة قبل تثبيت القيمة النهائية.</p>
+  </div>`;
+  const host=$("#sheetHost .sheet");host.querySelectorAll("td,th").forEach(c=>{c.style.whiteSpace="normal";c.style.textAlign="right";c.style.padding="4px 6px";c.style.height="auto"});host.querySelectorAll("th").forEach(c=>c.style.background="#dae3f3");
+  if(!window.html2canvas||!window.jspdf){window.print();return}
+  try{
+    try{await document.fonts.ready}catch(e){}
+    const canvas=await html2canvas(host,{scale:2,backgroundColor:"#ffffff",logging:false,windowWidth:794});
+    const pdf=new window.jspdf.jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
+    const pw=210,ph=297,iw=pw,ih=canvas.height*pw/canvas.width;
+    if(ih<=ph)pdf.addImage(canvas.toDataURL("image/jpeg",.92),"JPEG",0,0,iw,ih);
+    else{const pagePx=Math.floor(canvas.width*ph/pw);for(let y=0,pg=0;y<canvas.height;y+=pagePx,pg++){const c2=document.createElement("canvas");c2.width=canvas.width;c2.height=Math.min(pagePx,canvas.height-y);c2.getContext("2d").drawImage(canvas,0,-y);if(pg)pdf.addPage();pdf.addImage(c2.toDataURL("image/jpeg",.92),"JPEG",0,0,pw,c2.height*pw/canvas.width)}}
+    showPdf(pdf.output("blob"),`تقرير المنفعة المفقودة - ${v.no}.pdf`);
+  }catch(err){toast("تعذر إنشاء PDF: "+(err?.message||err),6000)}
+  finally{$("#sheetHost").innerHTML=""}
 };
 
 start();
