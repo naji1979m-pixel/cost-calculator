@@ -194,7 +194,6 @@ dialog h3{margin:0;padding:12px 16px;background:var(--soft);border-bottom:1px so
           </span></span><span class="hint" id="rangeLbl"></span></div>
         <label class="f" style="grid-column:1/-1"><span>نوع المخالفة <span class="req">*</span></span><select data-k="info.vtype"></select></label>
         <label class="f"><span>التاريخ <span class="req">*</span></span><input type="date" data-k="info.date"></label>
-        <label class="f">القطاع<select data-k="info.sector"></select></label>
         <label class="f">المنطقة<select data-k="info.region"></select></label>
         <label class="f">المحافظة<select data-k="info.gov"></select></label>
         <div style="grid-column:1/-1" class="row-actions"><button class="btn ghost" id="clearInfoBtn" type="button">تفريغ بيانات المخالفة</button><button class="btn ghost" id="refetchBtn" type="button">إعادة الجلب من الملف الشامل</button></div>
@@ -393,7 +392,6 @@ dialog h3{margin:0;padding:12px 16px;background:var(--soft);border-bottom:1px so
     <div class="grid">
       <label class="f">المنطقة<select id="scRegion"></select></label>
       <label class="f">المحافظة<select id="scGov"></select></label>
-      <label class="f">القطاع<select id="scSector"></select></label>
     </div>
     <p class="hint warn" id="scNoData" hidden>قائمة المناطق والمحافظات فاضية — يلزم رفع الملف الشامل أولاً من حساب المسؤول.</p>
     <div class="row-actions"><button class="btn solid" id="scSave">حفظ</button><button class="btn ghost" id="scCancel">إلغاء</button></div>
@@ -490,7 +488,7 @@ const get=p=>p.split(".").reduce((o,k)=>o?.[k],S);
 const set=(p,v)=>{const ks=p.split(".");let o=S;ks.slice(0,-1).forEach(k=>o=o[k]??=({}));o[ks.at(-1)]=v};
 function toast(m,ms=2600){const t=$("#toast");t.textContent=m;t.style.display="block";clearTimeout(t._h);t._h=setTimeout(()=>t.style.display="none",ms)}
 const draftKey=()=>"cc-platform-draft-"+(user?.id||"anon");
-function blank(){return{id:null,status:"مسودة",info:{ptype:"مخالف",sector:SCOPE?SCOPE.sector||"":"القطاع الشرقي",branch:SCOPE?(SCOPE.gov?govShort(SCOPE.gov):""):"حفر الباطن",region:SCOPE?SCOPE.region||"":"الشرقية",gov:SCOPE?.gov||"",date:new Date().toISOString().slice(0,10)},boq:[{code:null,q:1}],eq:[],pt:[],ext:{},lb:{cat:rates[0]?.name||""},br:{},ex:{},sign:{}}}
+function blank(){return{id:null,status:"مسودة",info:{ptype:"مخالف",sector:SCOPE?(SECTOR_OF[SCOPE.region]||""):"القطاع الشرقي",branch:SCOPE?(SCOPE.gov?govShort(SCOPE.gov):""):"حفر الباطن",region:SCOPE?SCOPE.region||"":"الشرقية",gov:SCOPE?.gov||"",date:new Date().toISOString().slice(0,10)},boq:[{code:null,q:1}],eq:[],pt:[],ext:{},lb:{cat:rates[0]?.name||""},br:{},ex:{},sign:{}}}
 const locked=()=>S.status==="معتمد"&&!isAdmin;
 
 /* ================= الدخول ================= */
@@ -569,9 +567,9 @@ function autoBoq(v){const codes=VMAP[v]||[];const r0=S.boq[0],rule=VRULES[v];
 const snap=it=>({code:it.item_code,ag:it.agreement,no:it.item_no,desc:it.description,price:num(it.price),sector:itemSector(it)});
 
 function renderBoq(){
-  if(S.status!=="معتمد"){const before=S.boq.length;S.boq=S.boq.filter(rowOk);if(!S.boq.length)S.boq=[{code:null,q:1}];if(S.boq.length<before)toast("حُذفت بنود لا تخص قطاع "+(S.info.sector||"—"),4000)}
+  if(S.status!=="معتمد"){const before=S.boq.length;S.boq=S.boq.filter(rowOk);if(!S.boq.length)S.boq=[{code:null,q:1}];if(S.boq.length<before)toast("حُذفت بنود لا تخص منطقة "+(S.info.region||"—"),4000)}
   const rel=new Set(VMAP[S.info.vtype]||[]);const act=cat.filter(c=>c.active&&itemSector(c)===S.info.sector);
-  $("#boqNote").innerHTML=act.length?`<span class="hint">جدول الكميات المعروض خاص بـ ${esc(S.info.sector)}${[...new Set(act.map(c=>c.agreement))].length?" — اتفاقية "+esc([...new Set(act.map(c=>c.agreement))].join("، ")):""}</span>`:`<div class="missing" style="margin:0 0 8px">لا يوجد جدول كميات معتمد لـ ${esc(S.info.sector||"القطاع المحدد")}. اتفاقية 701250248 خاصة بالقطاع الشرقي فقط ولا يُسمح لأي قطاع آخر العمل بها.</div>`;
+  $("#boqNote").innerHTML=act.length?`<span class="hint">جدول الكميات المعروض خاص بـ ${esc(S.info.sector)} (منطقة ${esc(S.info.region||"")})${[...new Set(act.map(c=>c.agreement))].length?" — اتفاقية "+esc([...new Set(act.map(c=>c.agreement))].join("، ")):""}</span>`:`<div class="missing" style="margin:0 0 8px">لا يوجد جدول كميات معتمد لـ ${S.info.region?"منطقة "+esc(S.info.region):"المنطقة المحددة"}. اتفاقية 701250248 خاصة بالقطاع الشرقي (المنطقة الشرقية) فقط ولا يُسمح لأي قطاع آخر العمل بها.</div>`;
   const o=(c,sel)=>`<option value="${esc(c.item_code)}"${c.item_code===sel?" selected":""}>${esc((c.item_no?c.item_no+" - ":"")+c.description)} (${fmt(num(c.price))})</option>`;
   const sel=r=>{const a=[],b=[];act.forEach(c=>(rel.has(c.item_code)?a:b).push(o(c,r.code)));
     let extra=r.code&&!act.some(c=>c.item_code===r.code)?`<option value="${esc(r.code)}" selected>${esc(r.desc)} (${fmt(num(r.price))})</option>`:"";
@@ -691,7 +689,7 @@ function missingList(c){
   if(!i.date)m.push("التاريخ");
   if(!S.boq.some(r=>r.code&&num(r.q)>0))m.push("بند واحد على الأقل من جدول الكميات بكمية");
   if(S.boq.some(r=>r.code&&!(num(r.q)>0)))m.push("كمية بند في جدول الكميات");
-  if(!S.boq.every(rowOk))m.push("بنود جدول الكميات المختارة لا تخص "+(S.info.sector||"القطاع المحدد"));
+  if(!S.boq.every(rowOk))m.push("بنود جدول الكميات المختارة لا تخص منطقة "+(S.info.region||"—"));
   if(S.eq.some(r=>r.n&&!(num(r.c)>0&&num(r.h)>0)))m.push("العدد والوقت للمعدات المختارة");
   if(!c.noLoss&&!S.lb.cat)m.push("الفئة");
   if(!c.noLoss&&!S.lb.useMax){if(!S.lb.start)m.push("تاريخ بداية المخالفة");if(!S.lb.end)m.push("تاريخ نهاية المخالفة");if(c.bad)m.push("تاريخ النهاية يجب أن يكون بعد البداية")}
@@ -878,7 +876,7 @@ function buildSheet(c){
   return `<div class="sheet"><table>
 <colgroup>${[233,64,110,126,111,64,64,64,64,64,200,64,64,76,128].map(w=>`<col style="width:${(w/1496*100).toFixed(3)}%">`).join("")}</colgroup>
 <tr style="height:70px">${td(`<img src="${LOGO}" style="height:44px">`,{cs:4})}${td("تكاليف الإصلاح والمنفعة المفقودة",{cs:11,c:"title"})}</tr>
-<tr>${td("اسم المخالف : ",{c:"lb r"})}${td(esc(i.name),{cs:4,c:"gr b"})}${td("رقم  المخالفة :",{c:"lb r"})}${td(esc(i.no),{cs:4,c:"gr b"})}${td("القطاع:",{rs:2,c:"lb"})}${td(esc(i.sector),{cs:4,rs:2,c:"gr"})}</tr>
+<tr>${td("اسم المخالف : ",{c:"lb r"})}${td(esc(i.name),{cs:4,c:"gr b"})}${td("رقم  المخالفة :",{c:"lb r"})}${td(esc(i.no),{cs:4,c:"gr b"})}${td("القطاع:",{rs:2,c:"lb"})}${td(esc(i.sector||(i.region?"منطقة "+i.region:"")),{cs:4,rs:2,c:"gr"})}</tr>
 <tr>${td("رقم الهوية/ رقم المنشأة الموحد :",{c:"lb r"})}${td(esc(i.id),{cs:4,c:"gr b"})}${td("نوع المخالفة : ",{c:"lb r"})}${td(esc(i.vtype),{cs:4,c:"gr wrap",st:"font-size:8.5px"})}</tr>
 <tr>${td("نوع المخالف:",{c:"lb r"})}${td(esc(i.ptype),{cs:4,c:"gr"})}${td("الــتـــاريــخ :",{c:"lb r"})}${td(dmy(i.date),{cs:4,c:"gr b"})}${td("وحدة العمل:",{c:"lb"})}${td(esc(i.branch||govShort(i.gov||"")),{cs:4,c:"gr"})}</tr>
 <tr>${td("1- : تكلفة الأيدي العاملة",{cs:5,c:"lb"})}${td("2- : تكلفة إستعمال المعدات",{cs:5,c:"lb"})}${td("3- : تكلفة قطع الغيار",{cs:5,c:"lb"})}</tr>
@@ -946,7 +944,7 @@ function xSet(xml,ref,val){
 }
 function excelCells(S,c,h){
   const {num,fmt,dmy}=h,i=S.info,R=c.R,m={};
-  m.C7=i.name||"";m.H7=i.no||"";m.M7=i.sector||"";
+  m.C7=i.name||"";m.H7=i.no||"";m.M7=i.sector||(i.region?"منطقة "+i.region:"");
   m.C8=i.id||"";m.H8=i.vtype||"";
   m.C9=i.ptype||"";m.H9=dmy(i.date);m.M9=i.branch||govShort(i.gov||"");
   const boq=S.boq.filter(r=>r.code&&num(r.q)>0);
@@ -1051,11 +1049,10 @@ function fillPlaceLists(){
   if(!S)return;const i=S.info;
   $('[data-k="info.region"]').innerHTML=selOpts(Object.keys(REGIONS).sort(),i.region||"","— اختر المنطقة —");
   $('[data-k="info.gov"]').innerHTML=selOpts(govsOf(i.region),i.gov||"","— اختر المحافظة —");
-  $('[data-k="info.sector"]').innerHTML=selOpts(LISTS.sector,i.sector||"","— اختر القطاع —");
 }
 document.addEventListener("change",e=>{const k=e.target.dataset?.k;if(!k||!S||!e.target.closest("#tab-form"))return;
-  if(k==="info.sector"||k==="info.region")setTimeout(()=>{renderBoq();recalc()},0);
-  if(k==="info.region"){if(S.info.gov&&!govsOf(S.info.region).includes(S.info.gov)){S.info.gov="";S.info.branch=""}const s=SECTOR_OF[S.info.region];if(s)S.info.sector=s;fillPlaceLists();bindFields()}
+  if(k==="info.region")setTimeout(()=>{renderBoq();recalc()},0);
+  if(k==="info.region"){if(S.info.gov&&!govsOf(S.info.region).includes(S.info.gov)){S.info.gov="";S.info.branch=""}S.info.sector=SECTOR_OF[S.info.region]||"";fillPlaceLists();bindFields()}
   if(k==="info.gov"){S.info.branch=govShort(S.info.gov||"");fillPlaceLists()}});
 /* ===== جلب بيانات الزيارة ===== */
 let visitIdx=[];
@@ -1068,14 +1065,13 @@ function scGovs(cur){$("#scGov").innerHTML=selOpts(govsOf($("#scRegion").value),
 function openScope(){
   $("#scRegion").innerHTML=selOpts(Object.keys(REGIONS).sort(),SCOPE?.region||"","— اختر المنطقة —");
   scGovs(SCOPE?.gov);
-  $("#scSector").innerHTML=selOpts(LISTS.sector,SCOPE?.sector||"","— اختر القطاع —");
   $("#scNoData").hidden=Object.keys(REGIONS).length>0;
   $("#scopeDlg").showModal();
 }
-$("#scRegion").addEventListener("change",()=>{scGovs("");const s=SECTOR_OF[$("#scRegion").value];if(s)$("#scSector").value=s});
+$("#scRegion").addEventListener("change",()=>scGovs(""));
 $("#scCancel").onclick=()=>$("#scopeDlg").close();
 $("#scSave").onclick=()=>{
-  SCOPE={region:$("#scRegion").value.trim(),gov:$("#scGov").value.trim(),sector:$("#scSector").value.trim()};
+  SCOPE={region:$("#scRegion").value.trim(),gov:$("#scGov").value.trim(),sector:SECTOR_OF[$("#scRegion").value.trim()]||""};
   try{localStorage.setItem("cc-scope",JSON.stringify(SCOPE))}catch(e){}
   $("#scopeDlg").close();renderScopeBar();scopeKey="";
   if(!S.id&&!S.info.name&&!S.info.no){S.info={...S.info,sector:SCOPE.sector,region:SCOPE.region,gov:SCOPE.gov,branch:SCOPE.gov?govShort(SCOPE.gov):S.info.branch};showForm()}
