@@ -350,7 +350,7 @@ dialog h3{margin:0;padding:12px 16px;background:var(--soft);border-bottom:1px so
     <section class="block">
       <h2>المنفعة المفقودة — المخالفات الجسيمة</h2>
       <div class="body">
-        <p class="hint" style="margin-top:0">تعرض المخالفات <b>الجسيمة</b> التي فيها فاقد مياه ضمن نطاقك. السكني والتجاري والحكومي يُحسب <b>بالمعدل</b>، والكسور والتعديات على الخطوط تُحسب <b>هيدروليكياً</b> حسب إفادة مأمور الضبط أو المفتش الميداني.</p>
+        <p class="hint" style="margin-top:0">تعرض المخالفات <b>الجسيمة</b> التي فيها فاقد مياه لكل المناطق، وتقدر تفلتر بالمنطقة والمحافظة (تبدأ على نطاقك). السكني والتجاري والحكومي يُحسب <b>بالمعدل</b>، والكسور والتعديات على الخطوط تُحسب <b>هيدروليكياً</b> حسب إفادة مأمور الضبط أو المفتش الميداني.</p>
         <div class="grid">
           <label class="f">من تاريخ<input type="date" id="lsFrom"></label>
           <label class="f">إلى تاريخ<input type="date" id="lsTo"></label>
@@ -1141,7 +1141,7 @@ $("#scCancel").onclick=()=>$("#scopeDlg").close();
 $("#scSave").onclick=()=>{
   SCOPE={region:$("#scRegion").value.trim(),gov:$("#scGov").value.trim(),sector:SECTOR_OF[$("#scRegion").value.trim()]||""};
   try{localStorage.setItem("cc-scope",JSON.stringify(SCOPE))}catch(e){}
-  $("#scopeDlg").close();renderScopeBar();scopeKey="";lossRows=[];if(!$("#tab-loss").hidden)loadLossList();
+  $("#scopeDlg").close();renderScopeBar();scopeKey="";if(lossRows.length){$("#lsRegion").value=SCOPE?.region||"";lsGovFill(SCOPE?.gov||"");renderLossList()}
   if(!S.id&&!S.info.name&&!S.info.no){S.info={...S.info,sector:SCOPE.sector,region:SCOPE.region,gov:SCOPE.gov,branch:SCOPE.gov?govShort(SCOPE.gov):S.info.branch};showForm()}
   toast("تم حفظ النطاق");
 };
@@ -1314,11 +1314,10 @@ function defaultParams(v){
   return{method:m,cat:RATE_PROPS[v.prop]||"سكني – فيلا",start:"",end:d,useMax:true,sewer:false,dia:ld.dia,v:1.5,h:24,months:ld.months||12,days:ld.days?String(ld.days):"",price:6,repair,insp:v.insp||"",note:v.notes||"",estimated:true};
 }
 async function loadLossList(){
-  const sum=$("#lsSum");sum.textContent="جاري تحميل المخالفات الجسيمة…";
+  const sum=$("#lsSum");sum.textContent="جاري تحميل المخالفات الجسيمة لكل المناطق…";
   const all=[];
   for(let i=0;i<40000;i+=1000){
     let q=sb.from("cost_visits").select("visit_no,violator_name,start:data->>start,prop:data->>prop,region:data->>region,gov:data->>gov,items:data->items").neq("visit_no","__META__").contains("data",{items:[{sev:"جسيمة"}]});
-    if(SCOPE?.gov)q=q.eq("branch",govShort(SCOPE.gov));else if(SCOPE?.region)q=q.eq("data->>region",SCOPE.region);
     const {data,error}=await q.order("visit_no").range(i,i+999);if(error){sum.textContent="تعذر التحميل: "+error.message;return}
     if(!data?.length)break;all.push(...data);sum.textContent=`جاري التحميل… ${all.length}`;if(data.length<1000)break;
   }
