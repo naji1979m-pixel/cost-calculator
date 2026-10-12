@@ -97,6 +97,15 @@ dialog::backdrop{background:#0008}
 dialog .body{max-height:70vh;overflow:auto}
 dialog h3{margin:0;padding:12px 16px;background:var(--soft);border-bottom:1px solid var(--line);font-size:1rem}
 [hidden]{display:none!important}
+.combo{position:relative;display:block}
+.combo input{padding-left:38px}
+.combo-btn{position:absolute;left:4px;top:50%;transform:translateY(-50%);border:none;background:var(--soft);color:var(--ink2);width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:.95rem}
+.combo-list{position:absolute;top:calc(100% + 4px);right:0;left:0;max-height:300px;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px #0003;z-index:30}
+.combo-list button{display:flex;justify-content:space-between;gap:10px;width:100%;text-align:right;border:none;border-bottom:1px solid var(--line);background:none;color:var(--ink);font:inherit;font-size:.88rem;padding:9px 12px;cursor:pointer}
+.combo-list button:hover,.combo-list button:focus{background:var(--soft)}
+.combo-list .cl-no{direction:ltr;font-weight:600;white-space:nowrap}
+.combo-list .cl-nm{color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.combo-list .cl-hint{display:block;padding:10px 12px;font-size:.84rem;color:var(--muted)}
 @media (max-width:600px){.totalbar .p.hide-s{display:none}.grid{grid-template-columns:1fr 1fr}}
 @media (max-width:420px){.grid{grid-template-columns:1fr}}
 /* ===== النموذج الرسمي (نفس قالب الإكسل) ===== */
@@ -166,7 +175,8 @@ dialog h3{margin:0;padding:12px 16px;background:var(--soft);border-bottom:1px so
         <label class="f"><span>اسم المخالف <span class="req">*</span></span><input data-k="info.name"></label>
         <label class="f"><span>رقم الهوية / رقم المنشأة الموحد <span class="req">*</span></span><input data-k="info.id" inputmode="numeric"></label>
         <label class="f">نوع المخالف<select data-k="info.ptype"></select></label>
-        <label class="f"><span>رقم المخالفة <span class="req">*</span></span><input data-k="info.no" placeholder="SWA-00000" dir="ltr" style="text-align:right" list="visitList" autocomplete="off"></label><datalist id="visitList"></datalist>
+        <label class="f"><span>رقم المخالفة <span class="req">*</span></span>
+          <span class="combo"><input data-k="info.no" placeholder="اكتب الرقم أو اختر من القائمة" dir="ltr" style="text-align:right" autocomplete="off"><button type="button" class="combo-btn" id="comboBtn" aria-label="عرض القائمة">▾</button><span class="combo-list" id="comboList" hidden></span></span></label>
         <label class="f" style="grid-column:1/-1"><span>نوع المخالفة <span class="req">*</span></span><select data-k="info.vtype"></select></label>
         <label class="f"><span>التاريخ <span class="req">*</span></span><input type="date" data-k="info.date"></label>
         <label class="f">القطاع<select data-k="info.sector"></select></label>
@@ -1018,7 +1028,6 @@ document.addEventListener("change",e=>{const k=e.target.dataset?.k;if(!k||!S||!e
   if(k==="info.gov"&&S.info.gov){S.info.branch=govShort(S.info.gov);const u=UNIT_OF[S.info.branch];if(u)S.info.unit=u;fillPlaceLists();bindFields()}});
 /* ===== جلب بيانات الزيارة ===== */
 let visitIdx=[];
-let searchT=null;
 function loadVisitList(){loadMeta().then(()=>{renderScopeBar();if(!SCOPE)openScope()})}
 function renderScopeBar(){
   const s=SCOPE;$("#scopeBar").innerHTML=`<span>نطاقي: <b>${s?esc([s.sector,s.unit,s.region,s.gov?govShort(s.gov):"كل المحافظات"].filter(Boolean).join(" / ")):"غير محدد"}</b></span><button class="btn ghost" id="scopeBtn" type="button">تغيير النطاق</button>`;
@@ -1039,18 +1048,55 @@ $("#scCancel").onclick=()=>$("#scopeDlg").close();
 $("#scSave").onclick=()=>{
   SCOPE={region:$("#scRegion").value.trim(),gov:$("#scGov").value.trim(),sector:$("#scSector").value.trim(),unit:$("#scUnit").value.trim()};
   try{localStorage.setItem("cc-scope",JSON.stringify(SCOPE))}catch(e){}
-  $("#scopeDlg").close();renderScopeBar();
+  $("#scopeDlg").close();renderScopeBar();scopeKey="";
   if(!S.id&&!S.info.name&&!S.info.no){S.info={...S.info,sector:SCOPE.sector,unit:SCOPE.unit,region:SCOPE.region,gov:SCOPE.gov,branch:SCOPE.gov?govShort(SCOPE.gov):S.info.branch};showForm()}
   toast("تم حفظ النطاق");
 };
-$('[data-k="info.no"]').addEventListener("input",e=>{
-  clearTimeout(searchT);const v=e.target.value.trim().toUpperCase();if(v.length<5)return;
-  searchT=setTimeout(async()=>{let q=sb.from("cost_visits").select("visit_no,violator_name").ilike("visit_no",v+"%");
-    if(SCOPE?.gov)q=q.eq("branch",govShort(SCOPE.gov));else if(SCOPE?.region)q=q.eq("data->>region",SCOPE.region);
-    const {data}=await q.limit(15);
-    $("#visitList").innerHTML=(data||[]).filter(x=>x.visit_no!=="__META__").map(x=>`<option value="${esc(x.visit_no)}">${esc(x.violator_name||"")}</option>`).join("")},300)});
+/* ===== قائمة أرقام المخالفات (كتابة أو اختيار) ===== */
+let scopeVisits=null,scopeKey="";
+const vNum=s=>+String(s).replace(/\D/g,"")||0;
+async function loadScopeVisits(){
+  const key=JSON.stringify([SCOPE?.region||"",SCOPE?.gov||""]);if(key===scopeKey)return;scopeKey=key;scopeVisits=null;
+  if(!SCOPE?.gov&&!SCOPE?.region)return;
+  const all=[];
+  for(let i=0;i<6000;i+=1000){
+    let q=sb.from("cost_visits").select("visit_no,violator_name").neq("visit_no","__META__");
+    q=SCOPE.gov?q.eq("branch",govShort(SCOPE.gov)):q.eq("data->>region",SCOPE.region);
+    const {data,error}=await q.range(i,i+999);if(error||!data?.length)break;all.push(...data);if(data.length<1000)break;
+  }
+  all.sort((a,b)=>vNum(b.visit_no)-vNum(a.visit_no));scopeVisits=all;
+}
+async function comboItems(raw){
+  const q=String(raw||"").trim().toUpperCase(),digits=q.replace(/^SWA-?/,"");
+  if(scopeVisits){return scopeVisits.filter(v=>!q||v.visit_no.replace("SWA-","").startsWith(digits)||(v.violator_name||"").includes(raw.trim())).slice(0,80)}
+  if(digits.length<3)return null;
+  const {data}=await sb.from("cost_visits").select("visit_no,violator_name").ilike("visit_no","SWA-"+digits+"%").limit(40);
+  return(data||[]).sort((a,b)=>vNum(b.visit_no)-vNum(a.visit_no));
+}
+let comboT=null;
+async function openCombo(){
+  const L=$("#comboList"),inp=$('[data-k="info.no"]');if(locked())return;
+  L.hidden=false;L.innerHTML='<span class="cl-hint">جاري التحميل…</span>';
+  await loadScopeVisits();
+  const items=await comboItems(inp.value);
+  if(items===null){L.innerHTML='<span class="cl-hint">اكتب 3 أرقام على الأقل للبحث، أو حدد نطاقك لعرض قائمة مخالفاته.</span>';return}
+  if(!items.length){L.innerHTML='<span class="cl-hint">لا توجد نتائج — تقدر تكمل كتابة الرقم يدوياً.</span>';return}
+  L.innerHTML=(scopeVisits&&!inp.value.trim()?`<span class="cl-hint">مخالفات نطاقك (${scopeVisits.length}) — الأحدث أولاً</span>`:"")+items.map(v=>`<button type="button" data-no="${esc(v.visit_no)}"><span class="cl-no">${esc(v.visit_no)}</span><span class="cl-nm">${esc(v.violator_name||"")}</span></button>`).join("");
+}
+function closeCombo(){$("#comboList").hidden=true}
+{
+  const inp=$('[data-k="info.no"]');
+  inp.addEventListener("focus",()=>openCombo());
+  inp.addEventListener("input",()=>{clearTimeout(comboT);comboT=setTimeout(openCombo,250)});
+  inp.addEventListener("keydown",e=>{if(e.key==="Escape")closeCombo();if(e.key==="Enter"){e.preventDefault();closeCombo();lookupVisit(inp.value)}});
+  inp.addEventListener("blur",()=>setTimeout(closeCombo,200));
+  $("#comboBtn").addEventListener("mousedown",e=>e.preventDefault());
+  $("#comboBtn").onclick=()=>{if($("#comboList").hidden){inp.focus();openCombo()}else closeCombo()};
+  $("#comboList").addEventListener("mousedown",e=>e.preventDefault());
+  $("#comboList").addEventListener("click",e=>{const b=e.target.closest("[data-no]");if(!b)return;inp.value=b.dataset.no;S.info.no=b.dataset.no;closeCombo();lookupVisit(b.dataset.no)});
+}
 async function lookupVisit(raw,force){
-  const no=String(raw||"").trim().toUpperCase();if(!/^SWA-\d+$/.test(no)||locked())return;
+  let no=String(raw||"").trim().toUpperCase();if(/^\d+$/.test(no))no="SWA-"+no;if(!/^SWA-\d+$/.test(no)||locked())return;
   if(S.visit?.no===no&&!force)return;
   const {data,error}=await sb.from("cost_visits").select("data").eq("visit_no",no).maybeSingle();
   if(error){toast("تعذر البحث في الملف الشامل",4000);return}
@@ -1122,7 +1168,7 @@ $("#compUpload").onclick=async()=>{
     }
     await sb.from("cost_visits").upsert({visit_no:"__META__",branch:null,violator_name:null,data:{regions},updated_at:now},{onConflict:"visit_no"});
     P(`تم ✅ — حُفظت ${list.length} زيارة من جميع المناطق والمحافظات.`);
-    await loadCompInfo();loadMeta();
+    await loadCompInfo();loadMeta();scopeKey="";
   }catch(err){P("تعذر الرفع: "+(err?.message||err))}
   finally{b.disabled=false}
 };
