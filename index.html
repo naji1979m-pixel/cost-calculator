@@ -360,7 +360,7 @@ dialog h3{margin:0;padding:12px 16px;background:var(--soft);border-bottom:1px so
           <label class="f">الحالة<select id="lsSt"><option value="">الكل</option><option value="done">محتسبة</option><option value="todo">غير محتسبة</option></select></label>
         </div>
         <label class="check"><input type="checkbox" id="lsAll">عرض كل المخالفات الجسيمة (وليس فقط ما فيه فاقد مياه)</label>
-        <div class="row-actions"><button class="btn" id="lsLoad">تحديث القائمة</button></div>
+        <div class="row-actions"><button class="btn" id="lsLoad">تحديث القائمة</button><button class="btn solid" id="lsPdf">تقرير PDF</button><button class="btn solid" id="lsXls" style="background:#1d6f42;border-color:#1d6f42">تقرير Excel</button></div>
         <div class="calc" id="lsSum" style="margin-top:12px">اضغط "تحديث القائمة".</div>
         <div class="tbl" style="margin-top:12px"><table class="t">
           <thead><tr><th>رقم الزيارة</th><th>المخالف</th><th>المخالفة</th><th>المحافظة</th><th>نوع العقار</th><th>التاريخ</th><th>الطريقة</th><th class="num">القيمة</th><th></th></tr></thead>
@@ -1323,7 +1323,7 @@ async function loadLossList(){
   }
   lossRows=all.map(r=>r.items?{no:r.visit_no,name:r.violator_name,start:r.start,prop:r.prop,region:r.region,gov:r.gov,items:r.items}:r.data).filter(v=>v&&sevItems(v).length);
   lossSaved={};
-  for(let i=0;i<20000;i+=1000){const {data:sv}=await sb.from("cost_losses").select("visit_no,method,value,total,updated_at").range(i,i+999);if(!sv?.length)break;sv.forEach(s=>lossSaved[s.visit_no]=s);if(sv.length<1000)break}
+  for(let i=0;i<20000;i+=1000){const {data:sv}=await sb.from("cost_losses").select("visit_no,method,value,total,m3,updated_at").range(i,i+999);if(!sv?.length)break;sv.forEach(s=>lossSaved[s.visit_no]=s);if(sv.length<1000)break}
   const regs=[...new Set(lossRows.map(v=>v.region).filter(Boolean))].sort();
   $("#lsRegion").innerHTML=selOpts(regs,SCOPE?.region&&regs.includes(SCOPE.region)?SCOPE.region:"","كل المناطق");lsGovFill(SCOPE?.gov||"");
   renderLossList();
@@ -1336,7 +1336,7 @@ function renderLossList(){
   list=list.filter(v=>{const d=compDate(v.start);return(!f||d>=f)&&(!t||d<=t)});
   if(q)list=list.filter(v=>v.no.includes(q.toUpperCase())||(v.name||"").includes(q));
   if(st)list=list.filter(v=>st==="done"?!!lossSaved[v.no]:!lossSaved[v.no]);
-  list.sort((a,b)=>vNum(b.no)-vNum(a.no));
+  list.sort((a,b)=>vNum(b.no)-vNum(a.no));curLossList=list;
   let estR=0,estL=0,saved=0,nSaved=0,nR=0,nL=0;
   list.forEach(v=>{const s=lossSaved[v.no];if(s){saved+=num(s.total);nSaved++;return}
     const c=calcLoss(defaultParams(v));if(lossMethod(v)==="line"){estL+=c.total;nL++}else{estR+=c.total;nR++}});
@@ -1424,7 +1424,7 @@ $("#lcSave").onclick=async()=>{
   const row={visit_no:LC.v.no,branch:govShort(LC.v.gov||""),violator_name:LC.v.name||null,method:p.method,params:p,value:+r.val.toFixed(2),total:+r.total.toFixed(2),m3:+r.m3.toFixed(2),updated_at:new Date().toISOString()};
   const {error}=await sb.from("cost_losses").upsert(row,{onConflict:"visit_no"});
   if(error){toast("تعذر الحفظ: "+error.message,5000);return}
-  LC.saved=true;lossSaved[LC.v.no]={visit_no:LC.v.no,method:p.method,value:row.value,total:row.total};toast("تم حفظ احتساب "+LC.v.no);
+  LC.saved=true;lossSaved[LC.v.no]={visit_no:LC.v.no,method:p.method,value:row.value,total:row.total,m3:row.m3};toast("تم حفظ احتساب "+LC.v.no);
   if(lossRows.length)renderLossList();fillLossForm();
 };
 $("#lcPdf").onclick=async()=>{
@@ -1459,6 +1459,109 @@ $("#lcPdf").onclick=async()=>{
     showPdf(pdf.output("blob"),`تقرير المنفعة المفقودة - ${v.no}.pdf`);
   }catch(err){toast("تعذر إنشاء PDF: "+(err?.message||err),6000)}
   finally{$("#sheetHost").innerHTML=""}
+};
+
+/* ===== تقارير المنفعة المفقودة (PDF / Excel) ===== */
+let curLossList=[];
+function lossReportRows(){
+  return curLossList.map(v=>{const it=sevItems(v)[0]||{},s=lossSaved[v.no];
+    if(s)return{no:v.no,name:v.name||"",vio:(it.bnd?it.bnd+" - ":"")+(it.desc||""),region:v.region||"",gov:govShort(v.gov||""),prop:v.prop||"",date:dmy(compDate(v.start)),method:s.method==="line"?"كسر / خط":"بالمعدل",status:"محتسبة",m3:num(s.m3),val:num(s.value),repair:num(s.total)-num(s.value),total:num(s.total)};
+    const p=defaultParams(v),c=calcLoss(p),m=lossMethod(v);
+    return{no:v.no,name:v.name||"",vio:(it.bnd?it.bnd+" - ":"")+(it.desc||""),region:v.region||"",gov:govShort(v.gov||""),prop:v.prop||"",date:dmy(compDate(v.start)),method:m==="line"?"كسر / خط":"بالمعدل",status:"تقديري",m3:c.m3,val:c.val,repair:c.repair,total:c.total};
+  });
+}
+function lossFilterText(){
+  const f=$("#lsFrom").value,t=$("#lsTo").value,r=$("#lsRegion").value,g=$("#lsGov").value;
+  return[`المنطقة: ${r||"كل المناطق"}`,`المحافظة: ${g?govShort(g):"كل المحافظات"}`,`الفترة: ${f?dmy(f):"البداية"} — ${t?dmy(t):"اليوم"}`,$("#lsAll").checked?"كل المخالفات الجسيمة":"الجسيمة التي فيها فاقد مياه"].join("   |   ");
+}
+function lossAgg(rows){
+  const by={};rows.forEach(r=>{const k=(r.region||"—")+"|"+(r.gov||"—");const a=by[k]=by[k]||{region:r.region||"—",gov:r.gov||"—",n:0,nRate:0,nLine:0,nSaved:0,m3:0,total:0};
+    a.n++;a.m3+=r.m3;a.total+=r.total;if(r.status==="محتسبة")a.nSaved++;if(r.method==="بالمعدل")a.nRate++;else a.nLine++});
+  return Object.values(by).sort((a,b)=>b.total-a.total);
+}
+function lossTotals(rows){const t={n:rows.length,m3:0,val:0,repair:0,total:0,saved:0,est:0,nSaved:0,nRate:0,nLine:0};
+  rows.forEach(r=>{t.m3+=r.m3;t.val+=r.val;t.repair+=r.repair;t.total+=r.total;if(r.status==="محتسبة"){t.saved+=r.total;t.nSaved++}else t.est+=r.total;if(r.method==="بالمعدل")t.nRate++;else t.nLine++});return t}
+
+/* ---------- PDF ---------- */
+$("#lsPdf").onclick=async()=>{
+  if(!curLossList.length){toast("لا توجد بيانات — حدّث القائمة أولاً");return}
+  if(!window.html2canvas||!window.jspdf){toast("تعذر تحميل مكتبة PDF، حدّث الصفحة",5000);return}
+  const btn=$("#lsPdf");btn.disabled=true;
+  try{
+    const rows=lossReportRows(),T=lossTotals(rows),agg=lossAgg(rows),MAXD=600,today=dmy(new Date().toISOString().slice(0,10));
+    const head=(pg)=>`<div style="display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #0f7ea8;padding-bottom:8px;margin-bottom:10px"><div><div style="font-size:18px;font-weight:700">تقرير المنفعة المفقودة — المخالفات الجسيمة</div><div style="font-size:10px;margin-top:2px">${esc(lossFilterText())}</div></div><img src="${LOGO}" style="height:40px"></div>`;
+    const foot=(pg,n)=>`<div style="position:absolute;bottom:18px;left:40px;right:40px;display:flex;justify-content:space-between;font-size:9px;color:#555;border-top:1px solid #ccc;padding-top:4px"><span>شركة المياه الوطنية — تاريخ الإصدار ${today}</span><span>صفحة ${pg} من ${n}</span></div>`;
+    const tbl=(h,body,w)=>`<table>${w?`<colgroup>${w.map(x=>`<col style="width:${x}%">`).join("")}</colgroup>`:""}<tr>${h.map(x=>`<th>${x}</th>`).join("")}</tr>${body}</table>`;
+    const pages=[];
+    // صفحة 1: الملخص
+    const sumRows=[["عدد المخالفات",T.n.toLocaleString("en-US")],["محسوبة بالمعدل (سكني / تجاري / حكومي)",T.nRate.toLocaleString("en-US")],["كسور وتعديات على الخطوط",T.nLine.toLocaleString("en-US")],["محتسبة ومعتمدة بإفادة المفتش",T.nSaved.toLocaleString("en-US")],["الفاقد المائي التقديري",fmt(T.m3)+" م³"],["قيمة الفاقد",fmt(T.val)+" ريال"],["تكاليف الإصلاح",fmt(T.repair)+" ريال"],["قيمة المحتسب",fmt(T.saved)+" ريال"],["قيمة التقديري",fmt(T.est)+" ريال"],["الإجمالي",fmt(T.total)+" ريال"]];
+    pages.push(`<div style="font-weight:700;font-size:13px;margin:4px 0">الملخص</div>${tbl(["البيان","القيمة"],sumRows.map((r,i)=>`<tr${i===sumRows.length-1?' style="font-weight:700;background:#e2efda"':""}><td>${r[0]}</td><td>${r[1]}</td></tr>`).join(""))}
+      <p style="font-size:9.5px;line-height:1.7;margin:10px 0 0">أسس الاحتساب: السكني والتجاري والحكومي بالمعدل حسب منظم المياه (الاستهلاك الشهري × المدة بحد أقصى 6 أشهر للسكني و12 للتجاري والحكومي × سعر آخر شريحة). الكسور والتعديات على الخطوط هيدروليكياً (مساحة المقطع × سرعة التدفق × مدة التشغيل × سعر المتر) حسب إفادة مأمور الضبط أو المفتش الميداني، وما لم يُحتسب بعد يُقدَّر بافتراضات أولية (سرعة 1.5 م/ث وتسرب 24 ساعة).</p>`);
+    // التوزيع حسب المحافظة
+    const AGP=28,AG1=14;for(let i=0,first=true;i<agg.length;first=false){const n=first?AG1:AGP;const html=(`<div style="font-weight:700;font-size:13px;margin:12px 0 4px">التوزيع حسب المنطقة والمحافظة</div>`+tbl(["المنطقة","المحافظة","العدد","بالمعدل","كسور","محتسبة","الفاقد م³","الإجمالي (ريال)"],agg.slice(i,i+n).map(a=>`<tr><td>${esc(a.region)}</td><td>${esc(a.gov)}</td><td>${a.n}</td><td>${a.nRate}</td><td>${a.nLine}</td><td>${a.nSaved}</td><td>${fmt(a.m3)}</td><td><b>${fmt(a.total)}</b></td></tr>`).join("")+(i+n>=agg.length?`<tr style="font-weight:700;background:#e2efda"><td colspan="2">الإجمالي</td><td>${T.n}</td><td>${T.nRate}</td><td>${T.nLine}</td><td>${T.nSaved}</td><td>${fmt(T.m3)}</td><td>${fmt(T.total)}</td></tr>`:"")));
+      if(first)pages[0]+=html;else pages.push(html);i+=n}
+    // التفاصيل
+    const det=[...rows].sort((a,b)=>b.total-a.total).slice(0,MAXD),DP=27;
+    for(let i=0;i<det.length;i+=DP){pages.push(`<div style="font-weight:700;font-size:13px;margin:4px 0">تفاصيل المخالفات${rows.length>MAXD?` — أعلى ${MAXD} قيمة من ${rows.length} (التفاصيل الكاملة في ملف الإكسل)`:""}</div>`+tbl(["م","رقم الزيارة","المخالف","المخالفة","المحافظة","العقار","الطريقة","الحالة","الإجمالي"],det.slice(i,i+DP).map((r,k)=>`<tr><td>${i+k+1}</td><td dir="ltr">${esc(r.no)}</td><td>${esc(r.name.slice(0,30))}</td><td style="font-size:8px">${esc(r.vio.slice(0,40))}</td><td>${esc(r.gov)}</td><td style="font-size:8.5px">${esc(r.prop)}</td><td>${r.method}</td><td>${r.status}</td><td><b>${fmt(r.total)}</b></td></tr>`).join(""),[4,12,17,21,10,11,9,7,9]))}
+    const pdf=new window.jspdf.jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
+    try{await document.fonts.ready}catch(e){}
+    for(let i=0;i<pages.length;i++){
+      toast(`جاري إنشاء التقرير… صفحة ${i+1} من ${pages.length}`,60000);
+      $("#sheetHost").innerHTML=`<div class="sheet lossrep" style="width:794px;height:1123px;min-height:0;padding:30px 40px;position:relative;font-size:10px">${head(i+1)}${pages[i]}${foot(i+1,pages.length)}</div>`;
+      const el=$("#sheetHost .sheet");el.querySelectorAll("td,th").forEach(c=>{c.style.whiteSpace="normal";c.style.padding="3px 5px";c.style.height="auto";c.style.textAlign="right"});el.querySelectorAll("th").forEach(c=>{c.style.background="#dae3f3";c.style.fontWeight="700"});
+      const cv=await html2canvas(el,{scale:1.6,backgroundColor:"#ffffff",logging:false,windowWidth:794});
+      if(i)pdf.addPage();pdf.addImage(cv.toDataURL("image/jpeg",.9),"JPEG",0,0,210,297);
+    }
+    showPdf(pdf.output("blob"),`تقرير المنفعة المفقودة - ${today.replace(/\//g,"-")}.pdf`);
+  }catch(err){toast("تعذر إنشاء PDF: "+(err?.message||err),6000)}
+  finally{$("#sheetHost").innerHTML="";btn.disabled=false}
+};
+
+/* ---------- Excel (مع شعار الشركة) ---------- */
+function xlCol(n){let s="";n++;while(n){const m=(n-1)%26;s=String.fromCharCode(65+m)+s;n=Math.floor((n-1)/26)}return s}
+function xlSheet(rows,widths,merges){
+  const cell=(v,ci,ri,st)=>{const r=xlCol(ci)+(ri+1);if(v===null||v===undefined||v==="")return st?`<c r="${r}" s="${st}"/>`:"";
+    if(typeof v==="number")return`<c r="${r}" s="${st||0}"><v>${Math.round(v*100)/100}</v></c>`;
+    return`<c r="${r}" s="${st||0}" t="inlineStr"><is><t xml:space="preserve">${xEsc(v)}</t></is></c>`};
+  const data=rows.map((row,ri)=>`<row r="${ri+1}"${row.h?` ht="${row.h}" customHeight="1"`:""}>${row.c.map((x,ci)=>Array.isArray(x)?cell(x[0],ci,ri,x[1]):cell(x,ci,ri,row.s||0)).join("")}</row>`).join("");
+  return`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheetPr><pageSetUpPr fitToPage="1"/></sheetPr><sheetViews><sheetView rightToLeft="1" workbookViewId="0"/></sheetViews><cols>${widths.map((w,i)=>`<col min="${i+1}" max="${i+1}" width="${w}" customWidth="1"/>`).join("")}</cols><sheetData>${data}</sheetData>${merges.length?`<mergeCells count="${merges.length}">${merges.map(m=>`<mergeCell ref="${m}"/>`).join("")}</mergeCells>`:""}<pageMargins left="0.3" right="0.3" top="0.4" bottom="0.4" header="0.2" footer="0.2"/><pageSetup paperSize="9" orientation="landscape" fitToWidth="1" fitToHeight="0"/><drawing r:id="rId1"/></worksheet>`;
+}
+$("#lsXls").onclick=async()=>{
+  if(!curLossList.length){toast("لا توجد بيانات — حدّث القائمة أولاً");return}
+  if(!window.JSZip){toast("تعذر تحميل مكتبة Excel، حدّث الصفحة",5000);return}
+  const btn=$("#lsXls");btn.disabled=true;
+  try{
+    const rows=lossReportRows(),T=lossTotals(rows),agg=lossAgg(rows),today=dmy(new Date().toISOString().slice(0,10));
+    // S: 1 header, 2 number, 3 text, 4 title, 5 total row, 6 subtitle
+    const top=[{h:42,c:[["تقرير المنفعة المفقودة — المخالفات الجسيمة",4]]},{c:[[lossFilterText(),6]]},{c:[["تاريخ الإصدار: "+today,6]]},{c:[]}];
+    const s1=[...top,{c:[["البيان",1],["القيمة",1]]},
+      ...[["عدد المخالفات",T.n,7],["محسوبة بالمعدل (سكني / تجاري / حكومي)",T.nRate,7],["كسور وتعديات على الخطوط",T.nLine,7],["محتسبة ومعتمدة بإفادة المفتش",T.nSaved,7],["الفاقد المائي التقديري (م³)",T.m3],["قيمة الفاقد (ريال)",T.val],["تكاليف الإصلاح (ريال)",T.repair],["قيمة المحتسب (ريال)",T.saved],["قيمة التقديري (ريال)",T.est]].map(r=>({c:[[r[0],3],[r[1],r[2]||2]]})),
+      {c:[["الإجمالي (ريال)",5],[T.total,5]]},{c:[]},
+      {c:[["المنطقة",1],["المحافظة",1],["العدد",1],["بالمعدل",1],["كسور",1],["محتسبة",1],["الفاقد م³",1],["الإجمالي (ريال)",1]]},
+      ...agg.map(a=>({c:[[a.region,3],[a.gov,3],[a.n,7],[a.nRate,7],[a.nLine,7],[a.nSaved,7],[a.m3,2],[a.total,2]]})),
+      {c:[["الإجمالي",5],["",5],[T.n,8],[T.nRate,8],[T.nLine,8],[T.nSaved,8],[T.m3,5],[T.total,5]]}];
+    const s2=[...top,{c:["م","رقم الزيارة","اسم المخالف","المخالفة","المنطقة","المحافظة","نوع العقار","تاريخ الزيارة","طريقة الاحتساب","الحالة","الفاقد (م³)","قيمة الفاقد","تكلفة الإصلاح","الإجمالي"].map(x=>[x,1])},
+      ...rows.sort((a,b)=>b.total-a.total).map((r,i)=>({c:[[i+1,7],[r.no,3],[r.name,3],[r.vio,3],[r.region,3],[r.gov,3],[r.prop,3],[r.date,3],[r.method,3],[r.status,3],[r.m3,2],[r.val,2],[r.repair,2],[r.total,2]]})),
+      {c:[["الإجمالي",5],...Array(9).fill(["",5]),[T.m3,5],[T.val,5],[T.repair,5],[T.total,5]]}];
+    const styles=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="1"><numFmt numFmtId="164" formatCode="#,##0.00"/></numFmts><fonts count="4"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="16"/><color rgb="FF0D3240"/><name val="Calibri"/></font><font><sz val="10"/><color rgb="FF555555"/><name val="Calibri"/></font></fonts><fills count="4"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFDAE3F3"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE2EFDA"/></patternFill></fill></fills><borders count="2"><border/><border><left style="thin"/><right style="thin"/><top style="thin"/><bottom style="thin"/></border></borders><cellStyleXfs count="1"><xf/></cellStyleXfs><cellXfs count="9"><xf/><xf fontId="1" fillId="2" borderId="1" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf><xf numFmtId="164" borderId="1" applyNumberFormat="1" applyBorder="1"/><xf borderId="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" wrapText="1"/></xf><xf fontId="2" applyFont="1" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="164" fontId="1" fillId="3" borderId="1" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/><xf fontId="3" applyFont="1"/><xf numFmtId="3" borderId="1" applyNumberFormat="1" applyBorder="1"/><xf numFmtId="3" fontId="1" fillId="3" borderId="1" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/></cellXfs></styleSheet>`;
+    const drawing=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><xdr:oneCellAnchor><xdr:from><xdr:col>7</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>0</xdr:row><xdr:rowOff>30000</xdr:rowOff></xdr:from><xdr:ext cx="1800000" cy="470000"/><xdr:pic><xdr:nvPicPr><xdr:cNvPr id="2" name="NWC"/><xdr:cNvPicPr/></xdr:nvPicPr><xdr:blipFill><a:blip r:embed="rId1"/><a:stretch><a:fillRect/></a:stretch></xdr:blipFill><xdr:spPr><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></xdr:spPr></xdr:pic><xdr:clientData/></xdr:oneCellAnchor></xdr:wsDr>`;
+    const R="http://schemas.openxmlformats.org/officeDocument/2006/relationships",PR="http://schemas.openxmlformats.org/package/2006/relationships";
+    const z=new JSZip();
+    z.file("[Content_Types].xml",`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="png" ContentType="image/png"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/xl/drawings/drawing1.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/><Override PartName="/xl/drawings/drawing2.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/></Types>`);
+    z.file("_rels/.rels",`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="${PR}"><Relationship Id="rId1" Type="${R}/officeDocument" Target="xl/workbook.xml"/></Relationships>`);
+    z.file("xl/workbook.xml",`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="${R}"><bookViews><workbookView/></bookViews><sheets><sheet name="الملخص" sheetId="1" r:id="rId1"/><sheet name="تفاصيل المخالفات" sheetId="2" r:id="rId2"/></sheets></workbook>`);
+    z.file("xl/_rels/workbook.xml.rels",`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="${PR}"><Relationship Id="rId1" Type="${R}/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="${R}/worksheet" Target="worksheets/sheet2.xml"/><Relationship Id="rId3" Type="${R}/styles" Target="styles.xml"/></Relationships>`);
+    z.file("xl/styles.xml",styles);
+    z.file("xl/worksheets/sheet1.xml",xlSheet(s1,[40,26,10,10,10,10,16,20],["A1:F1","A2:H2","A3:H3"]));
+    z.file("xl/worksheets/sheet2.xml",xlSheet(s2,[6,14,30,46,14,16,16,13,14,10,14,16,14,16],["A1:F1","A2:N2","A3:N3"]));
+    [1,2].forEach(n=>{z.file(`xl/worksheets/_rels/sheet${n}.xml.rels`,`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="${PR}"><Relationship Id="rId1" Type="${R}/drawing" Target="../drawings/drawing${n}.xml"/></Relationships>`);
+      z.file(`xl/drawings/drawing${n}.xml`,drawing);z.file(`xl/drawings/_rels/drawing${n}.xml.rels`,`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="${PR}"><Relationship Id="rId1" Type="${R}/image" Target="../media/image1.png"/></Relationships>`)});
+    z.file("xl/media/image1.png",LOGO.split(",")[1],{base64:true});
+    const mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    const blob=await z.generateAsync({type:"blob",compression:"DEFLATE",mimeType:mime});
+    showPdf(blob,`تقرير المنفعة المفقودة - ${today.replace(/\//g,"-")}.xlsx`,mime);
+  }catch(err){toast("تعذر إنشاء Excel: "+(err?.message||err),6000)}
+  finally{btn.disabled=false}
 };
 
 start();
