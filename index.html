@@ -1283,6 +1283,12 @@ $("#compUpload").onclick=async()=>{
 const LOSS_BANDS=new Set(["1","3","4","5","6","7","8","9","10","12","13","14","15","16","22","30","31","32","33","43","44","72"]);
 const LINE_BANDS=new Set(["3","4","5","6","9","10","12","13","14","15","16","22","30","31","32","33"]);
 const RATE_PROPS={"مبنى سكني":"سكني – فيلا","فيلا":"سكني – فيلا","شقة":"سكني – شقة","قصر سكني":"سكني – فيلا","منشأة تجارية":"تجاري","مبنى متعدد الاستخدامات":"تجاري","منشأة حكومية":"حكومي"};
+/* افتراضات الكسور حتى تُعدّل حسب إفادة المفتش: القطر (بوصة) ومدة التسرب */
+const LINE_DEF={"3":{dia:4,days:1},"5":{dia:4,days:1},"13":{dia:4,days:1},"30":{dia:4,days:1},"32":{dia:4,days:1},"9":{dia:4,days:1},
+  "4":{dia:2,days:1},"6":{dia:2,days:1},"14":{dia:2,days:1},"31":{dia:2,days:1},"33":{dia:2,days:1},"10":{dia:2,days:1},
+  "7":{dia:0.75,days:1},"12":{dia:4,days:1},"15":{dia:4,days:1},"16":{dia:2,days:1},"22":{dia:2,days:1},"8":{dia:1,months:12}};
+const lineDef=v=>LINE_DEF[String((sevItems(v)[0]||{}).bnd||"").trim()]||{dia:2,days:1};
+const durTxt=p=>num(p.days)>0?(num(p.days)===1?"يوم واحد (24 ساعة)":`${num(p.days)} يوم`):`${num(p.months)} شهر`;
 const DIAS=[0.5,0.75,1,1.25,1.5,2,2.5,3,4,6,8,10,12,14,16,18,20,24];
 let lossRows=[],lossSaved={},LC=null;
 const sevItems=v=>(v.items||[]).filter(i=>i.sev==="جسيمة");
@@ -1302,7 +1308,8 @@ function defaultParams(v){
   const m=lossMethod(v),it=sevItems(v)[0]||v.items?.[0]||{},vt=matchViolation(it.bnd,it.desc,VIOLATIONS);
   let repair="";const code=(VMAP[vt]||[])[0];const ci=cat.find(c=>c.item_code===code&&c.active&&itemSector(c)===(SECTOR_OF[v.region]||""));if(ci)repair=num(ci.price);
   const d=compDate(v.start);
-  return{method:m,cat:RATE_PROPS[v.prop]||"سكني – فيلا",start:"",end:d,useMax:true,sewer:false,dia:m==="line"?4:1,v:1.5,h:24,months:12,days:"",price:6,repair,insp:v.insp||"",note:v.notes||""};
+  const ld=lineDef(v);
+  return{method:m,cat:RATE_PROPS[v.prop]||"سكني – فيلا",start:"",end:d,useMax:true,sewer:false,dia:ld.dia,v:1.5,h:24,months:ld.months||12,days:ld.days?String(ld.days):"",price:6,repair,insp:v.insp||"",note:v.notes||"",estimated:true};
 }
 async function loadLossList(){
   const sum=$("#lsSum");sum.textContent="جاري التحميل…";
@@ -1326,17 +1333,19 @@ function renderLossList(){
   if(q)list=list.filter(v=>v.no.includes(q.toUpperCase())||(v.name||"").includes(q));
   if(st)list=list.filter(v=>st==="done"?!!lossSaved[v.no]:!lossSaved[v.no]);
   list.sort((a,b)=>vNum(b.no)-vNum(a.no));
-  let est=0,saved=0,nSaved=0;
-  list.forEach(v=>{const s=lossSaved[v.no];if(s){saved+=num(s.total);nSaved++}else if(lossMethod(v)==="rate"){const p=defaultParams(v);est+=calcLoss(p).val}});
-  const nLine=list.filter(v=>!lossSaved[v.no]&&lossMethod(v)==="line").length;
+  let estR=0,estL=0,saved=0,nSaved=0,nR=0,nL=0;
+  list.forEach(v=>{const s=lossSaved[v.no];if(s){saved+=num(s.total);nSaved++;return}
+    const c=calcLoss(defaultParams(v));if(lossMethod(v)==="line"){estL+=c.total;nL++}else{estR+=c.total;nR++}});
   $("#lsSum").innerHTML=`<div class="line"><span>عدد المخالفات الجسيمة${all?"":" التي فيها فاقد مياه"}</span><b>${list.length}</b></div>
     <div class="line"><span>محتسبة ومحفوظة (${nSaved})</span><b>${fmt(saved)} ريال</b></div>
-    <div class="line"><span>تقدير بالمعدل للحد الأقصى — غير المحتسبة</span><b>${fmt(est)} ريال</b></div>
-    ${nLine?`<div class="rule">${nLine} مخالفة على خطوط تحتاج إفادة المفتش (القطر والسرعة والمدة) لاحتسابها.</div>`:""}`;
+    <div class="line"><span>تقدير بالمعدل (الحد الأقصى) — ${nR} مخالفة</span><b>${fmt(estR)} ريال</b></div>
+    <div class="line"><span>تقدير الكسور على الخطوط — ${nL} مخالفة</span><b>${fmt(estL)} ريال</b></div>
+    <div class="line big"><span>الإجمالي (محتسب + تقديري)</span><b>${fmt(saved+estR+estL)} ريال</b></div>
+    ${nL?`<div class="rule">الكسور محسوبة بافتراضات أولية (قطر حسب نوع الخط، سرعة 1.5 م/ث، تسرب 24 ساعة) إلى أن تُعدّل حسب إفادة المفتش وتُحفظ.</div>`:""}`;
   $("#lsRows").innerHTML=list.slice(0,400).map(v=>{const it=sevItems(v)[0]||{},s=lossSaved[v.no],m=s?.method||lossMethod(v);
     return`<tr><td dir="ltr" style="text-align:right">${esc(v.no)}</td><td>${esc(v.name||"—")}</td><td style="min-width:180px;font-size:.82rem">${esc(it.bnd?it.bnd+" - ":"")}${esc(it.desc||"")}</td><td>${esc(v.prop||"")}</td><td>${dmy(compDate(v.start))}</td>
     <td><span class="status ${m==="line"?"d":"a"}">${m==="line"?"كسر / خط":"بالمعدل"}</span></td>
-    <td class="num">${s?fmt(num(s.total)):m==="rate"?"≈ "+fmt(calcLoss(defaultParams(v)).val):"—"}</td>
+    <td class="num">${s?`<b>${fmt(num(s.total))}</b>`:(()=>{const p=defaultParams(v),c=calcLoss(p);return`≈ ${fmt(c.total)}${m==="line"?`<br><span class="hint" style="margin:0">${p.dia}" — ${durTxt(p)}</span>`:""}`})()}</td>
     <td><button class="btn ${s?"ghost":""}" data-ls="${esc(v.no)}" type="button">${s?"عرض":"احتساب"}</button></td></tr>`}).join("")||`<tr><td colspan="8" class="hint">لا توجد مخالفات جسيمة ضمن الفلتر.</td></tr>`;
   if(list.length>400)$("#lsRows").insertAdjacentHTML("beforeend",`<tr><td colspan="8" class="hint">يُعرض أول 400 — ضيّق الفترة أو استخدم البحث.</td></tr>`);
 }
@@ -1359,7 +1368,7 @@ function fillLossForm(){
   $("#lcInfo").innerHTML=`<div class="line"><span>المخالف</span><b>${esc(v.name||"—")} ${v.nid?`<span dir="ltr">(${esc(v.nid)})</span>`:""}</b></div>
     <div class="line"><span>المخالفة</span><b style="font-weight:500">${esc(it.bnd||"")} - ${esc(it.desc||"")} — ${esc(it.sev||"")}</b></div>
     <div class="line"><span>نوع العقار / المحافظة</span><b>${esc(v.prop||"—")} — ${esc(v.gov||"")}</b></div>
-    <div class="line"><span>تاريخ الزيارة</span><b>${dmy(compDate(v.start))}</b></div>${LC.saved?`<div class="rule">يوجد احتساب محفوظ لهذه المخالفة — أي تعديل ثم حفظ يستبدله.</div>`:""}`;
+    <div class="line"><span>تاريخ الزيارة</span><b>${dmy(compDate(v.start))}</b></div>${LC.saved?`<div class="rule">يوجد احتساب محفوظ لهذه المخالفة — أي تعديل ثم حفظ يستبدله.</div>`:`<div class="rule warn">القيم المعروضة تقديرية بافتراضات أولية — عدّل القطر ومدة التسرب حسب إفادة المفتش ثم احفظ.</div>`}`;
   document.querySelectorAll('[name="lcM"]').forEach(r=>r.checked=r.value===p.method);
   $("#lcCat").innerHTML=rates.map(r=>`<option${r.name===p.cat?" selected":""}>${esc(r.name)}</option>`).join("");
   $("#lcStart").value=p.start||"";$("#lcEnd").value=p.end||"";$("#lcMax").checked=!!p.useMax;$("#lcSewer").checked=!!p.sewer;
