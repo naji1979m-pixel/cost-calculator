@@ -450,7 +450,7 @@ const VMAP={
 "إلقاء أو وضع أو التسبب في وصول مواد خطرة، صلبة أو سائلة أو غازية أو ملوثة إلى الخزانات أو المحطات أو خطوط المياه والصرف الصحي أو توصيلات المياه أو الصرف الصحي أو المطابق أو غرف التفتيش":MANHOLE,
 "إلقاء أو وضع أو التسبب في وصول مواد ضارة صلبة أو سائلة أو غازية إلى غرف التفتيش أو المطابق أو توصيلات الصرف الصحي":MANHOLE,
 "الاعتداء على حرم خطوط المياه رئيسية والفرعية وكذلك حرم الآبار التابعة للمرخص لهم":[...WMAIN,...WSUB],
-"فتح العداد بشكل غير نظامي بعد قفله من قبل مقدم الخدمة":METER,
+"فتح العداد بشكل غير نظامي بعد قفله من قبل مقدم الخدمة":[],
 "تعمد كسر أو إتلاف طبعة خط مياه رئيسي.":WMAIN,
 "تعمد كسر أو إتلاف طبعة خط مياه فرعي.":WSUB,
 "كسر تمديدات المياه الرئيسية.":WMAIN,
@@ -555,7 +555,12 @@ document.addEventListener("change",e=>{const el=e.target;if(!el.dataset.k||el.ta
   if(el.dataset.k==="info.vtype"){autoBoq(el.value);renderBoq()}
   if(el.dataset.k==="lb.cat")delete S.lb.R;
   recalc()});
-function autoBoq(v){const codes=VMAP[v]||[];const r0=S.boq[0];
+/* قواعد خاصة لبعض المخالفات: تكلفة إصلاح ثابتة و/أو بدون منفعة مفقودة */
+const VRULES={"فتح العداد بشكل غير نظامي بعد قفله من قبل مقدم الخدمة":{fixed:115,noLoss:true,noForm:"هذه المخالفة لا يُعد لها نموذج حساب تكاليف في منصة ممتثل — تُضاف تكلفة الإصلاح (115 ريال) على العميل تلقائياً في الفاتورة."}};
+const codeShow=c=>String(c||"").startsWith("FIX-")?"تكلفة ثابتة":(c||"");
+const noLossNow=()=>!!VRULES[S.info.vtype]?.noLoss;
+function autoBoq(v){const codes=VMAP[v]||[];const r0=S.boq[0],rule=VRULES[v];
+  if(rule?.fixed){if(S.boq.length<=1&&(!r0||!r0.code||r0.auto))S.boq=[{code:"FIX-"+rule.fixed,ag:"—",no:"—",desc:"تكلفة إصلاح ثابتة — "+v.replace(/[.،]$/,""),price:rule.fixed,q:1,auto:true}];return}
   if(S.boq.length<=1&&(!r0||!r0.code||r0.auto)){const it=cat.find(c=>c.item_code===codes[0]&&c.active);S.boq=[it?{...snap(it),q:r0?.q||1,auto:true}:{code:null,q:1}]}}
 const snap=it=>({code:it.item_code,ag:it.agreement,no:it.item_no,desc:it.description,price:num(it.price)});
 
@@ -567,7 +572,7 @@ function renderBoq(){
     return`<option value="">— اختر بند —</option>${extra}`+(a.length?`<optgroup label="البنود المرتبطة بالمخالفة">${a.join("")}</optgroup><optgroup label="باقي البنود">${b.join("")}</optgroup>`:b.join(""))};
   $("#boqRows").innerHTML=S.boq.map((r,k)=>`<tr data-r="${k}">
     <td style="min-width:200px"><select data-b="code">${sel(r)}</select></td>
-    <td>${esc(r.ag||"")}</td><td>${esc(r.no||"")}</td><td>${esc(r.code||"")}</td>
+    <td>${esc(r.ag||"")}</td><td>${esc(r.no||"")}</td><td>${esc(codeShow(r.code))}</td>
     <td class="num">${r.code?fmt(num(r.price)):""}</td>
     <td style="width:90px"><input type="number" min="0" step="any" data-b="q" value="${r.q??""}"></td>
     <td class="num">${fmt(r.code?num(r.price)*num(r.q):0)}</td>
@@ -630,8 +635,12 @@ function compute(){
   const m3=R.monthly*months,water=m3*R.water,sewer=S.lb.sewer?m3*R.sewer:0;
   const brH=hours(S.br.brDate,S.br.brTime,S.br.offDate,S.br.offTime);
   const brM3=num(S.br.m3),brVal=brM3*R.water;
-  const loss=water+sewer+brVal,lab=num(S.ex.lab),sub=repair+loss+lab,vat=S.ex.vat?sub*0.15:0;
-  return{ext,boq,eq,pt,repair,R,d,bad,months,capped,m3,water,sewer,brH,brM3,brVal,loss,lab,sub,vat,total:sub+vat};
+  if(noLossNow())return finish({ext,boq,eq,pt,repair,R,d:0,bad:false,months:0,capped:false,m3:0,water:0,sewer:0,brH,brM3:0,brVal:0,noLoss:true});
+  return finish({ext,boq,eq,pt,repair,R,d,bad,months,capped,m3,water,sewer,brH,brM3,brVal});
+}
+function finish(c){
+  const loss=c.water+c.sewer+c.brVal,lab=num(S.ex.lab),sub=c.repair+loss+lab,vat=S.ex.vat?sub*0.15:0;
+  return{...c,loss,lab,sub,vat,total:sub+vat};
 }
 function recalc(skipTables){
   const c=compute();
@@ -644,6 +653,7 @@ function recalc(skipTables){
   $("#boqSum").textContent=fmt(c.boq);$("#eqSum").textContent=fmt(c.eq);$("#ptSum").textContent=fmt(c.pt);
   $("#lbDays").value=c.bad?"تاريخ النهاية قبل البداية":(c.d??"");
   const R=c.R;
+  if(c.noLoss){$("#lbCalc").innerHTML=`<div class="line"><b>هذه المخالفة بدون منفعة مفقودة</b><b>0.00</b></div><div class="rule">تكلفة الإصلاح ثابتة ${fmt(VRULES[S.info.vtype].fixed||0)} ريال وتُضاف على العميل تلقائياً في الفاتورة، ولا تُحتسب منفعة مفقودة.</div>`}else
   $("#lbCalc").innerHTML=`
     <div class="line"><span>الأشهر المحتسبة</span><b>${fmt(c.months)} شهر${c.capped?` <span class="warn">(تم التقييد بالحد الأقصى ${R.months} أشهر)</span>`:""}</b></div>
     <div class="line"><span>الكمية المفقودة = ${fmt(R.monthly)} م³ × ${fmt(c.months)}</span><b>${fmt(c.m3)} م³</b></div>
@@ -676,9 +686,9 @@ function missingList(c){
   if(!S.boq.some(r=>r.code&&num(r.q)>0))m.push("بند واحد على الأقل من جدول الكميات بكمية");
   if(S.boq.some(r=>r.code&&!(num(r.q)>0)))m.push("كمية بند في جدول الكميات");
   if(S.eq.some(r=>r.n&&!(num(r.c)>0&&num(r.h)>0)))m.push("العدد والوقت للمعدات المختارة");
-  if(!S.lb.cat)m.push("الفئة");
-  if(!S.lb.useMax){if(!S.lb.start)m.push("تاريخ بداية المخالفة");if(!S.lb.end)m.push("تاريخ نهاية المخالفة");if(c.bad)m.push("تاريخ النهاية يجب أن يكون بعد البداية")}
-  if(S.br.brDate||S.br.offDate||num(S.br.m3)>0){
+  if(!c.noLoss&&!S.lb.cat)m.push("الفئة");
+  if(!c.noLoss&&!S.lb.useMax){if(!S.lb.start)m.push("تاريخ بداية المخالفة");if(!S.lb.end)m.push("تاريخ نهاية المخالفة");if(c.bad)m.push("تاريخ النهاية يجب أن يكون بعد البداية")}
+  if(!c.noLoss&&(S.br.brDate||S.br.offDate||num(S.br.m3)>0)){
     if(!S.br.brDate||!S.br.brTime)m.push("تاريخ ووقت وقوع الكسر");
     if(!S.br.offDate||!S.br.offTime)m.push("تاريخ ووقت بدء إقفال المياه");
     if(Number.isNaN(c.brH))m.push("وقت الإقفال يجب أن يكون بعد وقت الكسر");
@@ -699,6 +709,9 @@ function renderState(c){
   $("#approveBtn").disabled=m.length>0;
   $("#pdfBtn").hidden=!approved;$("#xlsBtn").hidden=!approved;
   $("#delBtn").hidden=!S.id||(approved&&!isAdmin);
+  const nf=VRULES[S.info.vtype]?.noForm;
+  if(nf&&!approved){$("#approveBtn").disabled=true;$("#saveDraftBtn").hidden=true;
+    $("#readyBox").innerHTML=`<div class="missing" style="border-color:var(--water);color:var(--ink)"><b>لا يلزم نموذج لهذه المخالفة</b>${esc(nf)}</div>`;return}
   $("#readyBox").innerHTML=locked()?"":m.length?`<div class="missing"><b>أكمل البيانات التالية لتفعيل الاعتماد وتحميل PDF:</b><ul>${m.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:`<div class="ready">البيانات مكتملة — النموذج جاهز للاعتماد.</div>`;
 }
 
@@ -839,7 +852,7 @@ function buildSheet(c){
   const rows=[];
   for(let k=0;k<13;k++){
     const b=boq[k],e=eq[k];let L="";
-    const bq=b?`${td(esc(b.ag),{c:"big"})}${td(esc(b.no),{c:"big"})}${td(esc(b.code),{c:"big"})}${td(fmt(num(b.price)),{c:"big"})}${td(fmt(num(b.price)*b.q)+(b.q!==1?`<br><span style="font-size:9px;font-weight:400">الكمية ${b.q}</span>`:""),{c:"big"})}`:td("").repeat(5);
+    const bq=b?`${td(esc(b.ag),{c:"big"})}${td(esc(b.no),{c:"big"})}${td(esc(codeShow(b.code)),{c:"big"})}${td(fmt(num(b.price)),{c:"big"})}${td(fmt(num(b.price)*b.q)+(b.q!==1?`<br><span style="font-size:9px;font-weight:400">الكمية ${b.q}</span>`:""),{c:"big"})}`:td("").repeat(5);
     const eqc=e?`${td(esc(e.n),{c:"wrap",st:"font-size:9px"})}${td(e.c)}${td(e.h)}${td(fmt(e.p))}${td(fmt(e.p*e.c*e.h))}`:td("").repeat(5);
     if(k===0)L=td("مقاس تمديدات الشبكة(مياه/صرف)",{c:"lb"})+td(esc(S.ext.size),{cs:4});
     else if(k===1)L=td("نوع التمديدات",{c:"lb"})+td(esc(S.ext.type),{cs:4});
@@ -933,7 +946,7 @@ function excelCells(S,c,h){
   const pt=S.pt.filter(r=>r.d||num(r.p)).slice(0,8);
   for(let k=0;k<13;k++){
     const row=12+k,b=boq[k],e=eq[k];
-    if(b){m["B"+row]=Number(b.ag)||b.ag;m["C"+row]=Number(b.no)||b.no;m["D"+row]=Number(b.code)||b.code;m["E"+row]=num(b.price);m["F"+row]=num(b.price)*num(b.q)}
+    if(b){m["B"+row]=Number(b.ag)||b.ag;m["C"+row]=Number(b.no)||b.no;m["D"+row]=String(b.code).startsWith("FIX-")?"تكلفة ثابتة":(Number(b.code)||b.code);m["E"+row]=num(b.price);m["F"+row]=num(b.price)*num(b.q)}
     if(e){m["G"+row]=e.n;m["H"+row]=num(e.c);m["I"+row]=num(e.h);m["J"+row]=num(e.p);m["K"+row]=num(e.p)*num(e.c)*num(e.h)}
   }
   m.M12=S.ext.size||"";m.M13=S.ext.type||"";m.M14=num(S.ext.len)||"";m.M15=c.ext||"";
