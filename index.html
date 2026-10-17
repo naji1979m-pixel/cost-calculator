@@ -368,7 +368,7 @@ dialog h3{margin:0;padding:12px 16px;background:var(--soft);border-bottom:1px so
           <label class="f">إلى تاريخ<input type="date" id="lsTo"></label>
           <label class="f">بحث<input id="lsQ" placeholder="رقم الزيارة أو اسم المخالف"></label>
           <label class="f">المنطقة<select id="lsRegion"></select></label>
-          <div class="f">المحافظة<div class="gov-ms" id="lsGovBox"><button type="button" class="gov-btn" id="lsGovBtn">كل المحافظات</button><div class="gov-panel" id="lsGovPanel" hidden><div class="gov-quick"><button type="button" data-unit="north">الوحدة الشمالية</button><button type="button" data-unit="south">الوحدة الجنوبية</button><button type="button" data-unit="dammam">وحدة أعمال الدمام</button><button type="button" data-unit="all">الكل</button><button type="button" data-unit="none">مسح</button></div><div id="lsGov"></div></div></div></div>
+          <div class="f">المحافظة<div class="gov-ms" id="lsGovBox"><button type="button" class="gov-btn" id="lsGovBtn">كل المحافظات</button><div class="gov-panel" id="lsGovPanel" hidden><div class="gov-quick"><button type="button" data-unit="north">الوحدة الشمالية</button><button type="button" data-unit="south">الوحدة الجنوبية</button><button type="button" data-unit="dammam">وحدة أعمال الدمام</button><button type="button" data-unit="all">الكل</button><button type="button" data-unit="none">مسح</button></div><div id="lsGov"><div class="hint" style="margin:6px">اضغط "تحديث القائمة" أولاً لتظهر المحافظات</div></div></div></div></div>
           <label class="f">الحالة<select id="lsSt"><option value="">الكل</option><option value="done">محتسبة</option><option value="todo">غير محتسبة</option></select></label>
         </div>
         <label class="check"><input type="checkbox" id="lsAll">عرض كل المخالفات الجسيمة (وليس فقط ما فيه فاقد مياه)</label>
@@ -1328,10 +1328,14 @@ function defaultParams(v){
 async function loadLossList(){
   const sum=$("#lsSum");sum.textContent="جاري تحميل المخالفات الجسيمة لكل المناطق…";
   const all=[];
-  for(let i=0;i<40000;i+=1000){
+  let last="",size=500,tries=0;
+  for(let n=0;n<400;n++){
     let q=sb.from("cost_visits").select("visit_no,violator_name,start:data->>start,prop:data->>prop,region:data->>region,gov:data->>gov,items:data->items").neq("visit_no","__META__").contains("data",{items:[{sev:"جسيمة"}]});
-    const {data,error}=await q.order("visit_no").range(i,i+999);if(error){sum.textContent="تعذر التحميل: "+error.message;return}
-    if(!data?.length)break;all.push(...data);sum.textContent=`جاري التحميل… ${all.length}`;if(data.length<1000)break;
+    if(last)q=q.gt("visit_no",last);
+    const {data,error}=await q.order("visit_no").limit(size);
+    if(error){if(/timeout/i.test(error.message)&&tries<4){tries++;size=Math.max(50,Math.floor(size/2));sum.textContent=`جاري التحميل… ${all.length} (إعادة المحاولة بدفعات أصغر)`;continue}
+      sum.textContent="تعذر التحميل: "+error.message;return}
+    tries=0;if(!data?.length)break;all.push(...data);last=data[data.length-1].visit_no;sum.textContent=`جاري التحميل… ${all.length}`;if(data.length<size)break;
   }
   lossRows=all.map(r=>r.items?{no:r.visit_no,name:r.violator_name,start:r.start,prop:r.prop,region:r.region,gov:r.gov,items:r.items}:r.data).filter(v=>v&&sevItems(v).length);
   lossSaved={};
