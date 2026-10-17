@@ -110,6 +110,18 @@ dialog h3{margin:0;padding:12px 16px;background:var(--soft);border-bottom:1px so
 .range-panel .rp-act .btn{width:auto;padding:6px 14px;border:1px solid var(--water)}
 .combo-btn{position:absolute;left:4px;top:50%;transform:translateY(-50%);border:none;background:var(--soft);color:var(--ink2);width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:.95rem}
 .combo-list{position:absolute;top:calc(100% + 4px);right:0;left:0;max-height:300px;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px #0003;z-index:30}
+.gov-ms{position:relative}
+.gov-btn{width:100%;text-align:right;font:inherit;font-size:.95rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:8px 10px;cursor:pointer}
+.gov-btn::after{content:"▾";float:left;color:var(--muted)}
+.gov-panel{position:absolute;top:calc(100% + 4px);right:0;left:0;min-width:230px;max-height:340px;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px #0003;z-index:30;padding:8px}
+.gov-quick{display:flex;flex-wrap:wrap;gap:5px;padding-bottom:8px;margin-bottom:4px;border-bottom:1px solid var(--line)}
+.gov-quick button{border:1px solid var(--water);background:var(--bg);color:var(--water);border-radius:999px;padding:4px 10px;font:inherit;font-size:.78rem;cursor:pointer}
+.gov-quick button:hover{background:var(--water);color:#fff}
+#lsGov label{display:flex;align-items:center;gap:9px;padding:7px 4px;border-radius:6px;cursor:pointer;font-size:.9rem;color:var(--ink)}
+#lsGov label:hover{background:var(--soft)}
+#lsGov input{appearance:none;-webkit-appearance:none;width:18px;height:18px;min-width:18px;padding:0;margin:0;border:2px solid var(--water);border-radius:50%;background:var(--card);display:grid;place-content:center;cursor:pointer}
+#lsGov input:checked{background:var(--water)}
+#lsGov input:checked::after{content:"";width:6px;height:6px;border-radius:50%;background:#fff}
 .combo-list button{display:flex;justify-content:space-between;gap:10px;width:100%;text-align:right;border:none;border-bottom:1px solid var(--line);background:none;color:var(--ink);font:inherit;font-size:.88rem;padding:9px 12px;cursor:pointer}
 .combo-list button:hover,.combo-list button:focus{background:var(--soft)}
 .combo-list .cl-no{direction:ltr;font-weight:600;white-space:nowrap}
@@ -356,7 +368,7 @@ dialog h3{margin:0;padding:12px 16px;background:var(--soft);border-bottom:1px so
           <label class="f">إلى تاريخ<input type="date" id="lsTo"></label>
           <label class="f">بحث<input id="lsQ" placeholder="رقم الزيارة أو اسم المخالف"></label>
           <label class="f">المنطقة<select id="lsRegion"></select></label>
-          <label class="f">المحافظة<select id="lsGov"></select></label>
+          <div class="f">المحافظة<div class="gov-ms" id="lsGovBox"><button type="button" class="gov-btn" id="lsGovBtn">كل المحافظات</button><div class="gov-panel" id="lsGovPanel" hidden><div class="gov-quick"><button type="button" data-unit="north">الوحدة الشمالية</button><button type="button" data-unit="south">الوحدة الجنوبية</button><button type="button" data-unit="dammam">وحدة أعمال الدمام</button><button type="button" data-unit="all">الكل</button><button type="button" data-unit="none">مسح</button></div><div id="lsGov"></div></div></div></div>
           <label class="f">الحالة<select id="lsSt"><option value="">الكل</option><option value="done">محتسبة</option><option value="todo">غير محتسبة</option></select></label>
         </div>
         <label class="check"><input type="checkbox" id="lsAll">عرض كل المخالفات الجسيمة (وليس فقط ما فيه فاقد مياه)</label>
@@ -1328,11 +1340,21 @@ async function loadLossList(){
   $("#lsRegion").innerHTML=selOpts(regs,SCOPE?.region&&regs.includes(SCOPE.region)?SCOPE.region:"","كل المناطق");lsGovFill(SCOPE?.gov||"");
   renderLossList();
 }
-function lsGovFill(cur){const r=$("#lsRegion").value;const g=[...new Set(lossRows.filter(v=>!r||v.region===r).map(v=>v.gov).filter(Boolean))].sort();$("#lsGov").innerHTML=selOpts(g,g.includes(cur)?cur:"","كل المحافظات")}
+const GOV_UNITS={north:["حفر الباطن","القيصومة","الخفجي","النعيرية","قرية العليا","القرية العليا","مليجة"],south:["الأحساء","الإحساء","بقيق"],dammam:["الدمام","الخبر","الظهران","الجبيل","البيضاء","البيظاء","القطيف","رأس تنورة","سيهات","صفوى","عنك"]};
+function lsGovFill(cur){const r=$("#lsRegion").value;const g=[...new Set(lossRows.filter(v=>!r||v.region===r).map(v=>v.gov).filter(Boolean))].sort();const pre=Array.isArray(cur)?cur:(cur?[cur]:[]);
+  $("#lsGov").innerHTML=g.map(x=>`<label><input type="checkbox" value="${esc(x)}"${pre.includes(x)?" checked":""}><span>${esc(x)}</span></label>`).join("")||`<div class="hint" style="margin:6px">لا توجد محافظات</div>`;lsGovLabel()}
+function lsGovSel(){return[...document.querySelectorAll("#lsGov input:checked")].map(i=>i.value)}
+function lsGovLabel(){const s=lsGovSel(),n=document.querySelectorAll("#lsGov input").length;$("#lsGovBtn").textContent=!s.length||s.length===n?"كل المحافظات":s.length<=2?s.map(govShort).join("، "):`${s.length} محافظات مختارة`}
+function lsGovChanged(){lsGovLabel();if(lossRows.length)renderLossList()}
+$("#lsGovBtn").addEventListener("click",()=>{const p=$("#lsGovPanel");p.hidden=!p.hidden});
+document.addEventListener("click",e=>{if(!$("#lsGovBox").contains(e.target))$("#lsGovPanel").hidden=true});
+$("#lsGov").addEventListener("change",lsGovChanged);
+$("#lsGovPanel .gov-quick").addEventListener("click",e=>{const b=e.target.closest("[data-unit]");if(!b)return;const u=b.dataset.unit;
+  document.querySelectorAll("#lsGov input").forEach(i=>{i.checked=u==="all"?true:u==="none"?false:GOV_UNITS[u].some(k=>i.value.includes(k))});lsGovChanged()});
 function renderLossList(){
-  const f=$("#lsFrom").value,t=$("#lsTo").value,q=$("#lsQ").value.trim(),st=$("#lsSt").value,all=$("#lsAll").checked,rg=$("#lsRegion").value,gv=$("#lsGov").value;
+  const f=$("#lsFrom").value,t=$("#lsTo").value,q=$("#lsQ").value.trim(),st=$("#lsSt").value,all=$("#lsAll").checked,rg=$("#lsRegion").value,gv=lsGovSel();
   let list=lossRows.filter(v=>all||sevItems(v).some(i=>LOSS_BANDS.has(String(i.bnd).trim())));
-  if(rg)list=list.filter(v=>v.region===rg);if(gv)list=list.filter(v=>v.gov===gv);
+  if(rg)list=list.filter(v=>v.region===rg);if(gv.length)list=list.filter(v=>gv.includes(v.gov));
   list=list.filter(v=>{const d=compDate(v.start);return(!f||d>=f)&&(!t||d<=t)});
   if(q)list=list.filter(v=>v.no.includes(q.toUpperCase())||(v.name||"").includes(q));
   if(st)list=list.filter(v=>st==="done"?!!lossSaved[v.no]:!lossSaved[v.no]);
@@ -1353,7 +1375,7 @@ function renderLossList(){
     <td><button class="btn ${s?"ghost":""}" data-ls="${esc(v.no)}" type="button">${s?"عرض":"احتساب"}</button></td></tr>`}).join("")||`<tr><td colspan="9" class="hint">لا توجد مخالفات جسيمة ضمن الفلتر.</td></tr>`;
   if(list.length>400)$("#lsRows").insertAdjacentHTML("beforeend",`<tr><td colspan="9" class="hint">يُعرض أول 400 — ضيّق الفترة أو استخدم البحث (الملخص يشمل الكل).</td></tr>`);
 }
-["#lsFrom","#lsTo","#lsQ","#lsSt","#lsAll","#lsGov"].forEach(s=>$(s).addEventListener("input",()=>lossRows.length&&renderLossList()));
+["#lsFrom","#lsTo","#lsQ","#lsSt","#lsAll"].forEach(s=>$(s).addEventListener("input",()=>lossRows.length&&renderLossList()));
 $("#lsRegion").addEventListener("input",()=>{lsGovFill("");renderLossList()});
 $("#lsLoad").onclick=loadLossList;
 $("#lsRows").addEventListener("click",e=>{const b=e.target.closest("[data-ls]");if(b)openLossCalc(b.dataset.ls)});
@@ -1471,8 +1493,8 @@ function lossReportRows(){
   });
 }
 function lossFilterText(){
-  const f=$("#lsFrom").value,t=$("#lsTo").value,r=$("#lsRegion").value,g=$("#lsGov").value;
-  return[`المنطقة: ${r||"كل المناطق"}`,`المحافظة: ${g?govShort(g):"كل المحافظات"}`,`الفترة: ${f?dmy(f):"البداية"} — ${t?dmy(t):"اليوم"}`,$("#lsAll").checked?"كل المخالفات الجسيمة":"الجسيمة التي فيها فاقد مياه"].join("   |   ");
+  const f=$("#lsFrom").value,t=$("#lsTo").value,r=$("#lsRegion").value,g=lsGovSel(),gn=document.querySelectorAll("#lsGov input").length;
+  return[`المنطقة: ${r||"كل المناطق"}`,`المحافظة: ${g.length&&g.length<gn?g.map(govShort).join("، "):"كل المحافظات"}`,`الفترة: ${f?dmy(f):"البداية"} — ${t?dmy(t):"اليوم"}`,$("#lsAll").checked?"كل المخالفات الجسيمة":"الجسيمة التي فيها فاقد مياه"].join("   |   ");
 }
 function lossAgg(rows){
   const by={};rows.forEach(r=>{const k=(r.region||"—")+"|"+(r.gov||"—");const a=by[k]=by[k]||{region:r.region||"—",gov:r.gov||"—",n:0,nRate:0,nLine:0,nSaved:0,m3:0,total:0};
