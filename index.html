@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="حساب التكاليف">
-<meta name="theme-color" content="#0d3240">
+<meta name="theme-color" content="#06182b">
 <title>منصة حساب تكاليف الإصلاح والمنفعة المفقودة</title>
 <meta property="og:title" content="منصة حساب تكاليف الإصلاح والمنفعة المفقودة">
 <meta property="og:description" content="الوحدة الشمالية — حساب تكاليف الإصلاح حسب جدول الكميات والمنفعة المفقودة وإصدار النموذج PDF">
@@ -16,9 +16,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
-:root{--ink:#0d3240;--ink2:#3d5a66;--muted:#6f8790;--line:#d5e0e4;--soft:#eef4f6;--bg:#f7fafb;--card:#fff;--water:#0f7ea8;--water-soft:#e2f2f8;--warn:#a4531a;--ok:#1d7a4a;--total-bg:#0d3240;--total-fg:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#e3eef2;--ink2:#b4c7ce;--muted:#86a0a9;--line:#2b4049;--soft:#17262c;--bg:#0f1b20;--card:#14232a;--water:#4cb9e0;--water-soft:#163845;--warn:#e8a36b;--ok:#5fcf93;--total-bg:#0a3a4c}}
-:root[data-theme="dark"]{--ink:#e3eef2;--ink2:#b4c7ce;--muted:#86a0a9;--line:#2b4049;--soft:#17262c;--bg:#0f1b20;--card:#14232a;--water:#4cb9e0;--water-soft:#163845;--warn:#e8a36b;--ok:#5fcf93;--total-bg:#0a3a4c}
+:root{--ink:#e8f1fb;--ink2:#a9c1d9;--muted:#7d98b6;--line:#1d3d61;--soft:#0f2a48;--bg:#06182b;--card:#0b223c;--water:#3b9cff;--water-soft:#0f2f52;--warn:#f2a65e;--ok:#3fd6a4;--total-bg:#0a2440;--total-fg:#fff;--side-w:250px;--glow:rgba(59,156,255,.28);color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+
+
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *,*::before,*::after{box-sizing:inherit}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans Arabic",Tahoma,"Segoe UI",sans-serif;font-size:15px;line-height:1.6}
@@ -145,6 +145,83 @@ dialog h3{margin:0;padding:12px 16px;background:var(--soft);border-bottom:1px so
 .sheet .big{font-size:13px;font-weight:700}
 .sheet .title{font-size:24px;font-weight:700}
 .sheet .tot{font-size:12px;font-weight:700}
+
+/* ===== التصميم الجديد: شريط جانبي + لوحة مؤشرات ===== */
+body{background:radial-gradient(1200px 600px at 85% -10%,#0f3a6b 0%,transparent 60%),radial-gradient(900px 500px at 0% 100%,#0b2f55 0%,transparent 55%),var(--bg);background-attachment:fixed;min-height:100vh}
+.shell{display:flex;min-height:100vh}
+.side{position:fixed;top:0;bottom:0;right:0;width:var(--side-w);background:linear-gradient(180deg,#0a2442 0%,#071a30 100%);border-left:1px solid var(--line);display:flex;flex-direction:column;z-index:40;padding:calc(14px + env(safe-area-inset-top,0px)) 12px 14px;overflow-y:auto}
+.side .brand{display:flex;align-items:center;justify-content:center;background:#fff;border-radius:12px;padding:8px 10px;margin-bottom:18px}
+.side .brand img{height:40px;max-width:100%}
+.side nav{display:flex;flex-direction:column;gap:4px}
+.side nav button{display:flex;align-items:center;gap:12px;width:100%;border:1px solid transparent;background:none;color:var(--ink2);font:inherit;font-size:.92rem;padding:10px 12px;border-radius:10px;cursor:pointer;text-align:right}
+.side nav button svg{width:20px;height:20px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.side nav button:hover{background:rgba(59,156,255,.08);color:var(--ink)}
+.side nav button.on{background:linear-gradient(90deg,#1f6fd1,#2f8bff);color:#fff;box-shadow:0 6px 18px rgba(47,139,255,.35)}
+.side .sep{height:1px;background:var(--line);margin:10px 4px}
+.side .foot{margin-top:auto;padding-top:12px;font-size:.75rem;color:var(--muted);text-align:center}
+.main{flex:1;min-width:0;margin-right:var(--side-w)}
+.main .wrap{max-width:1240px;padding:16px 22px 24px}
+header.topbar{border-bottom:1px solid var(--line);padding:10px 14px;align-items:center}
+.topbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px;padding:10px 14px;background:rgba(11,34,60,.75);border:1px solid var(--line);border-radius:14px;backdrop-filter:blur(6px)}
+.topbar h1{margin:0;font-size:1.05rem;font-weight:600}
+.topbar .who{margin-inline-start:auto;font-size:.82rem;color:var(--ink2);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.menu-btn{display:none;border:1px solid var(--line);background:var(--soft);color:var(--ink);width:38px;height:38px;border-radius:10px;cursor:pointer;place-items:center}
+.menu-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+.side-mask{display:none}
+.tabs{display:none!important}
+.totalbar{right:var(--side-w)}
+section.block{background:linear-gradient(180deg,rgba(14,42,74,.92),rgba(10,32,58,.92));border-color:var(--line);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+section.block>h2{background:rgba(59,156,255,.07)}
+input,select,textarea{background:#081d34}
+.banner{background:rgba(59,156,255,.1);border:1px solid var(--line);border-radius:12px}
+.btn.solid{box-shadow:0 4px 14px rgba(59,156,255,.3)}
+dialog{background:#0b223c}
+/* لوحة المؤشرات */
+.hero{position:relative;overflow:hidden;border-radius:18px;border:1px solid var(--line);background:linear-gradient(120deg,#0a2a52 0%,#08203f 55%,#0b3566 100%);padding:30px 28px 34px;margin-bottom:16px;min-height:180px}
+.hero h2{position:relative;z-index:1;margin:0 0 8px;font-size:1.7rem;font-weight:700;line-height:1.35}
+.hero p{position:relative;z-index:1;margin:0;color:var(--ink2);font-size:1rem}
+.hero svg.deco{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.dash-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.chip{border:1px solid var(--line);background:rgba(11,34,60,.8);color:var(--ink2);border-radius:999px;padding:6px 14px;font:inherit;font-size:.85rem;cursor:pointer}
+.chip.on{border-color:var(--water);color:#fff;background:rgba(59,156,255,.22)}
+.dash-bar .st{margin-inline-start:auto;font-size:.82rem;color:var(--muted)}
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.kpi{position:relative;border:1px solid var(--line);border-radius:16px;padding:16px;background:linear-gradient(180deg,rgba(16,48,84,.95),rgba(10,32,58,.95));display:flex;gap:12px;align-items:center;min-width:0}
+.kpi.g{border-color:rgba(63,214,164,.35);box-shadow:inset 0 0 0 1px rgba(63,214,164,.08),0 0 24px rgba(63,214,164,.08)}
+.kpi.b{border-color:rgba(59,156,255,.35);box-shadow:inset 0 0 0 1px rgba(59,156,255,.08),0 0 24px rgba(59,156,255,.08)}
+.kpi .ic{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;flex-shrink:0;background:rgba(59,156,255,.14)}
+.kpi.g .ic{background:rgba(63,214,164,.14)}
+.kpi .ic svg{width:26px;height:26px;stroke:var(--water);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.kpi.g .ic svg{stroke:var(--ok)}
+.kpi .tx{min-width:0}
+.kpi .lb{font-size:.82rem;color:var(--ink2)}
+.kpi .v{font-size:1.45rem;font-weight:700;line-height:1.25;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kpi.g .v{color:#7ff0c7}
+.kpi .u{font-size:.78rem;color:var(--muted)}
+.dash-grid{display:grid;grid-template-columns:1.25fr 1fr;gap:14px;margin-bottom:14px}
+.panel{border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,rgba(14,42,74,.92),rgba(10,32,58,.92));padding:16px;min-width:0}
+.panel h3{margin:0 0 10px;font-size:1rem;font-weight:600}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.82rem;color:var(--ink2);margin-bottom:6px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-inline-end:6px;vertical-align:middle}
+.donut-wrap{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.donut-wrap svg{width:190px;height:190px;flex-shrink:0}
+.dlist{flex:1;min-width:180px;display:flex;flex-direction:column;gap:10px;font-size:.88rem}
+.dlist div{display:flex;align-items:center;gap:8px}
+.dlist i{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.dlist span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dlist b{font-variant-numeric:tabular-nums;color:var(--ink2);font-weight:600}
+.formula{font-size:.82rem;color:var(--ink2);border:1px dashed var(--line);border-radius:10px;padding:10px 12px;margin-top:10px;line-height:1.8}
+@media (max-width:1200px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:980px){
+  .main{margin-right:0}.totalbar{right:0}
+  .side{transform:translateX(105%);transition:transform .25s ease;box-shadow:-10px 0 40px rgba(0,0,0,.5)}
+  body.side-open .side{transform:none}
+  body.side-open .side-mask{display:block;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:35}
+  .menu-btn{display:grid}
+  .dash-grid{grid-template-columns:1fr}
+  .main .wrap{padding:12px}
+}
+@media (max-width:600px){.kpis{grid-template-columns:1fr 1fr}.kpi{flex-direction:column;align-items:flex-start;padding:12px}.kpi .v{font-size:1.15rem}.hero{padding:22px 18px 26px}.hero h2{font-size:1.3rem}.donut-wrap svg{width:160px;height:160px;margin:0 auto}}
 @media print{body{background:#fff;padding:0}#app,#login,.totalbar,dialog,.toast{display:none!important}#sheetHost{position:static;left:auto}@page{size:A4 landscape;margin:0}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -166,19 +243,25 @@ dialog h3{margin:0;padding:12px 16px;background:var(--soft);border-bottom:1px so
 </div>
 
 <!-- ===== التطبيق ===== -->
-<div id="app" hidden>
+<div id="app" class="shell" hidden>
+<aside class="side" id="side">
+  <div class="brand"><img id="sideLogo" alt="شركة المياه الوطنية"></div>
+  <nav id="sideNav"><button type="button" data-go="home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><span>الرئيسية</span></button><button type="button" data-go="form:sec-info"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg><span>بيانات المخالفة</span></button><button type="button" data-go="form:sec-repair"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg><span>تكاليف الإصلاح</span></button><button type="button" data-go="loss"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3s7 7.5 7 12a7 7 0 0 1-14 0c0-4.5 7-12 7-12z"/></svg><span>المنفعة المفقودة</span></button><button type="button" data-go="recs"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M9 13h6M9 17h6"/></svg><span>سجل النماذج</span></button><button type="button" data-go="boq"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/></svg><span>جدول الكميات</span></button><button type="button" data-go="rates"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="7" cy="7" r="3"/><circle cx="17" cy="17" r="3"/><path d="M5 19L19 5"/></svg><span>معدلات الفئات</span></button><button type="button" data-go="comp"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M12 18v-6M9 15l3-3 3 3"/></svg><span>الملف الشامل</span></button><div class="sep"></div><button type="button" data-go="admin"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>إدارة النظام</span></button></nav>
+  <div class="foot">إدارة المخالفات والتفتيش</div>
+</aside>
+<div class="side-mask" id="sideMask"></div>
+<main class="main">
 <div class="wrap">
-  <header class="top">
-    <div>
-      <h1>حساب تكاليف الإصلاح والمنفعة المفقودة</h1>
-      <p>الوحدة الشمالية — جدول الكميات، المنفعة المفقودة، وإصدار النموذج PDF</p>
-    </div>
+  <header class="top topbar">
+    <button class="menu-btn" id="menuBtn" type="button" aria-label="القائمة"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+    <h1 id="pageTitle">الرئيسية</h1>
     <div class="who"><span id="whoEmail"></span><span id="whoRole" class="status a" hidden>مسؤول</span><button class="btn ghost" id="logoutBtn" hidden>خروج</button><button class="btn ghost" id="adminBtn">دخول المسؤول</button></div>
   </header>
 
   <div class="banner" id="scopeBar" style="justify-content:space-between"></div>
   <div class="tabs" role="tablist">
-    <button class="on" data-tab="form">النموذج</button>
+    <button data-tab="home">الرئيسية</button>
+    <button data-tab="form">النموذج</button>
     <button data-tab="loss">المنفعة المفقودة</button>
     <button data-tab="recs">السجل</button>
     <button data-tab="boq">جدول الكميات</button>
@@ -186,12 +269,42 @@ dialog h3{margin:0;padding:12px 16px;background:var(--soft);border-bottom:1px so
     <button data-tab="comp">الملف الشامل</button>
   </div>
 
+  <!-- ===== HOME / DASHBOARD ===== -->
+  <div id="tab-home" hidden>
+    <div class="hero"><svg class="deco" viewBox="0 0 800 200" preserveAspectRatio="xMinYMid slice" aria-hidden="true"><defs><radialGradient id="hg" cx="12%" cy="50%" r="35%"><stop offset="0" stop-color="#3fb6ff" stop-opacity=".55"/><stop offset="1" stop-color="#3fb6ff" stop-opacity="0"/></radialGradient></defs><rect width="800" height="200" fill="url(#hg)"/><circle cx="95" cy="100" r="78" fill="none" stroke="#5cc3ff" stroke-opacity=".55" stroke-width="1.5"/><circle cx="95" cy="100" r="62" fill="#0e4a86" fill-opacity=".45" stroke="#7fd3ff" stroke-opacity=".35"/><path d="M40 92q55-22 110 0M38 112q57 20 114 0M95 38v124M60 50q35 50 0 100M130 50q-35 50 0 100" fill="none" stroke="#9fe0ff" stroke-opacity=".35"/><path d="M0 150C120 120 220 175 340 140S560 95 800 130" fill="none" stroke="#4fc0ff" stroke-opacity=".55" stroke-width="2"/><path d="M0 165C140 135 250 190 380 155S600 115 800 150" fill="none" stroke="#3fd6a4" stroke-opacity=".35" stroke-width="1.5"/><path d="M0 178C150 150 270 200 420 168S630 135 800 168" fill="none" stroke="#4fc0ff" stroke-opacity=".25"/></svg><div style="position:relative;z-index:1;max-width:640px;margin-inline-start:auto"><h2>منصة حساب التكاليف والمنفعة المفقودة</h2><p>بيانات دقيقة .. قرارات أفضل .. لاستدامة مواردنا المائية</p></div></div>
+    <div class="dash-bar" id="dbUnits">
+      <button class="chip on" type="button" data-u="all">كل الوحدات</button>
+      <button class="chip" type="button" data-u="north">الوحدة الشمالية</button>
+      <button class="chip" type="button" data-u="south">الوحدة الجنوبية</button>
+      <button class="chip" type="button" data-u="dammam">وحدة أعمال الدمام</button>
+      <button class="chip" type="button" id="dbReload">تحديث البيانات</button>
+      <span class="st" id="dbSt"></span>
+    </div>
+    <div class="kpis">
+      <div class="kpi g"><div class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6"/><path d="M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></svg></div><div class="tx"><div class="lb">المبالغ المسترجعة</div><div class="v" id="kRecSar">—</div><div class="u">ريال سعودي — تراكمي حتى اليوم</div></div></div>
+      <div class="kpi g"><div class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3s7 7.5 7 12a7 7 0 0 1-14 0c0-4.5 7-12 7-12z"/><path d="M9 14l2 2 4-4"/></svg></div><div class="tx"><div class="lb">المياه المسترجعة</div><div class="v" id="kRecM3">—</div><div class="u">متر مكعب — تراكمي حتى اليوم</div></div></div>
+      <div class="kpi b"><div class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3s7 7.5 7 12a7 7 0 0 1-14 0c0-4.5 7-12 7-12z"/></svg></div><div class="tx"><div class="lb">المياه المفقودة</div><div class="v" id="kLossM3">—</div><div class="u">متر مكعب</div></div></div>
+      <div class="kpi g"><div class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V12M10 20V6M15 20v-9M20 20V4"/></svg></div><div class="tx"><div class="lb">المنفعة المفقودة</div><div class="v" id="kLossSar">—</div><div class="u">ريال سعودي</div></div></div>
+      <div class="kpi b"><div class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M8 18h2M12 18h2"/></svg></div><div class="tx"><div class="lb">إجمالي التكاليف</div><div class="v" id="kCost">—</div><div class="u">ريال سعودي — النماذج المعتمدة</div></div></div>
+    </div>
+    <div class="dash-grid">
+      <div class="panel"><h3>اتجاه التكاليف والمنفعة المفقودة</h3>
+        <div class="legend"><span><i style="background:#3fd6a4"></i>المنفعة المفقودة</span><span><i style="background:#3b9cff"></i>التكاليف</span></div>
+        <div id="dbTrend"></div></div>
+      <div class="panel"><h3>نسبة أنواع المخالفات الجسيمة</h3><div class="donut-wrap" id="dbDonut"></div></div>
+    </div>
+    <div class="panel"><h3>المسترجع من إزالة التوصيلات غير النظامية حسب المحافظة</h3>
+      <div class="tbl"><table class="t"><thead><tr><th>المحافظة</th><th class="num">عدد التوصيلات</th><th class="num">متوسط الأيام</th><th class="num">المياه المسترجعة (م³)</th><th class="num">المبالغ المسترجعة (ريال)</th></tr></thead><tbody id="dbRecRows"></tbody></table></div>
+      <div class="formula" id="dbFormula"></div>
+    </div>
+  </div>
+
   <!-- ===== FORM ===== -->
-  <div id="tab-form">
+  <div id="tab-form" hidden>
     <div class="banner" id="docBanner"></div>
     <fieldset id="formFs" style="border:0;padding:0;margin:0;min-width:0">
     <section class="block">
-      <h2><span class="n">1</span>بيانات المخالفة</h2>
+      <h2 id="sec-info"><span class="n">1</span>بيانات المخالفة</h2>
       <div class="body" id="visitCard" hidden style="padding-bottom:0"></div>
       <div class="body grid">
         <label class="f"><span>اسم المخالف <span class="req">*</span></span><input data-k="info.name"></label>
@@ -214,7 +327,7 @@ dialog h3{margin:0;padding:12px 16px;background:var(--soft);border-bottom:1px so
     </section>
 
     <section class="block">
-      <h2><span class="n">2</span>تكاليف الإصلاح</h2>
+      <h2 id="sec-repair"><span class="n">2</span>تكاليف الإصلاح</h2>
       <div class="body">
         <div class="sub">بنود جدول الكميات <span class="req warn">*</span></div>
         <div id="boqNote"></div>
@@ -463,6 +576,7 @@ dialog h3{margin:0;padding:12px 16px;background:var(--soft);border-bottom:1px so
   <div class="p hide-s" id="tbVatWrap">الضريبة<b id="tbVat">0.00</b></div>
   <div class="p grand">الإجمالي (ريال)<b id="tbTotal">0.00</b></div>
 </div></div>
+</main>
 </div>
 
 <dialog id="scopeDlg">
@@ -602,8 +716,9 @@ async function boot(){
   await loadCatalogs();
   try{const d=JSON.parse(localStorage.getItem(draftKey())||"null");S=d||blank()}catch(e){S=blank()}
   loadVisitList();
-
+  $("#sideLogo").src=LOGO;
   showForm();
+  switchTab("home");
 }
 async function loadCatalogs(){
   const [a,b,c]=await Promise.all([
@@ -918,14 +1033,25 @@ $("#saveRates").onclick=async()=>{
 };
 
 /* ================= التبويبات ================= */
-function switchTab(t){
+const PAGE_TITLES={home:"الرئيسية",form:"النموذج",loss:"المنفعة المفقودة",recs:"سجل النماذج",boq:"جدول الكميات",rates:"معدلات الفئات",comp:"الملف الشامل"};
+function switchTab(t,sec){
   document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("on",x.dataset.tab===t));
-  ["form","recs","boq","rates","comp","loss"].forEach(k=>$("#tab-"+k).hidden=k!==t);
+  ["home","form","recs","boq","rates","comp","loss"].forEach(k=>$("#tab-"+k).hidden=k!==t);
   $("#totalbar").hidden=t!=="form";document.body.classList.toggle("has-bar",t==="form");
+  const go=sec?t+":"+sec:(t==="form"?"form:sec-info":t);
+  document.querySelectorAll("#sideNav [data-go]").forEach(b=>b.classList.toggle("on",b.dataset.go===go));
+  $("#pageTitle").textContent=sec==="sec-repair"?"تكاليف الإصلاح":sec==="sec-info"?"بيانات المخالفة":PAGE_TITLES[t]||"";
+  document.body.classList.remove("side-open");
   window.scrollTo(0,0);
-  if(t==="form")showForm();else if(t==="recs")loadRecs();else if(t==="boq")renderCat();else if(t==="comp")loadCompInfo();else if(t==="loss"){if(!lossRows.length)loadLossList()}else renderRates();
+  if(t==="home")loadDash();else if(t==="form")showForm();else if(t==="recs")loadRecs();else if(t==="boq")renderCat();else if(t==="comp")loadCompInfo();else if(t==="loss"){if(!lossRows.length)loadLossList();else if(!lossUiReady)lossUiInit()}else renderRates();
+  if(sec)setTimeout(()=>{const el=document.getElementById(sec);if(el){const y=el.getBoundingClientRect().top+window.scrollY-12;window.scrollTo({top:sec==="sec-info"?0:y,behavior:"smooth"})}},60);
 }
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
+document.querySelectorAll("#sideNav [data-go]").forEach(b=>b.onclick=()=>{const g=b.dataset.go;
+  if(g==="admin"){document.body.classList.remove("side-open");if(user)openScope();else showLogin();return}
+  const [t,sec]=g.split(":");switchTab(t,sec)});
+$("#menuBtn").onclick=()=>document.body.classList.toggle("side-open");
+$("#sideMask").onclick=()=>document.body.classList.remove("side-open");
 
 /* ================= النموذج الرسمي PDF ================= */
 const dmy=d=>{if(!d)return"";const[y,m,x]=d.split("-");return`${x}/${m}/${y}`};
@@ -1325,24 +1451,36 @@ function defaultParams(v){
   const ld=lineDef(v);
   return{method:m,cat:RATE_PROPS[v.prop]||"سكني – فيلا",start:"",end:d,useMax:true,sewer:false,dia:ld.dia,v:1.5,h:24,months:ld.months||12,days:ld.days?String(ld.days):"",price:6,repair,insp:v.insp||"",note:v.notes||"",estimated:true};
 }
-async function loadLossList(){
-  const sum=$("#lsSum");sum.textContent="جاري تحميل المخالفات الجسيمة لكل المناطق…";
-  const all=[];
-  let last="",size=500,tries=0;
+/* جلب الزيارات المطابقة لشرط معيّن على دفعات متتالية (يتفادى انتهاء مهلة الاستعلام) */
+async function fetchVisits(match,label,prog){
+  const all=[];let last="",size=500,tries=0;
   for(let n=0;n<400;n++){
-    let q=sb.from("cost_visits").select("visit_no,violator_name,start:data->>start,prop:data->>prop,region:data->>region,gov:data->>gov,items:data->items").neq("visit_no","__META__").contains("data",{items:[{sev:"جسيمة"}]});
+    let q=sb.from("cost_visits").select("visit_no,violator_name,start:data->>start,prop:data->>prop,region:data->>region,gov:data->>gov,items:data->items").neq("visit_no","__META__").contains("data",match);
     if(last)q=q.gt("visit_no",last);
     const {data,error}=await q.order("visit_no").limit(size);
-    if(error){if(/timeout/i.test(error.message)&&tries<4){tries++;size=Math.max(50,Math.floor(size/2));sum.textContent=`جاري التحميل… ${all.length} (إعادة المحاولة بدفعات أصغر)`;continue}
-      sum.textContent="تعذر التحميل: "+error.message;return}
-    tries=0;if(!data?.length)break;all.push(...data);last=data[data.length-1].visit_no;sum.textContent=`جاري التحميل… ${all.length}`;if(data.length<size)break;
+    if(error){if(/timeout/i.test(error.message)&&tries<4){tries++;size=Math.max(50,Math.floor(size/2));prog(`${label}… ${all.length} (إعادة المحاولة بدفعات أصغر)`);continue}
+      prog("تعذر التحميل: "+error.message);return null}
+    tries=0;if(!data?.length)break;all.push(...data);last=data[data.length-1].visit_no;prog(`${label}… ${all.length}`);if(data.length<size)break;
   }
-  lossRows=all.map(r=>r.items?{no:r.visit_no,name:r.violator_name,start:r.start,prop:r.prop,region:r.region,gov:r.gov,items:r.items}:r.data).filter(v=>v&&sevItems(v).length);
-  lossSaved={};
-  for(let i=0;i<20000;i+=1000){const {data:sv}=await sb.from("cost_losses").select("visit_no,method,value,total,m3,updated_at").range(i,i+999);if(!sv?.length)break;sv.forEach(s=>lossSaved[s.visit_no]=s);if(sv.length<1000)break}
-  const regs=[...new Set(lossRows.map(v=>v.region).filter(Boolean))].sort();
-  $("#lsRegion").innerHTML=selOpts(regs,SCOPE?.region&&regs.includes(SCOPE.region)?SCOPE.region:"","كل المناطق");lsGovFill(SCOPE?.gov||"");
-  renderLossList();
+  return all.map(r=>r.items?{no:r.visit_no,name:r.violator_name,start:r.start,prop:r.prop,region:r.region,gov:r.gov,items:r.items}:r.data).filter(Boolean);
+}
+let lossLoading=null;
+function fetchLossData(prog){
+  if(lossLoading)return lossLoading;
+  lossLoading=(async()=>{
+    const rows=await fetchVisits({items:[{sev:"جسيمة"}]},"جاري تحميل المخالفات الجسيمة",prog);
+    if(!rows)return false;
+    lossRows=rows.filter(v=>sevItems(v).length);
+    lossSaved={};
+    for(let i=0;i<20000;i+=1000){const {data:sv}=await sb.from("cost_losses").select("visit_no,method,value,total,m3,updated_at").range(i,i+999);if(!sv?.length)break;sv.forEach(s=>lossSaved[s.visit_no]=s);if(sv.length<1000)break}
+    return true;
+  })().finally(()=>{setTimeout(()=>lossLoading=null,0)});
+  return lossLoading;
+}
+async function loadLossList(){
+  const sum=$("#lsSum");sum.textContent="جاري تحميل المخالفات الجسيمة لكل المناطق…";
+  if(!await fetchLossData(t=>sum.textContent=t))return;
+  lossUiInit();
 }
 const GOV_UNITS={north:["حفر الباطن","القيصومة","الخفجي","النعيرية","قرية العليا","القرية العليا","مليجة"],south:["الأحساء","الإحساء","بقيق"],dammam:["الدمام","الخبر","الظهران","الجبيل","البيضاء","البيظاء","القطيف","رأس تنورة","سيهات","صفوى","عنك"]};
 function lsGovFill(cur){const r=$("#lsRegion").value;const g=[...new Set(lossRows.filter(v=>!r||v.region===r).map(v=>v.gov).filter(Boolean))].sort();const pre=Array.isArray(cur)?cur:(cur?[cur]:[]);
@@ -1589,6 +1727,104 @@ $("#lsXls").onclick=async()=>{
   }catch(err){toast("تعذر إنشاء Excel: "+(err?.message||err),6000)}
   finally{btn.disabled=false}
 };
+
+/* ================= لوحة المؤشرات ================= */
+/* المسترجع: المياه التي حُفظت من الهدر بعد إزالة التوصيلة غير النظامية، ويزيد يومياً
+   المسترجع المائي = عدد الأيام من تاريخ الزيارة (الإزالة) حتى اليوم × (المعدل الشهري للفئة ÷ 30)
+   المسترجع المالي = المسترجع المائي × سعر المتر */
+const RECOV_PRICE=6,RECOV_BAND="8",RECOV_NAME=VIOLATIONS[7];
+const AR_MONTHS=["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
+let recovRows=null,costRows=null,DBU="all",dbBusy=false,lossUiReady=false;
+const fmt0=n=>Math.round(n).toLocaleString("en-US");
+function inUnit(gov,u){return u==="all"||GOV_UNITS[u].some(k=>String(gov||"").includes(k))}
+function isIllegalConn(it){const b=String(it.bnd||"").trim();
+  if(b===RECOV_BAND)return !it.desc||matchViolation(it.bnd,it.desc,VIOLATIONS)===RECOV_NAME;
+  return vSim(vNorm(it.desc),vNorm(RECOV_NAME))>=0.6}
+function recovOf(v,today){const d=compDate(v.start);if(!d)return null;
+  const days=Math.max(0,Math.floor((today-new Date(d+"T00:00:00"))/864e5));
+  const R=rateOf(RATE_PROPS[v.prop]||"سكني – فيلا"),daily=R.monthly/30,m3=days*daily;
+  return{days,daily,m3,sar:m3*RECOV_PRICE,cat:R.name}}
+function lossUiInit(){
+  lossUiReady=true;
+  const regs=[...new Set(lossRows.map(v=>v.region).filter(Boolean))].sort();
+  $("#lsRegion").innerHTML=selOpts(regs,SCOPE?.region&&regs.includes(SCOPE.region)?SCOPE.region:"","كل المناطق");lsGovFill(SCOPE?.gov||"");
+  renderLossList();
+}
+async function loadDash(force){
+  if(dbBusy)return;
+  const st=$("#dbSt");
+  if(force){recovRows=null;costRows=null;lossRows=[];lossUiReady=false}
+  if(lossRows.length&&recovRows&&costRows){renderDash();return}
+  dbBusy=true;renderDash();
+  try{
+    if(!rates.length)await loadCatalogs();
+    if(!costRows){st.textContent="جاري تحميل النماذج…";const all=[];
+      for(let i=0;i<20000;i+=1000){const {data,error}=await sb.from("cost_calculations").select("branch,status,repair_total,loss_total,grand_total,created_at").range(i,i+999);if(error||!data?.length)break;all.push(...data);if(data.length<1000)break}
+      costRows=all;renderDash()}
+    if(!recovRows){const r=await fetchVisits({items:[{bnd:RECOV_BAND}]},"جاري تحميل التوصيلات غير النظامية",t=>st.textContent=t);
+      recovRows=r?r.filter(v=>(v.items||[]).some(isIllegalConn)):[];renderDash()}
+    if(!lossRows.length){if(!await fetchLossData(t=>st.textContent=t))return}
+    renderDash();
+    const t=new Date();st.textContent=`آخر تحديث ${String(t.getHours()).padStart(2,"0")}:${String(t.getMinutes()).padStart(2,"0")}`;
+  }finally{dbBusy=false}
+}
+function renderDash(){
+  const u=DBU,today=new Date();today.setHours(0,0,0,0);
+  /* المسترجع */
+  let rM3=0,rSar=0;const byGov={};
+  (recovRows||[]).filter(v=>inUnit(v.gov,u)).forEach(v=>{const r=recovOf(v,today);if(!r)return;rM3+=r.m3;rSar+=r.sar;
+    const g=govShort(v.gov||"")||"غير محدد",o=byGov[g]=byGov[g]||{n:0,days:0,m3:0,sar:0};o.n++;o.days+=r.days;o.m3+=r.m3;o.sar+=r.sar});
+  $("#kRecSar").textContent=recovRows?fmt0(rSar):"…";$("#kRecM3").textContent=recovRows?fmt0(rM3):"…";
+  /* التكاليف */
+  const cr=(costRows||[]).filter(r=>r.status==="معتمد"&&inUnit(r.branch,u));
+  $("#kCost").textContent=costRows?fmt0(cr.reduce((a,r)=>a+num(r.grand_total),0)):"…";
+  /* المنفعة المفقودة */
+  const keys=[];for(let i=11;i>=0;i--){const d=new Date(today.getFullYear(),today.getMonth()-i,1);keys.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`)}
+  const mLoss={},mCost={};keys.forEach(k=>{mLoss[k]=0;mCost[k]=0});
+  cr.forEach(r=>{const k=String(r.created_at||"").slice(0,7);if(k in mCost)mCost[k]+=num(r.repair_total)});
+  const have=lossRows.length>0;let lM3=0,lSar=0;const types={};let nSev=0;
+  if(have){lossRows.filter(v=>inUnit(v.gov,u)).forEach(v=>{
+    const it=sevItems(v)[0]||{};nSev++;const nm=matchViolation(it.bnd,it.desc,VIOLATIONS)||it.desc||"غير مصنفة";types[nm]=(types[nm]||0)+1;
+    if(!sevItems(v).some(i=>LOSS_BANDS.has(String(i.bnd).trim())))return;
+    const s=lossSaved[v.no];let m3,t;if(s){m3=num(s.m3);t=num(s.total)}else{const c=calcLoss(defaultParams(v));m3=c.m3;t=c.total}
+    lM3+=m3;lSar+=t;const k=compDate(v.start).slice(0,7);if(k in mLoss)mLoss[k]+=t})}
+  $("#kLossM3").textContent=have?fmt0(lM3):"…";$("#kLossSar").textContent=have?fmt0(lSar):"…";
+  $("#dbTrend").innerHTML=trendSvg(keys,[{c:"#3fd6a4",v:keys.map(k=>mLoss[k]),area:true},{c:"#3b9cff",v:keys.map(k=>mCost[k])}],have);
+  $("#dbDonut").innerHTML=have?donutSvg(types,nSev):`<div class="hint">جاري تحميل المخالفات…</div>`;
+  /* جدول المحافظات */
+  const gl=Object.entries(byGov).sort((a,b)=>b[1].sar-a[1].sar);
+  $("#dbRecRows").innerHTML=!recovRows?`<tr><td colspan="5" class="hint">جاري التحميل…</td></tr>`:gl.length?gl.map(([g,o])=>`<tr><td>${esc(g)}</td><td class="num">${fmt0(o.n)}</td><td class="num">${fmt0(o.days/o.n)}</td><td class="num">${fmt0(o.m3)}</td><td class="num">${fmt0(o.sar)}</td></tr>`).join("")
+    +`<tr><td><b>الإجمالي</b></td><td class="num"><b>${fmt0(gl.reduce((a,[,o])=>a+o.n,0))}</b></td><td></td><td class="num"><b>${fmt0(rM3)}</b></td><td class="num"><b>${fmt0(rSar)}</b></td></tr>`
+    :`<tr><td colspan="5" class="hint">لا توجد توصيلات غير نظامية ضمن النطاق.</td></tr>`;
+  const rl=rates.map(r=>`${esc(r.name)}: ${(num(r.monthly_m3)/30).toLocaleString("en-US",{maximumFractionDigits:2})} م³/يوم`).join(" — ");
+  $("#dbFormula").innerHTML=`<b>طريقة الحساب:</b> المسترجع المائي = عدد الأيام من تاريخ الزيارة (إزالة التوصيلة) حتى اليوم × معدل الاستهلاك اليومي للفئة (المعدل الشهري ÷ 30). المسترجع المالي = المسترجع المائي × ${RECOV_PRICE} ريال للمتر المكعب. يزيد الرقم تلقائياً كل يوم.<br>المعدلات اليومية الحالية: ${rl||"—"}`;
+}
+function niceMax(v){if(v<=0)return 1;const p=Math.pow(10,Math.floor(Math.log10(v))),n=v/p;return(n<=1?1:n<=2?2:n<=2.5?2.5:n<=5?5:10)*p}
+const kfmt=v=>v>=1e6?(v/1e6).toLocaleString("en-US",{maximumFractionDigits:1})+"M":v>=1e3?(v/1e3).toLocaleString("en-US",{maximumFractionDigits:0})+"K":String(Math.round(v));
+function trendSvg(keys,series,have){
+  const W=640,H=250,L=54,R=14,T=14,B=34,w=W-L-R,h=H-T-B;
+  const mx=niceMax(Math.max(1,...series.flatMap(s=>s.v)));
+  const X=i=>W-R-(keys.length<2?w/2:i*w/(keys.length-1)),Y=v=>T+h-(v/mx)*h;
+  let g="";for(let i=0;i<=4;i++){const v=mx*i/4,y=Y(v);g+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="#1d3d61" stroke-width="1"/><text x="${L-8}" y="${y+4}" fill="#7d98b6" font-size="11" text-anchor="end">${kfmt(v)}</text>`}
+  keys.forEach((k,i)=>{if(keys.length>8&&i%2)return;g+=`<text x="${X(i)}" y="${H-10}" fill="#7d98b6" font-size="11" text-anchor="middle">${AR_MONTHS[+k.slice(5)-1]}</text>`});
+  series.forEach(s=>{if(!have&&s.area)return;const pts=s.v.map((v,i)=>[X(i),Y(v)]);
+    const d=pts.map((p,i)=>{if(!i)return`M${p[0]},${p[1]}`;const q=pts[i-1],cx=(q[0]+p[0])/2;return`C${cx},${q[1]} ${cx},${p[1]} ${p[0]},${p[1]}`}).join("");
+    if(s.area)g+=`<path d="${d}L${X(keys.length-1)},${T+h}L${X(0)},${T+h}Z" fill="${s.c}" fill-opacity=".12"/>`;
+    g+=`<path d="${d}" fill="none" stroke="${s.c}" stroke-width="2.5"/>`+pts.map((p,i)=>`<circle cx="${p[0]}" cy="${p[1]}" r="3.5" fill="${s.c}"><title>${AR_MONTHS[+keys[i].slice(5)-1]}: ${fmt0(s.v[i])} ريال</title></circle>`).join("")});
+  return`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="اتجاه التكاليف والمنفعة المفقودة آخر 12 شهراً" style="display:block;direction:ltr">${g}</svg>`;
+}
+function donutSvg(types,total){
+  const COL=["#3b9cff","#3fd6a4","#f5c451","#7cc8ff","#7d98b6"];
+  const ent=Object.entries(types).sort((a,b)=>b[1]-a[1]);const top=ent.slice(0,4);const rest=ent.slice(4).reduce((a,[,n])=>a+n,0);if(rest)top.push(["مخالفات أخرى",rest]);
+  if(!total)return`<div class="hint">لا توجد مخالفات جسيمة ضمن النطاق.</div>`;
+  const r=70,c=2*Math.PI*r;let off=0,arcs="";
+  top.forEach(([,n],i)=>{const len=n/total*c;arcs+=`<circle cx="95" cy="95" r="${r}" fill="none" stroke="${COL[i]}" stroke-width="26" stroke-dasharray="${Math.max(0,len-2)} ${c}" stroke-dashoffset="${-off}" transform="rotate(-90 95 95)"><title>${esc(top[i][0])}: ${n}</title></circle>`;off+=len});
+  const short=t=>{const w=String(t).replace(/[.،]/g,"").split(/\s+/);return w.length>6?w.slice(0,6).join(" ")+"…":t};
+  return`<svg viewBox="0 0 190 190" role="img" aria-label="نسب أنواع المخالفات">${arcs}<text x="95" y="92" text-anchor="middle" fill="#e8f1fb" font-size="26" font-weight="700">${fmt0(total)}</text><text x="95" y="114" text-anchor="middle" fill="#a9c1d9" font-size="12">مخالفة جسيمة</text></svg>
+  <div class="dlist">${top.map(([t,n],i)=>`<div title="${esc(t)}"><i style="background:${COL[i]}"></i><span>${esc(short(t))}</span><b>${(n/total*100).toFixed(0)}%</b></div>`).join("")}</div>`;
+}
+document.querySelectorAll("#dbUnits [data-u]").forEach(b=>b.onclick=()=>{DBU=b.dataset.u;document.querySelectorAll("#dbUnits [data-u]").forEach(x=>x.classList.toggle("on",x===b));renderDash()});
+$("#dbReload").onclick=()=>loadDash(true);
 
 start();
 })();
