@@ -739,7 +739,7 @@ async function boot(){
   loadVisitList();
   $("#sideLogo").src=LOGO;
   showForm();
-  switchTab("home");
+  {const h=location.hash.slice(1);const T=["home","form","loss","recs","boq","rates","comp"];switchTab(T.includes(h)?h:"home")}
 }
 async function loadCatalogs(){
   const [a,b,c]=await Promise.all([
@@ -1056,6 +1056,7 @@ $("#saveRates").onclick=async()=>{
 /* ================= التبويبات ================= */
 const PAGE_TITLES={home:"الرئيسية",form:"النموذج",loss:"المنفعة المفقودة",recs:"سجل النماذج",boq:"جدول الكميات",rates:"معدلات الفئات",comp:"الملف الشامل"};
 function switchTab(t,sec){
+  try{history.replaceState(null,"",t==="home"?location.pathname+location.search:"#"+t)}catch(e){}
   document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("on",x.dataset.tab===t));
   ["home","form","recs","boq","rates","comp","loss"].forEach(k=>$("#tab-"+k).hidden=k!==t);
   $("#totalbar").hidden=t!=="form";document.body.classList.toggle("has-bar",t==="form");
