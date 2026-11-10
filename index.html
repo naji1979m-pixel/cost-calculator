@@ -158,6 +158,8 @@ body{background:radial-gradient(1200px 600px at 85% -10%,#0f3a6b 0%,transparent 
 .side nav button svg{width:20px;height:20px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .side nav button:hover{background:rgba(59,156,255,.08);color:var(--ink)}
 .side nav button.on{background:linear-gradient(90deg,#1f6fd1,#2f8bff);color:#fff;box-shadow:0 6px 18px rgba(47,139,255,.35)}
+@media (max-width:600px){#tab-unified .grid>[style*="span 2"]{grid-column:1/-1!important}}
+.nav-new{margin-inline-start:auto;font-size:.68rem;background:var(--ok);color:#06231a;border-radius:999px;padding:1px 8px;font-weight:600}
 .side .sep{height:1px;background:var(--line);margin:10px 4px}
 .side .foot{margin-top:auto;padding-top:12px;font-size:.75rem;color:var(--muted);text-align:center}
 .main{flex:1;min-width:0;margin-right:var(--side-w)}
@@ -267,7 +269,7 @@ dialog{background:#0b223c}
 <div id="app" class="shell" hidden>
 <aside class="side" id="side">
   <div class="brand"><img id="sideLogo" alt="شركة المياه الوطنية"></div>
-  <nav id="sideNav"><button type="button" data-go="home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><span>الرئيسية</span></button><button type="button" data-go="form:sec-info"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg><span>بيانات المخالفة</span></button><button type="button" data-go="form:sec-repair"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg><span>تكاليف الإصلاح</span></button><button type="button" data-go="loss"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3s7 7.5 7 12a7 7 0 0 1-14 0c0-4.5 7-12 7-12z"/></svg><span>المنفعة المفقودة</span></button><button type="button" data-go="recs"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M9 13h6M9 17h6"/></svg><span>سجل النماذج</span></button><button type="button" data-go="boq"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/></svg><span>جدول الكميات</span></button><button type="button" data-go="rates"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="7" cy="7" r="3"/><circle cx="17" cy="17" r="3"/><path d="M5 19L19 5"/></svg><span>معدلات الفئات</span></button><button type="button" data-go="comp"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M12 18v-6M9 15l3-3 3 3"/></svg><span>الملف الشامل</span></button><div class="sep"></div><button type="button" data-go="admin"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>إدارة النظام</span></button></nav>
+  <nav id="sideNav"><button type="button" data-go="home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><span>الرئيسية</span></button><button type="button" data-go="unified"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M8 18h2M12 18h2"/></svg><span>حساب التكاليف الموحد</span><span class="nav-new">جديد</span></button><button type="button" data-go="form:sec-info"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg><span>بيانات المخالفة</span></button><button type="button" data-go="form:sec-repair"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg><span>تكاليف الإصلاح</span></button><button type="button" data-go="loss"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3s7 7.5 7 12a7 7 0 0 1-14 0c0-4.5 7-12 7-12z"/></svg><span>المنفعة المفقودة</span></button><button type="button" data-go="recs"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M9 13h6M9 17h6"/></svg><span>سجل النماذج</span></button><button type="button" data-go="boq"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/></svg><span>جدول الكميات</span></button><button type="button" data-go="rates"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="7" cy="7" r="3"/><circle cx="17" cy="17" r="3"/><path d="M5 19L19 5"/></svg><span>معدلات الفئات</span></button><button type="button" data-go="comp"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M12 18v-6M9 15l3-3 3 3"/></svg><span>الملف الشامل</span></button><div class="sep"></div><button type="button" data-go="admin"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>إدارة النظام</span></button></nav>
   <div class="foot">إدارة المخالفات والتفتيش</div>
 </aside>
 <div class="side-mask" id="sideMask"></div>
@@ -319,6 +321,9 @@ dialog{background:#0b223c}
       <div class="formula" id="dbFormula"></div>
     </div>
   </div>
+
+  <!-- ===== UNIFIED ===== -->
+  <div id="tab-unified" hidden></div>
 
   <!-- ===== FORM ===== -->
   <div id="tab-form" hidden>
@@ -739,7 +744,7 @@ async function boot(){
   loadVisitList();
   $("#sideLogo").src=LOGO;
   showForm();
-  {const h=location.hash.slice(1);const T=["home","form","loss","recs","boq","rates","comp"];switchTab(T.includes(h)?h:"home")}
+  {const h=location.hash.slice(1);const T=["home","unified","form","loss","recs","boq","rates","comp"];switchTab(T.includes(h)?h:"home")}
 }
 async function loadCatalogs(){
   const [a,b,c]=await Promise.all([
@@ -1054,18 +1059,18 @@ $("#saveRates").onclick=async()=>{
 };
 
 /* ================= التبويبات ================= */
-const PAGE_TITLES={home:"الرئيسية",form:"النموذج",loss:"المنفعة المفقودة",recs:"سجل النماذج",boq:"جدول الكميات",rates:"معدلات الفئات",comp:"الملف الشامل"};
+const PAGE_TITLES={home:"الرئيسية",unified:"حساب التكاليف الموحد",form:"النموذج",loss:"المنفعة المفقودة",recs:"سجل النماذج",boq:"جدول الكميات",rates:"معدلات الفئات",comp:"الملف الشامل"};
 function switchTab(t,sec){
   try{history.replaceState(null,"",t==="home"?location.pathname+location.search:"#"+t)}catch(e){}
   document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("on",x.dataset.tab===t));
-  ["home","form","recs","boq","rates","comp","loss"].forEach(k=>$("#tab-"+k).hidden=k!==t);
+  ["home","unified","form","recs","boq","rates","comp","loss"].forEach(k=>$("#tab-"+k).hidden=k!==t);
   $("#totalbar").hidden=t!=="form";document.body.classList.toggle("has-bar",t==="form");
   const go=sec?t+":"+sec:(t==="form"?"form:sec-info":t);
   document.querySelectorAll("#sideNav [data-go]").forEach(b=>b.classList.toggle("on",b.dataset.go===go));
   $("#pageTitle").textContent=sec==="sec-repair"?"تكاليف الإصلاح":sec==="sec-info"?"بيانات المخالفة":PAGE_TITLES[t]||"";
   document.body.classList.remove("side-open");
   window.scrollTo(0,0);
-  if(t==="home")loadDash();else if(t==="form")showForm();else if(t==="recs")loadRecs();else if(t==="boq")renderCat();else if(t==="comp")loadCompInfo();else if(t==="loss"){if(!lossRows.length)loadLossList();else if(!lossUiReady)lossUiInit()}else renderRates();
+  if(t==="home")loadDash();else if(t==="unified")showUnified();else if(t==="form")showForm();else if(t==="recs")loadRecs();else if(t==="boq")renderCat();else if(t==="comp")loadCompInfo();else if(t==="loss"){if(!lossRows.length)loadLossList();else if(!lossUiReady)lossUiInit()}else renderRates();
   if(sec)setTimeout(()=>{const el=document.getElementById(sec);if(el){const y=el.getBoundingClientRect().top+window.scrollY-12;window.scrollTo({top:sec==="sec-info"?0:y,behavior:"smooth"})}},60);
 }
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
@@ -1848,6 +1853,381 @@ function donutSvg(types,total){
 document.querySelectorAll("#dbUnits [data-u]").forEach(b=>b.onclick=()=>{DBU=b.dataset.u;document.querySelectorAll("#dbUnits [data-u]").forEach(x=>x.classList.toggle("on",x===b));renderDash()});
 $("#dbReload").onclick=()=>loadDash(true);
 
+
+/* ================= حساب التكاليف الموحد (صفحة جديدة) =================
+   - جدول الكميات الموحد (unified-boq.js) لكل بند مخالفة + البنود العامة المساندة
+   - المنفعة المفقودة حسب النموذج الموحد:
+       الكمية (م³) = مساحة مقطع الأنبوب × سرعة التدفق × عدد ساعات الضخ الفعلية × 3600
+       مساحة المقطع = π × (القطر بالمتر ÷ 2)²
+       أيام الضخ الفعلية = تقريب(عدد أيام المخالفة × أيام الضخ بالأسبوع ÷ 7)
+       ساعات الضخ = أيام الضخ الفعلية × ساعات الضخ اليومية
+       المياه = الكمية × 6 ريال، الصرف = الكمية × 3 ريال (نصف قيمة المياه)
+       غير معلوم المدة: فترة الاحتساب 6 أشهر للسكني و12 شهراً للتجاري والحكومي */
+const UNI_KEY="cc-unified-draft",UNI_WATER=6,UNI_SEWER=3;
+const UNI_CATS=["سكني","تجاري","حكومي"];
+const UNI_VEL=1,UNI_D7=7,UNI_HRS=10,UNI_DIA=19;
+let U=null,uniReady=false,uniLoading=null;
+function uniBlank(){return{info:{no:"",name:"",id:"",ptype:"مخالف",band:"",date:"",sector:"",unit:"",branch:"",region:"",gov:"",agr:""},
+  boq:[{k:"",q:1,p:""}],emerg:false,eq:[],ext:{size:"",type:"",len:"",price:""},pt:[],
+  lb:{method:"hyd",known:true,start:"",end:"",d7:UNI_D7,hrs:UNI_HRS,dia:UNI_DIA,vel:UNI_VEL,cat:"سكني",ccat:"سكني – فيلا",sewer:true},
+  br:{repDate:"",repTime:"",brDate:"",brTime:"",offDate:"",offTime:"",dia:""},sign:{cs:"",om:""},visit:null}}
+function uniSave(){try{localStorage.setItem(UNI_KEY,JSON.stringify(U))}catch(e){}}
+function uniLoadDraft(){try{const d=JSON.parse(localStorage.getItem(UNI_KEY)||"null");if(d&&d.info)return Object.assign(uniBlank(),d,{lb:Object.assign(uniBlank().lb,d.lb||{}),br:Object.assign(uniBlank().br,d.br||{})})}catch(e){}return uniBlank()}
+function uniScript(src){return new Promise((ok,no)=>{const s=document.createElement("script");s.src=src+"?v=1";s.onload=ok;s.onerror=()=>no(new Error("تعذر تحميل "+src));document.head.appendChild(s)})}
+function uniEnsureData(){
+  if(window.UNIFIED_BOQ)return Promise.resolve();
+  if(!uniLoading)uniLoading=uniScript("unified-boq.js").catch(e=>{uniLoading=null;throw e});
+  return uniLoading;
+}
+const UB=()=>window.UNIFIED_BOQ;
+const uniV=()=>UB()?.violations||[];
+function uniCatalog(band){const b=UB()?.bands?.[String(band)];return b||null}
+/* مفتاح البند: "b:رقم" لبنود المخالفة، "g:رقم" للبنود العامة */
+function uniItem(k){if(!k)return null;const[t,i]=k.split(":");const band=U.info.band;
+  if(t==="g")return UB().general.items[+i]?{...UB().general.items[+i],code:"ع-"+(+i+1),src:"بنود عامة"}:null;
+  const c=uniCatalog(band);return c&&c.items[+i]?{...c.items[+i],code:band+"-"+(+i+1),src:"بند "+band}:null}
+function uniPrice(r){const it=uniItem(r.k);if(!it)return 0;return it.p!=null?it.p:num(r.p)}
+function uniAddMonths(d,m){const x=new Date(d+"T00:00:00Z");x.setUTCMonth(x.getUTCMonth()+m);return x.toISOString().slice(0,10)}
+function uniDays(a,b){if(!a||!b)return 0;return Math.round((new Date(b+"T00:00:00")-new Date(a+"T00:00:00"))/864e5)+1}
+function uniBreakHours(){const B=U.br;if(!B.brDate||!B.offDate)return null;
+  const a=new Date(B.brDate+"T"+(B.brTime||"00:00")),b=new Date(B.offDate+"T"+(B.offTime||"00:00"));const h=(b-a)/36e5;return h>0?h:null}
+function uniCompute(){
+  const L=U.lb,c={};
+  /* الإصلاح */
+  c.lines=U.boq.map(r=>{const it=uniItem(r.k);const p=it?uniPrice(r):0,q=num(r.q);return{r,it,p,q,t:p*q}}).filter(x=>x.it);
+  c.boqRaw=c.lines.reduce((a,x)=>a+x.t,0);
+  c.emerg=U.emerg?c.boqRaw*(UB()?.emergencyPct||40)/100:0;
+  c.boq=c.boqRaw+c.emerg;
+  c.eq=U.eq.reduce((a,e)=>a+num(e.c)*num(e.h)*num(e.p),0);
+  c.ext=num(U.ext.price);
+  c.pt=U.pt.reduce((a,p)=>a+num(p.q)*num(p.p),0)+c.ext;
+  c.repair=c.boq+c.eq+c.pt;
+  /* المنفعة المفقودة */
+  const unk=!L.known;
+  c.months=L.cat==="سكني"?6:12;
+  if(L.method==="break"){
+    c.hours=uniBreakHours();const d=num(U.br.dia)||num(L.dia);
+    c.area=Math.PI*Math.pow(d/2000,2);c.dia=d;
+    c.m3=c.hours?c.area*num(L.vel||1)*c.hours*3600:0;c.days=c.hours?Math.ceil(c.hours/24):0;
+    c.start=U.br.brDate;c.end=U.br.offDate;
+  }else{
+    c.end=L.end;c.start=unk?(L.end?uniAddMonths(L.end,-c.months):""):L.start;
+    c.days=Math.max(0,uniDays(c.start,c.end));
+    if(L.method==="cons"){
+      const M=(UB()?.maxBenefit||[]).find(x=>x.cat===L.ccat)||{daily:0,max:0,days:180};
+      c.max=M.max;c.daily=M.daily;
+      if(unk)c.days=M.days;
+      c.m3raw=c.daily*c.days;c.m3=Math.min(c.m3raw,c.max);c.capped=c.m3raw>c.max;
+    }else{
+      c.eff=Math.round(c.days*num(L.d7)/7);c.hrs=c.eff*num(L.hrs);
+      c.dia=num(L.dia);c.area=Math.PI*Math.pow(c.dia/2000,2);
+      c.m3=c.area*num(L.vel)*c.hrs*3600;
+    }
+  }
+  c.water=c.m3*UNI_WATER;c.sewer=L.sewer?c.m3*UNI_SEWER:0;c.loss=c.water+c.sewer;
+  c.total=c.repair+c.loss;
+  return c;
+}
+/* ---------- الواجهة ---------- */
+function uniOpts(list,cur,ph){return(ph!=null?`<option value="">${esc(ph)}</option>`:"")+list.map(x=>`<option${x===cur?" selected":""}>${esc(x)}</option>`).join("")}
+function uniBandOpts(){return`<option value="">— اختر بند المخالفة —</option>`+uniV().map((v,i)=>{const n=i+1,has=!!uniCatalog(n);return`<option value="${n}"${String(n)===String(U.info.band)?" selected":""}>${n} - ${esc(v)}${has?"":" (لا يوجد جدول كميات)"}</option>`}).join("")}
+function uniItemOpts(cur){
+  const c=uniCatalog(U.info.band);let h=`<option value="">— اختر البند —</option>`;
+  const grp=(items,pfx,label)=>{let last=null,o="";items.forEach((it,i)=>{const g=it.g||label;if(g!==last){if(last!==null)o+="</optgroup>";o+=`<optgroup label="${esc(g)}">`;last=g}
+      const k=pfx+":"+i;o+=`<option value="${k}"${k===cur?" selected":""}>${esc(it.d.length>110?it.d.slice(0,110)+"…":it.d)} — ${it.p!=null?fmt(it.p)+" ريال/"+esc(it.u):"غير مسعّر"}</option>`});return o+(last!==null?"</optgroup>":"")};
+  if(c)h+=grp(c.items,"b",c.title||"بنود المخالفة");
+  h+=grp(UB().general.items.map(x=>({...x,g:"بنود عامة مساندة"+(x.g?" — "+x.g:"")})),"g","بنود عامة مساندة");
+  return h;
+}
+function uniField(lbl,key,o={}){const v=key.split(".").reduce((a,k)=>a?.[k],U);const t=o.type||"text";
+  if(o.sel)return`<label class="f"${o.full?' style="grid-column:1/-1"':""}><span>${lbl}</span><select data-u="${key}">${o.sel}</select></label>`;
+  return`<label class="f"${o.full?' style="grid-column:1/-1"':""}><span>${lbl}</span><input data-u="${key}" type="${t}" value="${esc(v??"")}"${o.ph?` placeholder="${esc(o.ph)}"`:""}${o.ltr?' dir="ltr" style="text-align:right"':""}${o.step?` step="${o.step}"`:""}${o.min!=null?` min="${o.min}"`:""}></label>`}
+function uniRender(){
+  const host=$("#tab-unified");if(!host)return;
+  if(!UB()){host.innerHTML=`<section class="block"><div class="body"><div class="hint">جاري تحميل جدول الكميات الموحد…</div></div></section>`;return}
+  const I=U.info,L=U.lb,B=U.br,cat=uniCatalog(I.band);
+  host.innerHTML=`
+  <div class="banner" style="margin-bottom:14px;padding:12px 14px;font-size:.88rem;line-height:1.8">
+    <b>حساب التكاليف الموحد</b> — وفق ملفات توحيد العمل على تكاليف الإصلاح والمنفعة المفقودة: جدول كميات موحد لكل بند مخالفة، ومعادلة المنفعة المفقودة حسب قطر التوصيلة وساعات الضخ. صفحة مستقلة عن النموذج الحالي، والمسودة تُحفظ تلقائياً على جهازك.
+  </div>
+  <section class="block"><h2><span class="n">1</span>بيانات المخالفة</h2>
+    <div class="body grid">
+      <div class="f" style="grid-column:span 2;min-width:0"><span>رقم المخالفة (رقم الزيارة)</span><span style="display:flex;gap:6px"><input data-u="info.no" dir="ltr" style="text-align:right;flex:1" placeholder="SWA-..." value="${esc(I.no)}"><button class="btn" type="button" id="uLookup">جلب من الملف الشامل</button></span></div>
+      ${uniField("اسم المخالف","info.name")}
+      ${uniField("رقم الهوية / رقم المنشأة الموحد","info.id",{ltr:1})}
+      ${uniField("نوع المخالف","info.ptype",{sel:uniOpts(LISTS.ptype,I.ptype)})}
+      <label class="f" style="grid-column:1/-1"><span>نوع المخالفة (البند)</span><select data-u="info.band">${uniBandOpts()}</select></label>
+      ${uniField("التاريخ","info.date",{type:"date"})}
+      ${uniField("القطاع","info.sector",{sel:uniOpts(LISTS.sector,I.sector,"—")})}
+      ${uniField("وحدة العمل / الفرع","info.branch")}
+      ${uniField("رقم الاتفاقية (اختياري)","info.agr",{ltr:1})}
+    </div>
+    <div class="body" id="uVisit" style="padding-top:0">${uniVisitCard()}</div>
+  </section>
+  <section class="block"><h2><span class="n">2</span>تكاليف الإصلاح</h2>
+    <div class="body">
+      ${I.band&&cat?`<div class="calc" style="margin-top:0;margin-bottom:10px"><div style="font-weight:600;margin-bottom:4px">${esc(cat.title||("بند "+I.band))}</div><div class="hint" style="margin:0;line-height:1.7">${esc(cat.desc||"")}</div></div>`
+        :I.band?`<div class="rule warn" style="margin-bottom:10px">لا يوجد جدول كميات موحد لهذا البند — استخدم البنود العامة المساندة أو قطع الغيار.</div>`:`<div class="hint" style="margin-top:0;margin-bottom:10px">اختر نوع المخالفة أولاً لتظهر بنودها.</div>`}
+      <div class="sub">1- بنود جدول الكميات (الأيدي العاملة)</div>
+      <div class="tbl"><table class="t"><thead><tr><th style="min-width:280px">البند</th><th>الوحدة</th><th class="num">السعر الإفرادي</th><th>الكمية</th><th class="num">الإجمالي</th><th></th></tr></thead>
+        <tbody>${U.boq.map((r,i)=>{const it=uniItem(r.k),p=it?uniPrice(r):0;return`<tr>
+          <td><select data-ub="${i}" data-f="k" style="width:100%">${uniItemOpts(r.k)}</select>${it?`<div class="hint" style="margin-top:3px">رقم الصنف: <b dir="ltr">${esc(it.code)}</b></div>`:""}</td>
+          <td>${it?esc(it.u):""}</td>
+          <td class="num">${it&&it.p==null?`<input data-ub="${i}" data-f="p" type="number" min="0" step="0.01" value="${esc(r.p)}" placeholder="أدخل السعر" style="width:110px">`:(it?fmt(p):"")}</td>
+          <td><input data-ub="${i}" data-f="q" type="number" min="0" step="0.01" value="${esc(r.q)}" style="width:80px"></td>
+          <td class="num">${it?fmt(p*num(r.q)):""}</td>
+          <td><button class="btn ghost" type="button" data-udel="boq:${i}" aria-label="حذف">×</button></td></tr>`}).join("")}</tbody>
+        <tfoot><tr><td colspan="4">المجموع (ريال)</td><td class="num" id="uBoqSum"></td><td></td></tr></tfoot></table></div>
+      <div class="row-actions" style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button class="btn" type="button" id="uAddBoq">+ إضافة بند</button>
+        <label style="display:flex;gap:6px;align-items:center;font-size:.86rem"><input type="checkbox" data-u="emerg"${U.emerg?" checked":""}> تنفيذ طارئ / خارج أوقات الدوام (+${UB().emergencyPct}% من قيمة البنود)</label></div>
+      <div class="sub" style="margin-top:16px">2- تكلفة استعمال المعدات</div>
+      <div class="tbl"><table class="t"><thead><tr><th>النوع</th><th>العدد</th><th>الوقت بالساعة</th><th class="num">السعر الإفرادي</th><th class="num">الإجمالي</th><th></th></tr></thead>
+        <tbody>${U.eq.length?U.eq.map((e,i)=>`<tr><td><input data-ue="eq:${i}" data-f="n" value="${esc(e.n||"")}"></td><td><input data-ue="eq:${i}" data-f="c" type="number" min="0" value="${esc(e.c??"")}" style="width:70px"></td><td><input data-ue="eq:${i}" data-f="h" type="number" min="0" step="0.5" value="${esc(e.h??"")}" style="width:80px"></td><td><input data-ue="eq:${i}" data-f="p" type="number" min="0" step="0.01" value="${esc(e.p??"")}" style="width:100px"></td><td class="num">${fmt(num(e.c)*num(e.h)*num(e.p))}</td><td><button class="btn ghost" type="button" data-udel="eq:${i}">×</button></td></tr>`).join(""):`<tr><td colspan="6" class="hint">لا توجد معدات.</td></tr>`}</tbody></table></div>
+      <button class="btn" type="button" id="uAddEq" style="margin-top:8px">+ إضافة معدة</button>
+      <div class="sub" style="margin-top:16px">3- قطع الغيار والتمديدات</div>
+      <div class="grid" style="margin-bottom:10px">
+        ${uniField("مقاس تمديدات الشبكة (مياه/صرف)","ext.size")}${uniField("نوع التمديدات","ext.type")}${uniField("الطول بالمتر","ext.len",{type:"number",min:0})}${uniField("سعر التمديدات (ريال)","ext.price",{type:"number",min:0,step:"0.01"})}
+      </div>
+      <div class="tbl"><table class="t"><thead><tr><th>النوع</th><th>الوحدة</th><th>الكمية</th><th class="num">السعر الإفرادي</th><th class="num">الإجمالي</th><th></th></tr></thead>
+        <tbody>${U.pt.length?U.pt.map((p,i)=>`<tr><td><input data-ue="pt:${i}" data-f="d" value="${esc(p.d||"")}" placeholder="مثال: تركيب طبه"></td><td><input data-ue="pt:${i}" data-f="u" value="${esc(p.u||"")}" style="width:80px"></td><td><input data-ue="pt:${i}" data-f="q" type="number" min="0" value="${esc(p.q??"")}" style="width:70px"></td><td><input data-ue="pt:${i}" data-f="p" type="number" min="0" step="0.01" value="${esc(p.p??"")}" style="width:100px"></td><td class="num">${fmt(num(p.q)*num(p.p))}</td><td><button class="btn ghost" type="button" data-udel="pt:${i}">×</button></td></tr>`).join(""):`<tr><td colspan="6" class="hint">لا توجد قطع غيار.</td></tr>`}</tbody></table></div>
+      <button class="btn" type="button" id="uAddPt" style="margin-top:8px">+ إضافة قطعة</button>
+      <div class="calc" id="uRepairCalc"></div>
+    </div>
+  </section>
+  <section class="block"><h2><span class="n">3</span>المنفعة المفقودة</h2>
+    <div class="body">
+      <div class="grid">
+        ${uniField("طريقة الاحتساب","lb.method",{sel:[["hyd","حسب قطر التوصيلة وساعات الضخ (النموذج الموحد)"],["break","كسر / تسريب (حسب ساعات التسريب)"],["cons","حسب الاستهلاك التقديري للفئة (أقصى المنفعة)"]].map(([v,t])=>`<option value="${v}"${L.method===v?" selected":""}>${t}</option>`).join(""),full:1})}
+        ${L.method!=="break"?`${uniField("مدة المخالفة","lb.known",{sel:`<option value="1"${L.known?" selected":""}>معلوم المدة</option><option value="0"${!L.known?" selected":""}>غير معلوم المدة</option>`})}
+          ${L.method==="cons"?uniField("الفئة","lb.ccat",{sel:uniOpts((UB().maxBenefit||[]).map(x=>x.cat),L.ccat)}):uniField("فئة المخالف","lb.cat",{sel:uniOpts(UNI_CATS,L.cat)})}
+          ${L.known?uniField("تاريخ بداية المخالفة","lb.start",{type:"date"}):""}
+          ${uniField(L.known?"تاريخ نهاية المخالفة":"تاريخ اكتشاف المخالفة","lb.end",{type:"date"})}`:""}
+        ${L.method==="hyd"?`${uniField("قطر التوصيلة (ملم)","lb.dia",{type:"number",min:0,step:"0.1"})}${uniField("عدد أيام الضخ بالأسبوع","lb.d7",{type:"number",min:1,step:1})}${uniField("عدد ساعات الضخ يومياً","lb.hrs",{type:"number",min:0,step:"0.5"})}${uniField("سرعة التدفق (م/ث)","lb.vel",{type:"number",min:0,step:"0.1"})}`:""}
+        ${L.method==="break"?`${uniField("تاريخ البلاغ","br.repDate",{type:"date"})}${uniField("وقت البلاغ","br.repTime",{type:"time"})}${uniField("تاريخ وقوع الكسر","br.brDate",{type:"date"})}${uniField("وقت وقوع الكسر","br.brTime",{type:"time"})}${uniField("تاريخ بدء إقفال المياه","br.offDate",{type:"date"})}${uniField("وقت بدء إقفال المياه","br.offTime",{type:"time"})}${uniField("قطر الكسر (ملم)","br.dia",{type:"number",min:0,step:"0.1"})}${uniField("سرعة التدفق (م/ث)","lb.vel",{type:"number",min:0,step:"0.1"})}`:""}
+        <label class="f" style="justify-content:flex-end"><span style="display:flex;gap:6px;align-items:center"><input type="checkbox" data-u="lb.sewer"${L.sewer?" checked":""}> احتساب منفعة الصرف الصحي (${UNI_SEWER} ريال/م³)</span></label>
+      </div>
+      <div class="calc" id="uLossCalc"></div>
+    </div>
+  </section>
+  <section class="block"><h2><span class="n">4</span>الاعتماد والإصدار</h2>
+    <div class="body">
+      <div class="grid">${uniField("مسؤول خدمات العملاء","sign.cs")}${uniField("مسؤول التشغيل والصيانة","sign.om")}</div>
+      <div class="calc" id="uTotalCalc"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+        <button class="btn solid" type="button" id="uPdf">إصدار PDF</button>
+        <button class="btn" type="button" id="uXls">تصدير Excel (القالب الرسمي)</button>
+        <button class="btn danger" type="button" id="uReset">نموذج جديد</button>
+      </div>
+      <div class="hint" id="uMissing"></div>
+    </div>
+  </section>`;
+  uniBind();uniRecalc();
+}
+function uniVisitCard(){const v=U.visit;if(!v)return"";
+  return`<div class="calc" style="margin-top:0"><div class="line"><span>من الملف الشامل</span><b dir="ltr">${esc(v.no)}</b></div>
+  ${v.gov?`<div class="line"><span>المنطقة / المحافظة</span><b>${esc(v.region||"")} — ${esc(v.gov)}</b></div>`:""}
+  ${v.prop?`<div class="line"><span>نوع العقار</span><b>${esc(v.prop)}</b></div>`:""}
+  ${(v.items||[]).map(x=>`<div class="line"><span>البند ${esc(x.bnd||"")}</span><b style="font-weight:500">${esc(x.desc||"")}${x.sev?` — ${esc(x.sev)}`:""}</b></div>`).join("")}
+  ${v.matched?"":`<div class="rule warn">لم يتم التعرف على نوع المخالفة تلقائياً — اختره يدوياً.</div>`}</div>`}
+function uniSet(key,val){const ks=key.split(".");let o=U;for(let i=0;i<ks.length-1;i++)o=o[ks[i]];o[ks.at(-1)]=val}
+const UNI_RERENDER=new Set(["info.band","lb.method","lb.known","emerg"]);
+function uniBind(){
+  const host=$("#tab-unified");
+  host.querySelectorAll("[data-u]").forEach(el=>{const key=el.dataset.u;
+    const h=()=>{let v=el.type==="checkbox"?el.checked:el.value;if(key==="lb.known")v=v==="1";uniSet(key,v);
+      if(key==="info.band"){U.boq=[{k:"",q:1,p:""}]}
+      uniSave();if(UNI_RERENDER.has(key))uniRender();else uniRecalc()};
+    el.addEventListener(el.tagName==="SELECT"||el.type==="checkbox"||el.type==="date"||el.type==="time"?"change":"input",h)});
+  host.querySelectorAll("[data-ub]").forEach(el=>el.addEventListener(el.tagName==="SELECT"?"change":"input",()=>{const r=U.boq[+el.dataset.ub];r[el.dataset.f]=el.value;
+    if(el.dataset.f==="k"){r.p="";uniSave();uniRender();return}uniSave();uniRecalcRows()}));
+  host.querySelectorAll("[data-ue]").forEach(el=>el.addEventListener("input",()=>{const[a,i]=el.dataset.ue.split(":");U[a][+i][el.dataset.f]=el.value;uniSave();uniRecalcRows()}));
+  host.querySelectorAll("[data-udel]").forEach(b=>b.onclick=()=>{const[a,i]=b.dataset.udel.split(":");U[a].splice(+i,1);if(a==="boq"&&!U.boq.length)U.boq.push({k:"",q:1,p:""});uniSave();uniRender()});
+  $("#uAddBoq").onclick=()=>{U.boq.push({k:"",q:1,p:""});uniSave();uniRender()};
+  $("#uAddEq").onclick=()=>{U.eq.push({n:"",c:1,h:1,p:""});uniSave();uniRender()};
+  $("#uAddPt").onclick=()=>{U.pt.push({d:"",u:"عدد",q:1,p:""});uniSave();uniRender()};
+  $("#uLookup").onclick=()=>uniLookup(U.info.no);
+  host.querySelector('[data-u="info.no"]').addEventListener("change",e=>{if(/^(SWA-)?\d{3,}$/i.test(e.target.value.trim()))uniLookup(e.target.value)});
+  $("#uPdf").onclick=uniPdf;$("#uXls").onclick=uniExcel;
+  $("#uReset").onclick=()=>{if(!confirm("بدء نموذج جديد ومسح البيانات الحالية؟"))return;U=uniBlank();uniSave();uniRender()};
+}
+/* تحديث الإجماليات في صفوف الجداول بدون إعادة بناء الصفحة (حتى لا يضيع مكان المؤشر) */
+function uniRecalcRows(){
+  const host=$("#tab-unified");
+  host.querySelectorAll("tbody tr").forEach(tr=>{const s=tr.querySelector("[data-ub]"),e=tr.querySelector("[data-ue]");const cell=tr.querySelector("td.num:last-of-type");
+    if(s){const r=U.boq[+s.dataset.ub],it=uniItem(r.k);const cells=tr.querySelectorAll("td.num");if(it&&cells.length)cells[cells.length-1].textContent=fmt(uniPrice(r)*num(r.q))}
+    else if(e){const[a,i]=e.dataset.ue.split(":"),o=U[a][+i];const cells=tr.querySelectorAll("td.num");if(cells.length)cells[cells.length-1].textContent=fmt(a==="eq"?num(o.c)*num(o.h)*num(o.p):num(o.q)*num(o.p))}});
+  uniRecalc();
+}
+function uniRecalc(){
+  const c=uniCompute(),L=U.lb;if(!$("#uRepairCalc"))return;
+  $("#uBoqSum").textContent=fmt(c.boqRaw);
+  $("#uRepairCalc").innerHTML=`<div class="line"><span>بنود جدول الكميات</span><b>${fmt(c.boqRaw)}</b></div>
+    ${U.emerg?`<div class="line"><span>تنفيذ طارئ (+${UB().emergencyPct}%)</span><b>${fmt(c.emerg)}</b></div>`:""}
+    <div class="line"><span>المعدات</span><b>${fmt(c.eq)}</b></div><div class="line"><span>قطع الغيار والتمديدات</span><b>${fmt(c.pt)}</b></div>
+    <div class="line" style="border-top:1px solid var(--line);margin-top:4px;padding-top:6px"><span><b>تكاليف الإصلاح</b></span><b>${fmt(c.repair)} ريال</b></div>`;
+  let lines="";
+  if(L.method==="break"){
+    lines=`<div class="line"><span>مدة التسريب</span><b>${c.hours?fmt(c.hours)+" ساعة":"أدخل تاريخ ووقت الكسر والإقفال"}</b></div>
+      <div class="line"><span>مساحة مقطع الكسر (قطر ${fmt(c.dia||0)} ملم)</span><b dir="ltr">${(c.area||0).toFixed(6)} م²</b></div>`;
+  }else{
+    lines=`<div class="line"><span>فترة الاحتساب</span><b>${c.start?dmy(c.start):"—"} ← ${c.end?dmy(c.end):"—"}${!L.known?` (غير معلوم المدة: ${L.method==="cons"?c.days+" يوم":c.months+" أشهر"})`:""}</b></div>
+      <div class="line"><span>عدد أيام المخالفة</span><b>${c.days||0} يوم</b></div>`;
+    if(L.method==="hyd")lines+=`<div class="line"><span>أيام الضخ الفعلية (${num(L.d7)} أيام/أسبوع)</span><b>${c.eff||0} يوم</b></div>
+      <div class="line"><span>ساعات الضخ (${num(L.hrs)} ساعة/يوم)</span><b>${fmt(c.hrs||0)} ساعة</b></div>
+      <div class="line"><span>مساحة مقطع الأنبوب (قطر ${fmt(c.dia||0)} ملم)</span><b dir="ltr">${(c.area||0).toFixed(6)} م²</b></div>`;
+    else lines+=`<div class="line"><span>الاستهلاك التقديري اليومي (${esc(L.ccat)})</span><b>${(c.daily||0).toLocaleString("en-US",{maximumFractionDigits:3})} م³/يوم</b></div>
+      <div class="line"><span>أقصى منفعة للفئة</span><b>${fmt(c.max||0)} م³</b></div>${c.capped?`<div class="rule">تم تطبيق الحد الأقصى للفئة بدل ${fmt(c.m3raw)} م³.</div>`:""}`;
+  }
+  $("#uLossCalc").innerHTML=lines+`<div class="line"><span>كمية المياه المفقودة</span><b>${fmt(c.m3)} م³</b></div>
+    <div class="line"><span>قيمة المياه (${UNI_WATER} ريال/م³)</span><b>${fmt(c.water)}</b></div>
+    <div class="line"><span>قيمة الصرف الصحي (${UNI_SEWER} ريال/م³)</span><b>${L.sewer?fmt(c.sewer):"غير محتسب"}</b></div>
+    <div class="line" style="border-top:1px solid var(--line);margin-top:4px;padding-top:6px"><span><b>المنفعة المفقودة</b></span><b>${fmt(c.loss)} ريال</b></div>
+    ${L.method==="hyd"?`<div class="rule">المعادلة: π × (القطر ÷ 2000)² × سرعة التدفق × ساعات الضخ × 3600</div>`:""}`;
+  $("#uTotalCalc").innerHTML=`<div class="line"><span>المنفعة المفقودة</span><b>${fmt(c.loss)}</b></div><div class="line"><span>تكاليف الإصلاح</span><b>${fmt(c.repair)}</b></div>
+    <div class="line" style="border-top:1px solid var(--line);margin-top:4px;padding-top:6px;font-size:1.05rem"><span><b>الإجمالي لتكاليف الإصلاح والمنفعة المفقودة</b></span><b>${fmt(c.total)} ريال</b></div>`;
+  const miss=uniMissing(c);$("#uMissing").textContent=miss.length?"البيانات الناقصة قبل الإصدار: "+miss.join("، "):"";
+}
+function uniMissing(c){const I=U.info,m=[];if(!I.no)m.push("رقم المخالفة");if(!I.name)m.push("اسم المخالف");if(!I.band)m.push("نوع المخالفة");if(!I.date)m.push("التاريخ");
+  if(U.boq.some(r=>{const it=uniItem(r.k);return it&&it.p==null&&!num(r.p)}))m.push("سعر البنود غير المسعّرة");
+  if(U.lb.method==="break"){if(!c.hours)m.push("تاريخ ووقت الكسر والإقفال")}else if(!c.days)m.push("تواريخ المخالفة");
+  return m}
+async function uniLookup(raw){
+  let no=String(raw||"").trim().toUpperCase();if(/^\d+$/.test(no))no="SWA-"+no;if(!/^SWA-\d+$/.test(no)){toast("أدخل رقم زيارة صحيح");return}
+  const {data,error}=await sb.from("cost_visits").select("data").eq("visit_no",no).maybeSingle();
+  if(error){toast("تعذر البحث في الملف الشامل",4000);return}
+  if(!data){U.info.no=no;U.visit=null;uniSave();uniRender();toast("الرقم غير موجود في الملف الشامل — أدخل البيانات يدوياً",4500);return}
+  const v=data.data,I=U.info,d=compDate(v.start);
+  I.no=v.no;I.name=v.name||I.name;I.id=v.nid||I.id;if(d)I.date=d;I.region=v.region||"";I.gov=v.gov||"";
+  I.branch=govShort(v.gov||"")||I.branch;if(v.region&&SECTOR_OF[v.region])I.sector=SECTOR_OF[v.region];
+  const it=(v.items||[]).find(x=>x.sev==="جسيمة")||v.items?.[0]||{};
+  const nm=matchViolation(it.bnd,it.desc,uniV());const idx=nm?uniV().indexOf(nm)+1:0;
+  if(idx&&String(idx)!==String(I.band)){I.band=String(idx);U.boq=[{k:"",q:1,p:""}]}
+  const cat=PROP_CAT[v.prop];if(cat){U.lb.cat=cat.startsWith("سكني")?"سكني":cat;if((UB().maxBenefit||[]).some(x=>x.cat===cat))U.lb.ccat=cat}
+  if(/حكومي/.test(v.prop||""))I.ptype="جهة حكومية";
+  if(d&&!U.lb.end)U.lb.end=d;
+  U.visit={no:v.no,region:v.region,gov:v.gov,prop:v.prop,items:v.items,matched:!!idx};
+  uniSave();uniRender();toast("تم جلب بيانات الزيارة "+v.no);
+}
+/* ---------- النموذج المطبوع (PDF) ---------- */
+function uniSheetHtml(c){
+  const I=U.info,L=U.lb,B=U.br,V=uniV()[+I.band-1]||"";
+  const lines=c.lines.slice(0,13),eq=U.eq.filter(e=>e.n).slice(0,13),pt=U.pt.filter(p=>p.d||num(p.p)).slice(0,8);
+  let body="";
+  for(let k=0;k<13;k++){
+    const b=lines[k],e=eq[k];
+    const bq=b?td(esc(I.agr||""))+td(esc(I.band))+td(esc(b.it.code),{c:"b"})+td(fmt(b.p))+td(fmt(b.t)+(b.q!==1?`<br><span style="font-size:8px">الكمية ${b.q}</span>`:""),{c:"b"}):td("").repeat(5);
+    const ec=e?td(esc(e.n),{c:"wrap",st:"font-size:9px"})+td(num(e.c))+td(num(e.h))+td(fmt(num(e.p)))+td(fmt(num(e.c)*num(e.h)*num(e.p))):td("").repeat(5);
+    let R="";
+    if(k<4){const lab=["مقاس تمديدات الشبكة(مياه/صرف)","نوع التمديدات","الطول بالمتر","السعر"][k],val=[U.ext.size,U.ext.type,num(U.ext.len)||"",num(U.ext.price)?fmt(num(U.ext.price)):""][k];R=td(lab,{c:"lb"})+td(esc(val),{cs:4})}
+    else if(k===4)R=td("النوع",{c:"gd"})+td("الوحدة",{c:"gd"})+td("السعر الإفرادي",{c:"gd"})+td("السعر الإجمالي",{c:"gd",cs:2});
+    else{const p=pt[k-5];R=p?td(esc(p.d),{c:"wrap",st:"font-size:9px"})+td(esc((p.q||"")+" "+(p.u||"")))+td(fmt(num(p.p)))+td(fmt(num(p.q)*num(p.p)),{cs:2}):td("").repeat(3)+td("",{cs:2})}
+    body+=`<tr>${bq}${ec}${R}</tr>`;
+  }
+  const hrs=c.hours,brk=L.method==="break";
+  const logo=typeof LOGO!=="undefined"?`<img src="${LOGO}" style="height:52px">`:"";
+  return`<div class="sheet"><table>
+<colgroup>${'<col style="width:6.667%">'.repeat(15)}</colgroup>
+<tr><td colspan="4" rowspan="3" style="border:none">${logo}</td><td colspan="11" rowspan="3" class="title" style="border:none">تكاليف الإصلاح والمنفعة المفقودة</td></tr><tr></tr><tr></tr>
+<tr>${td("اسم المخالف :",{c:"lb"})}${td(esc(I.name),{cs:4,c:"b"})}${td("رقم المخالفة :",{c:"lb"})}${td(esc(I.no),{cs:4,c:"b"})}${td("القطاع:",{c:"lb",rs:2})}${td(esc(I.sector),{cs:4,rs:2,c:"b"})}</tr>
+<tr>${td("رقم الهوية/ رقم المنشأة الموحد :",{c:"lb"})}${td(esc(I.id),{cs:4})}${td("نوع المخالفة :",{c:"lb"})}${td(esc((I.band?I.band+" - ":"")+V),{cs:4,c:"wrap",st:"font-size:8.5px;white-space:normal"})}</tr>
+<tr>${td("نوع المخالف:",{c:"lb"})}${td(esc(I.ptype),{cs:4})}${td("الــتـــاريــخ :",{c:"lb"})}${td(dmy(I.date),{cs:4})}${td("وحدة العمل:",{c:"lb"})}${td(esc(I.branch),{cs:4})}</tr>
+<tr>${td("1- : تكلفة الأيدي العاملة",{cs:5,c:"ye"})}${td("2- : تكلفة إستعمال المعدات",{cs:5,c:"ye"})}${td("3- : تكلفة قطع الغيار",{cs:5,c:"ye"})}</tr>
+<tr>${["رقم الاتفاقية","الرقم","رقم الصنف","السعر الإفرادي","السعر الإجمالي","النوع","العدد","الوقت بالساعة","السعر الإفرادي","السعر الإجمالي"].map(x=>td(x,{c:"gd"})).join("")}${td("التوصيلة",{c:"gd"})}${td("السعر",{c:"gd",cs:4})}</tr>
+${body}
+<tr>${td("المجموع ( ريال )"+(U.emerg?` — شامل تنفيذ طارئ ${UB().emergencyPct}%`:""),{cs:4,c:"gn"})}${td(fmt(c.boq),{c:"gn"})}${td("المجموع ( ريال )",{cs:4,c:"gn"})}${td(fmt(c.eq),{c:"gn"})}${td("المجموع ( ريال )",{cs:4,c:"gn"})}${td(fmt(c.pt),{c:"gn"})}</tr>
+<tr>${td("الإنكسارات",{cs:9,c:"ye"})}${td("القيمة الكلية لاحتساب المنفعة المفقودة لمدة المخالفة",{cs:6,c:"ye"})}</tr>
+<tr>${td("تاريخ البلاغ",{c:"lb"})}${td(brk?dmy(B.repDate):"",{cs:2})}${td("تاريخ بدء اقفال المياه",{c:"lb"})}${td(brk?dmy(B.offDate):"",{cs:2})}${td("قطر الكسر (ملم)",{c:"lb"})}${td(brk&&num(B.dia)?num(B.dia):"",{cs:2})}${td("تاريخ بداية المخالفة",{c:"lb"})}${td(dmy(c.start))}${td("عدد أيام المخالفة",{c:"lb"})}${td(c.days||"",{cs:3,c:"b"})}</tr>
+<tr>${td("تاريخ وقوع الكسر",{c:"lb"})}${td(brk?dmy(B.brDate):"",{cs:2})}${td("وقت بدء اقفال المياه",{c:"lb"})}${td(brk?esc(B.offTime):"",{cs:2})}${td("مدة التسريب (تاريخ)",{c:"lb"})}${td(brk&&hrs?Math.floor(hrs/24)+" يوم و "+fmt(hrs%24)+" ساعة":"",{cs:2})}${td("تاريخ نهاية المخالفة",{c:"lb"})}${td(dmy(c.end))}${td("قيمة إحتساب المياه المفقودة",{c:"lb"})}${td(UNI_WATER+" ريال للمتر المكعب",{cs:3})}</tr>
+<tr>${td("وقت وقوع الكسر",{c:"lb"})}${td(brk?esc(B.brTime):"",{cs:2})}${td("وقت البلاغ ",{c:"lb"})}${td(brk?esc(B.repTime):"",{cs:2})}${td("مدة التسريب (ساعة)",{c:"lb"})}${td(brk&&hrs?fmt(hrs):"",{cs:2})}${td("قيمة إحتساب الصرف المفقودة",{c:"lb"})}${td(L.sewer?UNI_SEWER+" ريال":"—")}${td("الفئة ",{c:"lb"})}${td(esc(L.method==="cons"?L.ccat:L.cat),{cs:3})}</tr>
+<tr>${td("كمية مقدار المياه الضائعة م3 =",{cs:4,c:"gr b"})}${td(fmt(c.m3),{cs:4,c:"big"})}${td("حساب المنفعة المفقودة للصرف الصحي",{cs:7,c:"gr b"})}</tr>
+<tr>${td("احتساب فترة المخالفة للمياه"+(!L.known&&!brk?" (غير معلوم المدة)":""),{cs:8,c:"lb"})}${td("احتساب فترة المخالفة للصرف",{cs:7,c:"lb"})}</tr>
+<tr>${td(c.days?c.days+" يوم":"",{cs:8})}${td(L.sewer&&c.days?c.days+" يوم":"—",{cs:7})}</tr>
+<tr>${td("قيمة إحتساب المياه الضائعة ( ريال )",{cs:8,c:"lb"})}${td("قيمة إحتساب المنفعة المفقودة ( ريال )",{cs:7,c:"lb"})}</tr>
+<tr style="height:30px">${td(fmt(c.water),{cs:8,c:"big"})}${td(L.sewer?fmt(c.sewer):"—",{cs:7,c:"big"})}</tr>
+<tr>${td("قيمة إحتساب المنفعة المفقودة",{cs:13,c:"tot"})}${td(fmt(c.loss),{c:"tot"})}${td("ريال",{c:"tot"})}</tr>
+<tr>${td(" تكاليف الإصلاح ",{cs:13,c:"tot"})}${td(fmt(c.repair),{c:"tot"})}${td("ريال",{c:"tot"})}</tr>
+<tr>${td("الإجمالي لتكاليف الإصلاح والمنفعة المفقودة",{cs:13,c:"tot ye"})}${td(fmt(c.total)+" ريال",{cs:2,c:"tot ye"})}</tr>
+<tr>${td(" مسؤول خدمات العملاء: "+esc(U.sign.cs),{cs:8})}${td("مسؤول التشغيل والصيانة: "+esc(U.sign.om),{cs:7})}</tr>
+<tr style="height:46px">${td("توقيع")}${td("",{cs:7})}${td("توقيع ")}${td("",{cs:6})}</tr>
+</table></div>`;
+}
+function uniDetailHtml(c){
+  const I=U.info;
+  const rows=c.lines.map((x,i)=>`<tr>${td(i+1)}${td(esc(x.it.code),{c:"b"})}${td(esc(x.it.d),{c:"wrap r",st:"font-size:9px;white-space:normal;text-align:right"})}${td(esc(x.it.u))}${td(x.q)}${td(fmt(x.p))}${td(fmt(x.t),{c:"b"})}</tr>`).join("");
+  return`<div class="sheet" style="min-height:0"><table><colgroup><col style="width:4%"><col style="width:8%"><col style="width:52%"><col style="width:8%"><col style="width:7%"><col style="width:10%"><col style="width:11%"></colgroup>
+<tr>${td("تفاصيل بنود جدول الكميات — المخالفة "+esc(I.no)+(I.band?" — البند "+esc(I.band):""),{cs:7,c:"ye big"})}</tr>
+<tr>${["م","رقم الصنف","وصف البند","الوحدة","الكمية","السعر الإفرادي","الإجمالي"].map(x=>td(x,{c:"gd"})).join("")}</tr>
+${rows||`<tr>${td("لا توجد بنود",{cs:7})}</tr>`}
+${U.emerg?`<tr>${td("تنفيذ طارئ / خارج أوقات الدوام (+"+UB().emergencyPct+"%)",{cs:6,c:"r"})}${td(fmt(c.emerg),{c:"b"})}</tr>`:""}
+<tr>${td("المجموع (ريال)",{cs:6,c:"gn"})}${td(fmt(c.boq),{c:"gn"})}</tr></table></div>`;
+}
+async function uniPdf(){
+  const c=uniCompute(),miss=uniMissing(c);
+  if(miss.length&&!confirm("بيانات ناقصة: "+miss.join("، ")+"\nإصدار PDF على أي حال؟"))return;
+  const host=$("#sheetHost");host.innerHTML=uniSheetHtml(c)+(c.lines.length?`<div style="height:20px"></div>`+uniDetailHtml(c):"");
+  if(!window.html2canvas||!window.jspdf){window.print();setTimeout(()=>host.innerHTML="",1000);return}
+  const b=$("#uPdf");b.disabled=true;toast("جاري تجهيز ملف PDF…",8000);
+  try{
+    try{await document.fonts.ready}catch(e){}
+    const pdf=new window.jspdf.jsPDF({orientation:"landscape",unit:"mm",format:"a4"});
+    const pages=[...host.querySelectorAll(".sheet")];
+    for(let i=0;i<pages.length;i++){
+      const cv=await html2canvas(pages[i],{scale:2.3,backgroundColor:"#ffffff",logging:false,windowWidth:1123});
+      if(i)pdf.addPage("a4","landscape");
+      const r=Math.min(297/cv.width,210/cv.height),w=cv.width*r,h=cv.height*r;
+      pdf.addImage(cv.toDataURL("image/jpeg",0.93),"JPEG",(297-w)/2,i?8:(210-h)/2,w,h);
+    }
+    pdf.setProperties({title:"تكاليف الإصلاح والمنفعة المفقودة - "+(U.info.no||"")});
+    showPdf(pdf.output("blob"),`حساب التكاليف الموحد - ${String(U.info.no||"نموذج").trim()}.pdf`.replace(/[\\/:*?"<>|]/g,"-"));
+  }catch(err){toast("تعذر إنشاء PDF: "+(err?.message||err),6000)}
+  finally{b.disabled=false;host.innerHTML=""}
+}
+/* ---------- Excel على القالب الرسمي ---------- */
+const uniSerial=d=>d?Math.round((new Date(d+"T00:00:00Z")-Date.UTC(1899,11,30))/864e5):"";
+function uniExcelCells(c){
+  const I=U.info,L=U.lb,B=U.br,m={},brk=L.method==="break";
+  m.B7=I.name||"";m.G7=I.no||"";m.L7=I.sector||"";
+  m.B8=I.id||"";m.G8=(I.band?I.band+" - ":"")+(uniV()[+I.band-1]||"");
+  m.B9=I.ptype||"";m.G9=dmy(I.date);m.L9=I.branch||"";
+  const eq=U.eq.filter(e=>e.n),pt=U.pt.filter(p=>p.d||num(p.p));
+  for(let k=0;k<13;k++){const row=12+k,b=c.lines[k],e=eq[k];
+    if(b){m["A"+row]=I.agr||"";m["B"+row]=Number(I.band)||I.band;m["C"+row]=b.it.code;m["D"+row]=b.p;m["E"+row]=b.t}
+    if(e){m["F"+row]=e.n;m["G"+row]=num(e.c);m["H"+row]=num(e.h);m["I"+row]=num(e.p);m["J"+row]=num(e.c)*num(e.h)*num(e.p)}}
+  m.L12=U.ext.size||"";m.L13=U.ext.type||"";m.L14=num(U.ext.len)||"";m.L15=num(U.ext.price)||"";
+  pt.slice(0,8).forEach((p,k)=>{const row=17+k;m["K"+row]=p.d||"";m["L"+row]=((p.q||"")+" "+(p.u||"")).trim();m["M"+row]=num(p.p);m["N"+row]=num(p.q)*num(p.p)});
+  m.E25=c.boq;m.J25=c.eq;m.O25=c.pt;
+  m.B27=brk?dmy(B.repDate):"";m.E27=brk?dmy(B.offDate):"";m.H27=brk&&num(B.dia)?num(B.dia):"";m.K27=dmy(c.start);m.M27=c.days||0;
+  m.B28=brk?dmy(B.brDate):"";m.E28=brk?(B.offTime||""):"";m.H28=brk&&c.hours?Math.floor(c.hours/24)+" يوم و "+fmt(c.hours%24)+" ساعة":"";m.K28=dmy(c.end);m.M28=UNI_WATER+" ريال للمتر المكعب";
+  m.B29=brk?(B.brTime||""):"";m.E29=brk?(B.repTime||""):"";m.H29=brk&&c.hours?Math.round(c.hours*100)/100:"";m.M29=L.method==="cons"?L.ccat:L.cat;
+  m.E30=c.m3;m.A32=c.days||0;m.I32=L.sewer?(c.days||0):"—";m.A34=c.water;m.I34=c.sewer;
+  m.N36=c.loss;m.N37=c.repair;m.N38=c.total;
+  m.A39=" مسؤول خدمات العملاء: "+(U.sign.cs||"");m.I39="مسؤول التشغيل والصيانة: "+(U.sign.om||"");
+  /* مدخلات خلايا الاحتساب في القالب (خارج منطقة الطباعة) */
+  m.G46=uniSerial(c.start);m.G47=uniSerial(c.end);m.F49=num(L.d7)||7;m.G49=num(L.hrs)||10;m.J47=num(L.dia)||UNI_DIA;m.I51=num(L.vel)||1;
+  m.G52=L.cat;m.G53=L.known?"معلوم المدة ":"غير معلوم المدة";
+  return m;
+}
+async function uniExcel(){
+  if(!window.JSZip){toast("تعذر تحميل مكتبة Excel، حدّث الصفحة",5000);return}
+  const b=$("#uXls");b.disabled=true;
+  try{
+    if(!window.UNIFIED_XLSX_TPL)await uniScript("unified-tpl.js");
+    const c=uniCompute();
+    const zip=await JSZip.loadAsync(window.UNIFIED_XLSX_TPL,{base64:true});
+    const path="xl/worksheets/sheet1.xml";
+    const xml=await zip.file(path).async("string");
+    zip.file(path,fillSheetXml(xml,uniExcelCells(c)));
+    const mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    const blob=await zip.generateAsync({type:"blob",compression:"DEFLATE",mimeType:mime});
+    showPdf(blob,`حساب التكاليف الموحد - ${String(U.info.no||"نموذج").trim()}.xlsx`.replace(/[\\/:*?"<>|]/g,"-"),mime);
+  }catch(err){toast("تعذر إنشاء ملف Excel: "+(err?.message||err),6000)}
+  finally{b.disabled=false}
+}
+async function showUnified(){
+  if(!U)U=uniLoadDraft();
+  if(!UB()){uniRender();try{await uniEnsureData()}catch(e){$("#tab-unified").innerHTML=`<section class="block"><div class="body"><div class="rule warn">${esc(e.message)} — حدّث الصفحة.</div></div></section>`;return}}
+  uniRender();
+}
 
 /* ===== فاتح / غامق ===== */
 const SUN='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',MOON='<svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
