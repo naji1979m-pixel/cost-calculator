@@ -159,6 +159,17 @@ body{background:radial-gradient(1200px 600px at 85% -10%,#0f3a6b 0%,transparent 
 .side nav button:hover{background:rgba(59,156,255,.08);color:var(--ink)}
 .side nav button.on{background:linear-gradient(90deg,#1f6fd1,#2f8bff);color:#fff;box-shadow:0 6px 18px rgba(47,139,255,.35)}
 @media (max-width:600px){#tab-unified .grid>[style*="span 2"]{grid-column:1/-1!important}}
+.tiles{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-bottom:16px}
+.tile{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;border:1px solid var(--line);border-radius:14px;padding:14px 8px;background:linear-gradient(180deg,rgba(16,48,84,.95),rgba(10,32,58,.95));color:var(--ink);font:inherit;cursor:pointer;transition:transform .15s,border-color .15s}
+.tile:hover{transform:translateY(-2px);border-color:var(--water)}
+.tile .ti-ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:rgba(59,156,255,.14)}
+.tile.g .ti-ic{background:rgba(63,214,164,.16)}
+.tile svg{width:24px;height:24px;stroke:var(--water);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tile.g svg{stroke:var(--ok)}
+.tile .ti-t{font-size:.86rem;font-weight:600;line-height:1.3}.tile .ti-s{font-size:.72rem;color:var(--muted)}
+[data-theme="light"] .tile{background:#fff}
+@media (max-width:1100px){.tiles{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:600px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .nav-h{display:flex;align-items:center;gap:6px;font-size:.74rem;color:var(--muted);margin:14px 10px 4px;letter-spacing:.2px}
 .nav-h .nav-new{margin-inline-start:auto}
 .nav-new{margin-inline-start:auto;font-size:.68rem;background:var(--ok);color:#06231a;border-radius:999px;padding:1px 8px;font-weight:600}
@@ -297,6 +308,7 @@ dialog{background:#0b223c}
   <!-- ===== HOME / DASHBOARD ===== -->
   <div id="tab-home" hidden>
     <div class="hero"><svg class="deco" viewBox="0 0 800 200" preserveAspectRatio="xMinYMid slice" aria-hidden="true"><defs><radialGradient id="hg" cx="12%" cy="50%" r="35%"><stop offset="0" stop-color="#3fb6ff" stop-opacity=".55"/><stop offset="1" stop-color="#3fb6ff" stop-opacity="0"/></radialGradient></defs><rect width="800" height="200" fill="url(#hg)"/><circle cx="95" cy="100" r="78" fill="none" stroke="#5cc3ff" stroke-opacity=".55" stroke-width="1.5"/><circle cx="95" cy="100" r="62" fill="#0e4a86" fill-opacity=".45" stroke="#7fd3ff" stroke-opacity=".35"/><path d="M40 92q55-22 110 0M38 112q57 20 114 0M95 38v124M60 50q35 50 0 100M130 50q-35 50 0 100" fill="none" stroke="#9fe0ff" stroke-opacity=".35"/><path d="M0 150C120 120 220 175 340 140S560 95 800 130" fill="none" stroke="#4fc0ff" stroke-opacity=".55" stroke-width="2"/><path d="M0 165C140 135 250 190 380 155S600 115 800 150" fill="none" stroke="#3fd6a4" stroke-opacity=".35" stroke-width="1.5"/><path d="M0 178C150 150 270 200 420 168S630 135 800 168" fill="none" stroke="#4fc0ff" stroke-opacity=".25"/></svg><div style="position:relative;z-index:1;max-width:640px;margin-inline-start:auto"><h2>منصة حساب التكاليف والمنفعة المفقودة</h2><p>بيانات دقيقة .. قرارات أفضل .. لاستدامة مواردنا المائية</p></div></div>
+<div class="tiles"><button type="button" class="tile g" data-go="unified"><span class="ti-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M8 18h2M12 18h2"/></svg></span><span class="ti-t">حساب التكاليف الموحد</span><span class="ti-s">النموذج الجديد</span></button><button type="button" class="tile g" data-go="urecs"><span class="ti-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M9 13h6M9 17h6"/></svg></span><span class="ti-t">سجل النماذج الموحدة</span><span class="ti-s">المسودات والمعتمدة</span></button><button type="button" class="tile g" data-go="uboq"><span class="ti-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/></svg></span><span class="ti-t">جدول الكميات الموحد</span><span class="ti-s">البنود والأسعار</span></button><button type="button" class="tile b" data-go="form:sec-info"><span class="ti-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg></span><span class="ti-t">الحساب السابق</span><span class="ti-s">النموذج السابق</span></button><button type="button" class="tile b" data-go="loss"><span class="ti-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3s7 7.5 7 12a7 7 0 0 1-14 0c0-4.5 7-12 7-12z"/></svg></span><span class="ti-t">المنفعة المفقودة</span><span class="ti-s">المخالفات الجسيمة</span></button><button type="button" class="tile b" data-go="recs"><span class="ti-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M9 13h6M9 17h6"/></svg></span><span class="ti-t">سجل النماذج السابقة</span><span class="ti-s">المسودات والمعتمدة</span></button></div>
     <div class="dash-bar" id="dbUnits">
       <button class="chip on" type="button" data-u="all">كل الوحدات</button>
       <button class="chip" type="button" data-u="north">الوحدة الشمالية</button>
@@ -752,7 +764,8 @@ async function boot(){
   loadVisitList();
   $("#sideLogo").src=LOGO;
   showForm();
-  {const h=location.hash.slice(1);const T=["home","unified","urecs","uboq","form","loss","recs","boq","rates","comp"];switchTab(T.includes(h)?h:"home")}
+  try{if(location.hash)history.replaceState(null,"",location.pathname+location.search)}catch(e){}
+  switchTab("home");
 }
 async function loadCatalogs(){
   const [a,b,c]=await Promise.all([
@@ -1072,7 +1085,6 @@ $("#saveRates").onclick=async()=>{
 let RECKIND="old";
 const PAGE_TITLES={home:"الرئيسية",unified:"حساب التكاليف الموحد",uboq:"جدول الكميات الموحد",form:"النموذج",loss:"المنفعة المفقودة",recs:"سجل النماذج",boq:"جدول الكميات",rates:"معدلات الفئات",comp:"الملف الشامل"};
 function switchTab(t,sec){
-  try{history.replaceState(null,"",t==="home"?location.pathname+location.search:"#"+(sec==="__u"||t==="urecs"?"urecs":t))}catch(e){}
   document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("on",x.dataset.tab===t));
   if(t==="urecs"){RECKIND="unified";t="recs";sec="__u"}else if(t==="recs")RECKIND="old";
   ["home","unified","uboq","form","recs","boq","rates","comp","loss"].forEach(k=>$("#tab-"+k).hidden=k!==t);
@@ -1086,7 +1098,7 @@ function switchTab(t,sec){
   if(sec&&sec!=="__u")setTimeout(()=>{const el=document.getElementById(sec);if(el){const y=el.getBoundingClientRect().top+window.scrollY-12;window.scrollTo({top:sec==="sec-info"?0:y,behavior:"smooth"})}},60);
 }
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
-document.querySelectorAll("#sideNav [data-go]").forEach(b=>b.onclick=()=>{const g=b.dataset.go;
+document.querySelectorAll("#sideNav [data-go],.tiles [data-go]").forEach(b=>b.onclick=()=>{const g=b.dataset.go;
   if(g==="admin"){document.body.classList.remove("side-open");if(user)openScope();else showLogin();return}
   const [t,sec]=g.split(":");switchTab(t,sec)});
 $("#menuBtn").onclick=()=>document.body.classList.toggle("side-open");
