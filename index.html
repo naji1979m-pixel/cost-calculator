@@ -159,6 +159,8 @@ body{background:radial-gradient(1200px 600px at 85% -10%,#0f3a6b 0%,transparent 
 .side nav button:hover{background:rgba(59,156,255,.08);color:var(--ink)}
 .side nav button.on{background:linear-gradient(90deg,#1f6fd1,#2f8bff);color:#fff;box-shadow:0 6px 18px rgba(47,139,255,.35)}
 @media (max-width:600px){#tab-unified .grid>[style*="span 2"]{grid-column:1/-1!important}}
+.nav-h{display:flex;align-items:center;gap:6px;font-size:.74rem;color:var(--muted);margin:14px 10px 4px;letter-spacing:.2px}
+.nav-h .nav-new{margin-inline-start:auto}
 .nav-new{margin-inline-start:auto;font-size:.68rem;background:var(--ok);color:#06231a;border-radius:999px;padding:1px 8px;font-weight:600}
 .side .sep{height:1px;background:var(--line);margin:10px 4px}
 .side .foot{margin-top:auto;padding-top:12px;font-size:.75rem;color:var(--muted);text-align:center}
@@ -269,7 +271,7 @@ dialog{background:#0b223c}
 <div id="app" class="shell" hidden>
 <aside class="side" id="side">
   <div class="brand"><img id="sideLogo" alt="شركة المياه الوطنية"></div>
-  <nav id="sideNav"><button type="button" data-go="home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><span>الرئيسية</span></button><button type="button" data-go="unified"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M8 18h2M12 18h2"/></svg><span>حساب التكاليف الموحد</span><span class="nav-new">جديد</span></button><button type="button" data-go="form:sec-info"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg><span>بيانات المخالفة</span></button><button type="button" data-go="form:sec-repair"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg><span>تكاليف الإصلاح</span></button><button type="button" data-go="loss"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3s7 7.5 7 12a7 7 0 0 1-14 0c0-4.5 7-12 7-12z"/></svg><span>المنفعة المفقودة</span></button><button type="button" data-go="recs"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M9 13h6M9 17h6"/></svg><span>سجل النماذج</span></button><button type="button" data-go="boq"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/></svg><span>جدول الكميات</span></button><button type="button" data-go="rates"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="7" cy="7" r="3"/><circle cx="17" cy="17" r="3"/><path d="M5 19L19 5"/></svg><span>معدلات الفئات</span></button><button type="button" data-go="comp"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M12 18v-6M9 15l3-3 3 3"/></svg><span>الملف الشامل</span></button><div class="sep"></div><button type="button" data-go="admin"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>إدارة النظام</span></button></nav>
+  <nav id="sideNav"><button type="button" data-go="home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><span>الرئيسية</span></button><div class="nav-h">حساب التكاليف الموحد<span class="nav-new">جديد</span></div><button type="button" data-go="unified"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M8 18h2M12 18h2"/></svg><span>النموذج الموحد</span></button><button type="button" data-go="urecs"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M9 13h6M9 17h6"/></svg><span>سجل النماذج الموحدة</span></button><button type="button" data-go="uboq"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/></svg><span>جدول الكميات الموحد</span></button><div class="nav-h">حساب التكاليف السابق</div><button type="button" data-go="form:sec-info"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg><span>بيانات المخالفة</span></button><button type="button" data-go="form:sec-repair"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg><span>تكاليف الإصلاح</span></button><button type="button" data-go="loss"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3s7 7.5 7 12a7 7 0 0 1-14 0c0-4.5 7-12 7-12z"/></svg><span>المنفعة المفقودة</span></button><button type="button" data-go="recs"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M9 13h6M9 17h6"/></svg><span>سجل النماذج</span></button><button type="button" data-go="boq"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/></svg><span>جدول الكميات</span></button><button type="button" data-go="rates"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="7" cy="7" r="3"/><circle cx="17" cy="17" r="3"/><path d="M5 19L19 5"/></svg><span>معدلات الفئات</span></button><div class="nav-h">عام</div><button type="button" data-go="comp"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M12 18v-6M9 15l3-3 3 3"/></svg><span>الملف الشامل</span></button><div class="sep"></div><button type="button" data-go="admin"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>إدارة النظام</span></button></nav>
   <div class="foot">إدارة المخالفات والتفتيش</div>
 </aside>
 <div class="side-mask" id="sideMask"></div>
@@ -324,6 +326,12 @@ dialog{background:#0b223c}
 
   <!-- ===== UNIFIED ===== -->
   <div id="tab-unified" hidden></div>
+  <div id="tab-uboq" hidden><section class="block"><h2>جدول الكميات الموحد</h2><div class="body">
+    <p style="margin-top:0" class="hint">الأسعار المعتمدة في ملفات توحيد العمل على تكاليف الإصلاح والمنفعة المفقودة — للاطلاع فقط.</p>
+    <div class="grid" style="margin-bottom:12px"><label class="f" style="grid-column:1/-1">بند المخالفة<select id="ubBand"></select></label><label class="f">بحث في البنود<input id="ubQ" placeholder="مثال: عداد 25 مم"></label></div>
+    <div id="ubScope"></div>
+    <div class="tbl"><table class="t"><thead><tr><th>رقم الصنف</th><th>البند</th><th>الوحدة</th><th class="num">السعر (ريال)</th></tr></thead><tbody id="ubRows"></tbody></table></div>
+    <div class="hint" id="ubInfo"></div></div></section></div>
 
   <!-- ===== FORM ===== -->
   <div id="tab-form" hidden>
@@ -744,7 +752,7 @@ async function boot(){
   loadVisitList();
   $("#sideLogo").src=LOGO;
   showForm();
-  {const h=location.hash.slice(1);const T=["home","unified","form","loss","recs","boq","rates","comp"];switchTab(T.includes(h)?h:"home")}
+  {const h=location.hash.slice(1);const T=["home","unified","urecs","uboq","form","loss","recs","boq","rates","comp"];switchTab(T.includes(h)?h:"home")}
 }
 async function loadCatalogs(){
   const [a,b,c]=await Promise.all([
@@ -985,9 +993,10 @@ async function loadRecs(){
 }
 function renderRecs(){
   const q=$("#recQ").value.trim(),st=$("#recSt").value,br=$("#recBr").value;
-  const list=recs.filter(r=>(!q||(r.violation_no||"").includes(q)||(r.violator_name||"").includes(q))&&(!st||r.status===st)&&(!br||r.branch===br));
+  $(".rec-list>h2").textContent=RECKIND==="unified"?"سجل النماذج الموحدة":"سجل النماذج — الحساب السابق";
+  const list=recs.filter(r=>(RECKIND==="unified"?r.kind==="unified":r.kind!=="unified")&&(!q||(r.violation_no||"").includes(q)||(r.violator_name||"").includes(q))&&(!st||r.status===st)&&(!br||r.branch===br));
   $("#recRows").innerHTML=list.map(r=>`<tr data-id="${r.id}"><td dir="ltr" style="text-align:right">${esc(r.violation_no||"—")}</td><td>${esc(r.violator_name||"—")}</td><td>${esc(r.branch||"")}</td>
-    <td><span class="status ${r.status==="معتمد"?"a":"d"}">${esc(r.status)}</span>${r.kind==="unified"?' <span class="nav-new" style="margin:0">موحد</span>':""}</td><td class="num">${fmt(num(r.grand_total))}</td>
+    <td><span class="status ${r.status==="معتمد"?"a":"d"}">${esc(r.status)}</span></td><td class="num">${fmt(num(r.grand_total))}</td>
     <td>${new Date(r.created_at).toLocaleDateString("en-GB")}</td><td style="font-size:.8rem">${esc(r.prepared_by||"")}</td></tr>`).join("")||`<tr><td colspan="7" class="hint">لا توجد نماذج${q||st||br?" مطابقة":" بعد"}.</td></tr>`;
   $("#recInfo").textContent=`${list.length} نموذج — المسودات ${list.filter(r=>r.status==="مسودة").length}، المعتمدة ${list.filter(r=>r.status==="معتمد").length}`;
 }
@@ -1060,19 +1069,21 @@ $("#saveRates").onclick=async()=>{
 };
 
 /* ================= التبويبات ================= */
-const PAGE_TITLES={home:"الرئيسية",unified:"حساب التكاليف الموحد",form:"النموذج",loss:"المنفعة المفقودة",recs:"سجل النماذج",boq:"جدول الكميات",rates:"معدلات الفئات",comp:"الملف الشامل"};
+let RECKIND="old";
+const PAGE_TITLES={home:"الرئيسية",unified:"حساب التكاليف الموحد",uboq:"جدول الكميات الموحد",form:"النموذج",loss:"المنفعة المفقودة",recs:"سجل النماذج",boq:"جدول الكميات",rates:"معدلات الفئات",comp:"الملف الشامل"};
 function switchTab(t,sec){
-  try{history.replaceState(null,"",t==="home"?location.pathname+location.search:"#"+t)}catch(e){}
+  try{history.replaceState(null,"",t==="home"?location.pathname+location.search:"#"+(sec==="__u"||t==="urecs"?"urecs":t))}catch(e){}
   document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("on",x.dataset.tab===t));
-  ["home","unified","form","recs","boq","rates","comp","loss"].forEach(k=>$("#tab-"+k).hidden=k!==t);
+  if(t==="urecs"){RECKIND="unified";t="recs";sec="__u"}else if(t==="recs")RECKIND="old";
+  ["home","unified","uboq","form","recs","boq","rates","comp","loss"].forEach(k=>$("#tab-"+k).hidden=k!==t);
   $("#totalbar").hidden=t!=="form";document.body.classList.toggle("has-bar",t==="form");
-  const go=sec?t+":"+sec:(t==="form"?"form:sec-info":t);
+  const go=sec==="__u"?"urecs":sec?t+":"+sec:(t==="form"?"form:sec-info":t);
   document.querySelectorAll("#sideNav [data-go]").forEach(b=>b.classList.toggle("on",b.dataset.go===go));
-  $("#pageTitle").textContent=sec==="sec-repair"?"تكاليف الإصلاح":sec==="sec-info"?"بيانات المخالفة":PAGE_TITLES[t]||"";
+  $("#pageTitle").textContent=sec==="__u"?"سجل النماذج الموحدة":t==="recs"?"سجل النماذج (الحساب السابق)":sec==="sec-repair"?"تكاليف الإصلاح":sec==="sec-info"?"بيانات المخالفة":PAGE_TITLES[t]||"";
   document.body.classList.remove("side-open");
   window.scrollTo(0,0);
-  if(t==="home")loadDash();else if(t==="unified")showUnified();else if(t==="form")showForm();else if(t==="recs")loadRecs();else if(t==="boq")renderCat();else if(t==="comp")loadCompInfo();else if(t==="loss"){if(!lossRows.length)loadLossList();else if(!lossUiReady)lossUiInit()}else renderRates();
-  if(sec)setTimeout(()=>{const el=document.getElementById(sec);if(el){const y=el.getBoundingClientRect().top+window.scrollY-12;window.scrollTo({top:sec==="sec-info"?0:y,behavior:"smooth"})}},60);
+  if(t==="home")loadDash();else if(t==="unified")showUnified();else if(t==="uboq")showUBoq();else if(t==="form")showForm();else if(t==="recs")loadRecs();else if(t==="boq")renderCat();else if(t==="comp")loadCompInfo();else if(t==="loss"){if(!lossRows.length)loadLossList();else if(!lossUiReady)lossUiInit()}else renderRates();
+  if(sec&&sec!=="__u")setTimeout(()=>{const el=document.getElementById(sec);if(el){const y=el.getBoundingClientRect().top+window.scrollY-12;window.scrollTo({top:sec==="sec-info"?0:y,behavior:"smooth"})}},60);
 }
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
 document.querySelectorAll("#sideNav [data-go]").forEach(b=>b.onclick=()=>{const g=b.dataset.go;
@@ -2254,6 +2265,27 @@ async function showUnified(){
   if(!U)U=uniLoadDraft();
   if(!UB()){uniRender();try{await uniEnsureData()}catch(e){$("#tab-unified").innerHTML=`<section class="block"><div class="body"><div class="rule warn">${esc(e.message)} — حدّث الصفحة.</div></div></section>`;return}}
   uniRender();
+}
+
+/* ---------- تصفح جدول الكميات الموحد ---------- */
+async function showUBoq(){
+  if(!UB()){$("#ubRows").innerHTML=`<tr><td colspan="4" class="hint">جاري التحميل…</td></tr>`;try{await uniEnsureData()}catch(e){$("#ubRows").innerHTML=`<tr><td colspan="4" class="hint">${esc(e.message)}</td></tr>`;return}}
+  if(!$("#ubBand").options.length){
+    $("#ubBand").innerHTML=`<option value="g">البنود العامة المساندة (لجميع المخالفات)</option>`+uniV().map((v,i)=>uniCatalog(i+1)?`<option value="${i+1}">${i+1} - ${esc(v)}</option>`:"").join("");
+    $("#ubBand").onchange=renderUBoq;$("#ubQ").oninput=renderUBoq;
+  }
+  renderUBoq();
+}
+function renderUBoq(){
+  const b=$("#ubBand").value,q=vNorm?String($("#ubQ").value||"").trim():"";
+  const cat=b==="g"?UB().general:uniCatalog(b);if(!cat)return;
+  $("#ubScope").innerHTML=cat.desc?`<div class="calc" style="margin-top:0;margin-bottom:10px">${cat.title?`<div style="font-weight:600;margin-bottom:4px">${esc(cat.title)}</div>`:""}<div class="hint" style="margin:0;line-height:1.7">${esc(cat.desc)}</div></div>`:"";
+  let last=null,rows="",n=0;
+  cat.items.forEach((it,i)=>{if(q&&!(it.d+" "+(it.g||"")).includes(q))return;n++;
+    if((it.g||"")!==last){last=it.g||"";if(last)rows+=`<tr><td colspan="4" style="background:var(--soft);font-weight:600">${esc(last)}</td></tr>`}
+    rows+=`<tr><td dir="ltr" style="text-align:right">${b==="g"?"ع-"+(i+1):b+"-"+(i+1)}</td><td>${esc(it.d)}</td><td>${esc(it.u)}</td><td class="num">${it.p!=null?fmt(it.p):'<span class="hint">غير مسعّر</span>'}</td></tr>`});
+  $("#ubRows").innerHTML=rows||`<tr><td colspan="4" class="hint">لا توجد بنود مطابقة.</td></tr>`;
+  $("#ubInfo").textContent=`${n} بند`+(cat.items.some(x=>x.p==null)?` — البنود غير المسعّرة يُدخل سعرها يدوياً في النموذج`:"");
 }
 
 /* ===== فاتح / غامق ===== */
