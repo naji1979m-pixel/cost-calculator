@@ -975,7 +975,7 @@ $("#delBtn").onclick=async()=>{
 /* ================= السجل ================= */
 async function loadRecs(){
   $("#recInfo").textContent="جاري التحميل…";
-  const {data,error}=await sb.from("cost_calculations").select("id,violation_no,violator_name,branch,status,grand_total,created_at,prepared_by").order("created_at",{ascending:false}).limit(500);
+  const {data,error}=await sb.from("cost_calculations").select("id,violation_no,violator_name,branch,status,grand_total,created_at,prepared_by,kind:data->>kind").order("created_at",{ascending:false}).limit(500);
   if(error){$("#recInfo").textContent="تعذر تحميل السجل.";return}
   recs=data;
   const cur=$("#recBr").value||(SCOPE?.gov?govShort(SCOPE.gov):"");
@@ -987,7 +987,7 @@ function renderRecs(){
   const q=$("#recQ").value.trim(),st=$("#recSt").value,br=$("#recBr").value;
   const list=recs.filter(r=>(!q||(r.violation_no||"").includes(q)||(r.violator_name||"").includes(q))&&(!st||r.status===st)&&(!br||r.branch===br));
   $("#recRows").innerHTML=list.map(r=>`<tr data-id="${r.id}"><td dir="ltr" style="text-align:right">${esc(r.violation_no||"—")}</td><td>${esc(r.violator_name||"—")}</td><td>${esc(r.branch||"")}</td>
-    <td><span class="status ${r.status==="معتمد"?"a":"d"}">${esc(r.status)}</span></td><td class="num">${fmt(num(r.grand_total))}</td>
+    <td><span class="status ${r.status==="معتمد"?"a":"d"}">${esc(r.status)}</span>${r.kind==="unified"?' <span class="nav-new" style="margin:0">موحد</span>':""}</td><td class="num">${fmt(num(r.grand_total))}</td>
     <td>${new Date(r.created_at).toLocaleDateString("en-GB")}</td><td style="font-size:.8rem">${esc(r.prepared_by||"")}</td></tr>`).join("")||`<tr><td colspan="7" class="hint">لا توجد نماذج${q||st||br?" مطابقة":" بعد"}.</td></tr>`;
   $("#recInfo").textContent=`${list.length} نموذج — المسودات ${list.filter(r=>r.status==="مسودة").length}، المعتمدة ${list.filter(r=>r.status==="معتمد").length}`;
 }
@@ -996,6 +996,7 @@ $("#recRows").addEventListener("click",async e=>{
   const tr=e.target.closest("tr[data-id]");if(!tr)return;
   const {data,error}=await sb.from("cost_calculations").select("id,status,data").eq("id",tr.dataset.id).single();
   if(error){toast("تعذر فتح النموذج",4000);return}
+  if(data.data?.kind==="unified"){if(!window.UNIFIED_BOQ)try{await uniEnsureData()}catch(e){}uniOpenRec(data);window.scrollTo(0,0);return}
   S={...blank(),...data.data,id:data.id,status:data.status};
   switchTab("form");window.scrollTo(0,0);
 });
@@ -1947,6 +1948,7 @@ function uniRender(){
   if(!UB()){host.innerHTML=`<section class="block"><div class="body"><div class="hint">جاري تحميل جدول الكميات الموحد…</div></div></section>`;return}
   const I=U.info,L=U.lb,B=U.br,cat=uniCatalog(I.band);
   host.innerHTML=`
+  ${U.id?`<div class="banner" style="margin-bottom:10px;padding:10px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span class="status ${U.status==="معتمد"?"a":"d"}">${esc(U.status||"مسودة")}</span><span>نموذج موحد محفوظ في السجل — المخالفة ${esc(U.info.no||"")}</span>${uniLocked()?'<span class="hint" style="margin:0">النموذج معتمد ومقفل. للتعديل تواصل مع مسؤول المنصة.</span>':""}</div>`:""}
   <div class="banner" style="margin-bottom:14px;padding:12px 14px;font-size:.88rem;line-height:1.8">
     <b>حساب التكاليف الموحد</b> — وفق ملفات توحيد العمل على تكاليف الإصلاح والمنفعة المفقودة: جدول كميات موحد لكل بند مخالفة، ومعادلة المنفعة المفقودة حسب قطر التوصيلة وساعات الضخ. صفحة مستقلة عن النموذج الحالي، والمسودة تُحفظ تلقائياً على جهازك.
   </div>
@@ -2014,9 +2016,12 @@ function uniRender(){
       <div class="grid">${uniField("مسؤول خدمات العملاء","sign.cs")}${uniField("مسؤول التشغيل والصيانة","sign.om")}</div>
       <div class="calc" id="uTotalCalc"></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
-        <button class="btn solid" type="button" id="uPdf">إصدار PDF</button>
+        ${U.status!=="معتمد"?`<button class="btn" type="button" id="uSaveDraft">حفظ مسودة</button>`:""}
+        ${U.status!=="معتمد"||isAdmin?`<button class="btn solid" type="button" id="uApprove">${U.status==="معتمد"?"حفظ التعديلات وتحميل PDF":"اعتماد وتحميل PDF"}</button>`:""}
+        <button class="btn" type="button" id="uPdf">${U.status==="معتمد"?"تحميل PDF":"معاينة PDF"}</button>
         <button class="btn" type="button" id="uXls">تصدير Excel (القالب الرسمي)</button>
-        <button class="btn danger" type="button" id="uReset">نموذج جديد</button>
+        ${U.id&&(U.status!=="معتمد"||isAdmin)?`<button class="btn danger" type="button" id="uDel">حذف النموذج</button>`:""}
+        <button class="btn ghost" type="button" id="uReset">نموذج جديد</button>
       </div>
       <div class="hint" id="uMissing"></div>
     </div>
@@ -2047,8 +2052,15 @@ function uniBind(){
   $("#uAddPt").onclick=()=>{U.pt.push({d:"",u:"عدد",q:1,p:""});uniSave();uniRender()};
   $("#uLookup").onclick=()=>uniLookup(U.info.no);
   host.querySelector('[data-u="info.no"]').addEventListener("change",e=>{if(/^(SWA-)?\d{3,}$/i.test(e.target.value.trim()))uniLookup(e.target.value)});
-  $("#uPdf").onclick=uniPdf;$("#uXls").onclick=uniExcel;
-  $("#uReset").onclick=()=>{if(!confirm("بدء نموذج جديد ومسح البيانات الحالية؟"))return;U=uniBlank();uniSave();uniRender()};
+  $("#uPdf").onclick=()=>uniPdf();$("#uXls").onclick=uniExcel;
+  $("#uReset").onclick=()=>{if(!U.id&&!confirm("بدء نموذج جديد ومسح البيانات الحالية؟"))return;U=uniBlank();uniSave();uniRender();window.scrollTo(0,0)};
+  if($("#uSaveDraft"))$("#uSaveDraft").onclick=async e=>{e.target.disabled=true;if(await uniSaveRec("مسودة"))toast("تم حفظ المسودة في سجل النماذج");uniRender()};
+  if($("#uApprove"))$("#uApprove").onclick=async e=>{const c=uniCompute(),m=uniMissing(c);if(m.length){toast("أكمل البيانات أولاً: "+m.join("، "),5000);return}
+    e.target.disabled=true;if(await uniSaveRec("معتمد")){toast("تم اعتماد النموذج");uniRender();await uniPdf(true)}else uniRender()};
+  if($("#uDel"))$("#uDel").onclick=async()=>{if(!confirm("حذف هذا النموذج نهائياً من السجل؟"))return;
+    const {error}=await sb.from("cost_calculations").delete().eq("id",U.id);if(error){toast("تعذر الحذف: "+error.message,5000);return}
+    toast("تم حذف النموذج");U=uniBlank();uniSave();uniRender()};
+  if(uniLocked())host.querySelectorAll("input,select,textarea,[data-udel],#uAddBoq,#uAddEq,#uAddPt,#uLookup").forEach(el=>el.disabled=true);
 }
 /* تحديث الإجماليات في صفوف الجداول بدون إعادة بناء الصفحة (حتى لا يضيع مكان المؤشر) */
 function uniRecalcRows(){
@@ -2161,9 +2173,24 @@ ${rows||`<tr>${td("لا توجد بنود",{cs:7})}</tr>`}
 ${U.emerg?`<tr>${td("تنفيذ طارئ / خارج أوقات الدوام (+"+UB().emergencyPct+"%)",{cs:6,c:"r"})}${td(fmt(c.emerg),{c:"b"})}</tr>`:""}
 <tr>${td("المجموع (ريال)",{cs:6,c:"gn"})}${td(fmt(c.boq),{c:"gn"})}</tr></table></div>`;
 }
-async function uniPdf(){
+function uniLocked(){return U.status==="معتمد"&&!isAdmin}
+/* الحفظ في سجل النماذج (نفس جدول النماذج الحالي مع علامة kind=unified) */
+async function uniSaveRec(status){
+  const c=uniCompute(),I=U.info;
+  const row={prepared_by:U.sign.cs||null,violation_no:I.no||null,violator_name:I.name||null,violator_id:I.id||null,
+    violation_type:I.band?(I.band+" - "+(uniV()[+I.band-1]||"")):null,branch:I.branch||null,status,
+    data:{...U,kind:"unified",id:undefined,status},repair_total:+c.repair.toFixed(2),loss_total:+c.loss.toFixed(2),grand_total:+c.total.toFixed(2)};
+  if(status==="معتمد"&&U.status!=="معتمد")row.approved_at=new Date().toISOString();
+  let res;
+  if(U.id)res=await sb.from("cost_calculations").update(row).eq("id",U.id).select("id").single();
+  else res=await sb.from("cost_calculations").insert({...row,created_by_email:user?.email||null}).select("id").single();
+  if(res.error){toast("تعذر الحفظ: "+res.error.message,5000);return null}
+  U.id=res.data.id;U.status=status;uniSave();return U.id;
+}
+function uniOpenRec(rec){U=Object.assign(uniBlank(),rec.data,{id:rec.id,status:rec.status,lb:Object.assign(uniBlank().lb,rec.data.lb||{}),br:Object.assign(uniBlank().br,rec.data.br||{})});delete U.kind;uniSave();switchTab("unified")}
+async function uniPdf(skipCheck){
   const c=uniCompute(),miss=uniMissing(c);
-  if(miss.length&&!confirm("بيانات ناقصة: "+miss.join("، ")+"\nإصدار PDF على أي حال؟"))return;
+  if(!skipCheck&&miss.length&&!confirm("بيانات ناقصة: "+miss.join("، ")+"\nإصدار PDF على أي حال؟"))return;
   const host=$("#sheetHost");host.innerHTML=uniSheetHtml(c)+(c.lines.length?`<div style="height:20px"></div>`+uniDetailHtml(c):"");
   if(!window.html2canvas||!window.jspdf){window.print();setTimeout(()=>host.innerHTML="",1000);return}
   const b=$("#uPdf");b.disabled=true;toast("جاري تجهيز ملف PDF…",8000);
