@@ -341,8 +341,8 @@ dialog{background:#0b223c}
   <div id="tab-uboq" hidden><section class="block"><h2>جدول الكميات الموحد</h2><div class="body">
     <p style="margin-top:0" class="hint">الأسعار المعتمدة في ملفات توحيد العمل على تكاليف الإصلاح والمنفعة المفقودة — للاطلاع فقط.</p>
     <div class="grid" style="margin-bottom:12px"><label class="f" style="grid-column:1/-1">بند المخالفة<select id="ubBand"></select></label><label class="f">بحث في البنود<input id="ubQ" placeholder="مثال: عداد 25 مم"></label></div>
-    <div id="ubScope"></div>
-    <div class="tbl"><table class="t"><thead><tr><th>رقم الصنف</th><th>البند</th><th>الوحدة</th><th class="num">السعر (ريال)</th></tr></thead><tbody id="ubRows"></tbody></table></div>
+    <div id="ubCart"></div><div id="ubScope"></div>
+    <div class="tbl"><table class="t"><thead><tr><th>رقم الصنف</th><th>البند</th><th>الوحدة</th><th class="num">السعر (ريال)</th><th>اختيار</th></tr></thead><tbody id="ubRows"></tbody></table></div>
     <div class="hint" id="ubInfo"></div></div></section></div>
 
   <!-- ===== FORM ===== -->
@@ -2312,11 +2312,31 @@ async function showUnified(){
 }
 
 /* ---------- تصفح جدول الكميات الموحد ---------- */
+function ubAdd(b,k){
+  if(uniLocked()){toast("النموذج الحالي معتمد ومقفل");return}
+  if(b!=="g"&&String(U.info.band)!==String(b)){
+    const has=U.boq.some(r=>r.k);
+    if(U.info.band&&has&&!confirm(`النموذج الحالي على البند ${U.info.band}. تغيير نوع المخالفة إلى البند ${b} يحذف بنود الإصلاح المختارة. متابعة؟`))return;
+    U.info.band=String(b);U.boq=U.boq.filter(r=>r.k.startsWith("g:"));
+  }
+  U.boq=U.boq.filter(r=>r.k);
+  const ex=U.boq.find(r=>r.k===k);if(ex)ex.q=num(ex.q)+1;else U.boq.push({k,q:1,p:""});
+  uniSave();const it=uniItem(k);toast(`تمت إضافة: ${it?it.d.slice(0,60):"البند"}`);renderUBoq();
+}
+function ubCart(){
+  const n=U.boq.filter(r=>r.k).length,c=n?uniCompute():null;
+  $("#ubCart").innerHTML=n?`<div class="calc" style="margin-top:0;margin-bottom:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <span>في النموذج الموحد${U.info.no?" ("+esc(U.info.no)+")":""}: <b>${n}</b> بند — بقيمة <b>${fmt(c.boq)}</b> ريال</span>
+    <button class="btn solid" type="button" id="ubGo" style="margin-inline-start:auto">الذهاب للنموذج</button></div>`:"";
+  if($("#ubGo"))$("#ubGo").onclick=()=>switchTab("unified");
+}
 async function showUBoq(){
+  if(!U)U=uniLoadDraft();
   if(!UB()){$("#ubRows").innerHTML=`<tr><td colspan="4" class="hint">جاري التحميل…</td></tr>`;try{await uniEnsureData()}catch(e){$("#ubRows").innerHTML=`<tr><td colspan="4" class="hint">${esc(e.message)}</td></tr>`;return}}
   if(!$("#ubBand").options.length){
     $("#ubBand").innerHTML=`<option value="g">البنود العامة المساندة (لجميع المخالفات)</option>`+uniV().map((v,i)=>uniCatalog(i+1)?`<option value="${i+1}">${i+1} - ${esc(v)}</option>`:"").join("");
     $("#ubBand").onchange=renderUBoq;$("#ubQ").oninput=renderUBoq;
+    if(U.info.band&&uniCatalog(U.info.band))$("#ubBand").value=String(U.info.band);
   }
   renderUBoq();
 }
@@ -2327,8 +2347,12 @@ function renderUBoq(){
   let last=null,rows="",n=0;
   cat.items.forEach((it,i)=>{if(q&&!(it.d+" "+(it.g||"")).includes(q))return;n++;
     if((it.g||"")!==last){last=it.g||"";if(last)rows+=`<tr><td colspan="4" style="background:var(--soft);font-weight:600">${esc(last)}</td></tr>`}
-    rows+=`<tr><td dir="ltr" style="text-align:right">${b==="g"?"ع-"+(i+1):b+"-"+(i+1)}</td><td>${esc(it.d)}</td><td>${esc(it.u)}</td><td class="num">${it.p!=null?fmt(it.p):'<span class="hint">غير مسعّر</span>'}</td></tr>`});
-  $("#ubRows").innerHTML=rows||`<tr><td colspan="4" class="hint">لا توجد بنود مطابقة.</td></tr>`;
+    const k=(b==="g"?"g:":"b:")+i,inForm=U.boq.find(r=>r.k===k)&&(b==="g"||String(U.info.band)===String(b));
+    rows+=`<tr><td dir="ltr" style="text-align:right">${b==="g"?"ع-"+(i+1):uniCode(cat,i)}</td><td>${esc(it.d)}</td><td>${esc(it.u)}</td><td class="num">${it.p!=null?fmt(it.p):'<span class="hint">غير مسعّر</span>'}</td>
+      <td>${uniLocked()?"":inForm?`<button class="btn" type="button" data-ubadd="${k}" style="border-color:var(--ok);color:var(--ok)">✓ مضاف (+1)</button>`:`<button class="btn solid" type="button" data-ubadd="${k}">+ اختيار</button>`}</td></tr>`});
+  $("#ubRows").innerHTML=rows||`<tr><td colspan="5" class="hint">لا توجد بنود مطابقة.</td></tr>`;
+  $("#ubRows").querySelectorAll("[data-ubadd]").forEach(x=>x.onclick=()=>ubAdd(b,x.dataset.ubadd));
+  ubCart();
   $("#ubInfo").textContent=`${n} بند`+(cat.items.some(x=>x.p==null)?` — البنود غير المسعّرة يُدخل سعرها يدوياً في النموذج`:"");
 }
 
