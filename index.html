@@ -2352,8 +2352,9 @@ function ubCart(){
   const n=U.boq.filter(r=>r.k).length,c=n?uniCompute():null;
   $("#ubCart").innerHTML=n?`<div class="calc" style="margin-top:0;margin-bottom:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
     <span>في النموذج الموحد${U.info.no?" ("+esc(U.info.no)+")":""}: <b>${n}</b> بند — بقيمة <b>${fmt(c.boq)}</b> ريال</span>
-    <button class="btn solid" type="button" id="ubGo" style="margin-inline-start:auto">الذهاب للنموذج</button></div>`:"";
+    <button class="btn danger" type="button" id="ubClear" style="margin-inline-start:auto">مسح كل الاختيارات</button><button class="btn solid" type="button" id="ubGo">الذهاب للنموذج</button></div>`:"";
   if($("#ubGo"))$("#ubGo").onclick=()=>switchTab("unified");
+  if($("#ubClear"))$("#ubClear").onclick=()=>{if(uniLocked())return;if(!confirm("إزالة كل البنود المختارة من النموذج؟"))return;U.boq=[{k:"",q:1,p:""}];uniSave();toast("تم مسح الاختيارات");renderUBoq()};
 }
 async function showUBoq(){
   if(!U)U=uniLoadDraft();
@@ -2372,11 +2373,12 @@ function renderUBoq(){
   let last=null,rows="",n=0;
   cat.items.forEach((it,i)=>{if(q&&!(it.d+" "+(it.g||"")).includes(q))return;n++;
     if((it.g||"")!==last){last=it.g||"";if(last)rows+=`<tr><td colspan="4" style="background:var(--soft);font-weight:600">${esc(last)}</td></tr>`}
-    const k=(b==="g"?"g:":"b:")+i,inForm=U.boq.find(r=>r.k===k)&&(b==="g"||String(U.info.band)===String(b));
+    const k=(b==="g"?"g:":"b:")+i,line=(b==="g"||String(U.info.band)===String(b))?U.boq.find(r=>r.k===k):null,inForm=!!line;
     rows+=`<tr><td dir="ltr" style="text-align:right">${b==="g"?"ع-"+(i+1):uniCode(cat,i)}</td><td>${esc(it.d)}</td><td>${esc(it.u)}</td><td class="num">${it.p!=null?fmt(it.p):'<span class="hint">غير مسعّر</span>'}</td>
-      <td>${uniLocked()?"":inForm?`<button class="btn" type="button" data-ubadd="${k}" style="border-color:var(--ok);color:var(--ok)">✓ مضاف (+1)</button>`:`<button class="btn solid" type="button" data-ubadd="${k}">+ اختيار</button>`}</td></tr>`});
+      <td style="white-space:nowrap">${uniLocked()?"":inForm?`<span style="display:inline-flex;gap:6px;align-items:center"><button class="btn" type="button" data-ubadd="${k}" style="border-color:var(--ok);color:var(--ok)" title="زيادة الكمية">✓ مضاف ×${num(line.q)} (+1)</button><button class="btn danger" type="button" data-ubdel="${k}" title="إزالة من النموذج">× إزالة</button></span>`:`<button class="btn solid" type="button" data-ubadd="${k}">+ اختيار</button>`}</td></tr>`});
   $("#ubRows").innerHTML=rows||`<tr><td colspan="5" class="hint">لا توجد بنود مطابقة.</td></tr>`;
   $("#ubRows").querySelectorAll("[data-ubadd]").forEach(x=>x.onclick=()=>ubAdd(b,x.dataset.ubadd));
+  $("#ubRows").querySelectorAll("[data-ubdel]").forEach(x=>x.onclick=()=>{U.boq=U.boq.filter(r=>r.k!==x.dataset.ubdel);if(!U.boq.length)U.boq=[{k:"",q:1,p:""}];uniSave();toast("تمت إزالة البند");renderUBoq()});
   ubCart();
   $("#ubInfo").textContent=`${n} بند`+(cat.items.some(x=>x.p==null)?` — البنود غير المسعّرة يُدخل سعرها يدوياً في النموذج`:"");
 }
