@@ -1439,7 +1439,7 @@ $("#refetchBtn").onclick=async()=>{if(locked())return;const no=S.info.no;if(!no)
 
 /* ===== رفع الملف الشامل (المسؤول) ===== */
 async function loadCompInfo(){
-  let {count}=await sb.from("cost_visits").select("visit_no",{count:"exact",head:true});if(count)count--;
+  let {count}=await sb.from("cost_visits").select("visit_no",{count:"exact",head:true}).like("visit_no","SWA-%");
   const {data}=await sb.from("cost_visits").select("updated_at").order("updated_at",{ascending:false}).limit(1);
   $("#compInfo").innerHTML=`<div class="line"><span>عدد الزيارات المحفوظة</span><b>${count||0}</b></div><div class="line"><span>آخر تحديث</span><b>${data?.[0]?new Date(data[0].updated_at).toLocaleString("en-GB"):"لم يُرفع بعد"}</b></div>`;
 }
@@ -1909,7 +1909,28 @@ function uniCatalog(band){const b=UB()?.bands?.[String(band)];return b||null}
 /* مفتاح البند: "b:رقم" لبنود المخالفة، "g:رقم" للبنود العامة */
 function uniItem(k){if(!k)return null;const[t,i]=k.split(":");const band=U.info.band;
   if(t==="g")return UB().general.items[+i]?{...UB().general.items[+i],code:"ع-"+(+i+1),src:"بنود عامة"}:null;
-  const c=uniCatalog(band);return c&&c.items[+i]?{...c.items[+i],code:band+"-"+(+i+1),src:"بند "+band}:null}
+  const c=uniCatalog(band);return c&&c.items[+i]?{...c.items[+i],code:uniCode(c,+i),src:"بند "+band}:null}
+/* رقم الصنف بنفس ترقيم الملف الرسمي: رقم الورقة - رقم البند */
+function uniCode(c,i){const s=String(c.sheet);if(s.includes("+")){const[a,b]=s.split("+");return i<c.splitAt?a+"-"+(i+1):b+"-"+(i-c.splitAt+1)}return s+"-"+(i+1)}
+/* القوالب الافتراضية لكل بند مخالفة (يحفظها المسؤول) — صف خاص في جدول الزيارات */
+let UTPL=null;
+async function uniLoadTpl(){if(UTPL)return;try{const {data}=await sb.from("cost_visits").select("data").eq("visit_no","__UTPL__").maybeSingle();UTPL=data?.data?.templates||{}}catch(e){UTPL={}}}
+function uniApplyTpl(force){
+  const band=U.info.band;if(!band)return false;
+  if(!force&&U.boq.some(r=>r.k))return false;
+  const t=UTPL?.[band],c=uniCatalog(band);
+  if(t?.length){U.boq=t.map(x=>({k:x.k,q:x.q??1,p:x.p??""}));return true}
+  if(c&&c.items.length===1){U.boq=[{k:"b:0",q:1,p:""}];return true}
+  U.boq=[{k:"",q:1,p:""}];return false;
+}
+async function uniSaveTpl(){
+  const band=U.info.band;const lines=U.boq.filter(r=>r.k).map(r=>({k:r.k,q:num(r.q)||1,p:r.p||""}));
+  if(!band||!lines.length){toast("اختر نوع المخالفة وأضف البنود أولاً");return}
+  await uniLoadTpl();const tpl={...UTPL,[band]:lines};
+  const {error}=await sb.from("cost_visits").upsert({visit_no:"__UTPL__",branch:null,violator_name:null,data:{templates:tpl},updated_at:new Date().toISOString()},{onConflict:"visit_no"});
+  if(error){toast("تعذر حفظ القالب: "+error.message,5000);return}
+  UTPL=tpl;toast(`تم حفظ ${lines.length} بند كقالب افتراضي للبند ${band} — تُضاف تلقائياً عند إدخال رقم المخالفة`,5000);uniRender();
+}
 function uniPrice(r){const it=uniItem(r.k);if(!it)return 0;return it.p!=null?it.p:num(r.p)}
 function uniAddMonths(d,m){const x=new Date(d+"T00:00:00Z");x.setUTCMonth(x.getUTCMonth()+m);return x.toISOString().slice(0,10)}
 function uniDays(a,b){if(!a||!b)return 0;return Math.round((new Date(b+"T00:00:00")-new Date(a+"T00:00:00"))/864e5)+1}
@@ -2004,6 +2025,7 @@ function uniRender(){
           <td><button class="btn ghost" type="button" data-udel="boq:${i}" aria-label="حذف">×</button></td></tr>`}).join("")}</tbody>
         <tfoot><tr><td colspan="4">المجموع (ريال)</td><td class="num" id="uBoqSum"></td><td></td></tr></tfoot></table></div>
       <div class="row-actions" style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button class="btn" type="button" id="uAddBoq">+ إضافة بند</button>
+        ${isAdmin&&I.band?`<button class="btn" type="button" id="uSaveTpl" title="تُضاف هذه البنود تلقائياً لكل مخالفة من نفس النوع">حفظ كقالب للبند ${esc(I.band)}${UTPL?.[I.band]?" (موجود)":""}</button>`:""}
         <label style="display:flex;gap:6px;align-items:center;font-size:.86rem"><input type="checkbox" data-u="emerg"${U.emerg?" checked":""}> تنفيذ طارئ / خارج أوقات الدوام (+${UB().emergencyPct}% من قيمة البنود)</label></div>
       <div class="sub" style="margin-top:16px">2- تكلفة استعمال المعدات</div>
       <div class="tbl"><table class="t"><thead><tr><th>النوع</th><th>العدد</th><th>الوقت بالساعة</th><th class="num">السعر الإفرادي</th><th class="num">الإجمالي</th><th></th></tr></thead>
@@ -2046,7 +2068,7 @@ function uniRender(){
         ${U.id&&(U.status!=="معتمد"||isAdmin)?`<button class="btn danger" type="button" id="uDel">حذف النموذج</button>`:""}
         <button class="btn ghost" type="button" id="uReset">نموذج جديد</button>
       </div>
-      <div class="hint" id="uMissing"></div>
+      <div id="uMissing" style="margin-top:10px"></div>
     </div>
   </section>`;
   uniBind();uniRecalc();
@@ -2063,7 +2085,7 @@ function uniBind(){
   const host=$("#tab-unified");
   host.querySelectorAll("[data-u]").forEach(el=>{const key=el.dataset.u;
     const h=()=>{let v=el.type==="checkbox"?el.checked:el.value;if(key==="lb.known")v=v==="1";uniSet(key,v);
-      if(key==="info.band"){U.boq=[{k:"",q:1,p:""}]}
+      if(key==="info.band"){U.boq=[];uniApplyTpl(true)}
       uniSave();if(UNI_RERENDER.has(key))uniRender();else uniRecalc()};
     el.addEventListener(el.tagName==="SELECT"||el.type==="checkbox"||el.type==="date"||el.type==="time"?"change":"input",h)});
   host.querySelectorAll("[data-ub]").forEach(el=>el.addEventListener(el.tagName==="SELECT"?"change":"input",()=>{const r=U.boq[+el.dataset.ub];r[el.dataset.f]=el.value;
@@ -2074,7 +2096,11 @@ function uniBind(){
   $("#uAddEq").onclick=()=>{U.eq.push({n:"",c:1,h:1,p:""});uniSave();uniRender()};
   $("#uAddPt").onclick=()=>{U.pt.push({d:"",u:"عدد",q:1,p:""});uniSave();uniRender()};
   $("#uLookup").onclick=()=>uniLookup(U.info.no);
-  host.querySelector('[data-u="info.no"]').addEventListener("change",e=>{if(/^(SWA-)?\d{3,}$/i.test(e.target.value.trim()))uniLookup(e.target.value)});
+  {let tmr;const inp=host.querySelector('[data-u="info.no"]');let last="";
+   const go=()=>{const v=inp.value.trim();if(/^(SWA-)?\d{6,}$/i.test(v)&&v.toUpperCase()!==last){last=v.toUpperCase();uniLookup(v)}};
+   inp.addEventListener("input",()=>{clearTimeout(tmr);tmr=setTimeout(go,700)});inp.addEventListener("change",go);
+   inp.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();clearTimeout(tmr);uniLookup(inp.value)}})}
+  if($("#uSaveTpl"))$("#uSaveTpl").onclick=uniSaveTpl;
   $("#uPdf").onclick=()=>uniPdf();$("#uXls").onclick=uniExcel;
   $("#uReset").onclick=()=>{if(!U.id&&!confirm("بدء نموذج جديد ومسح البيانات الحالية؟"))return;U=uniBlank();uniSave();uniRender();window.scrollTo(0,0)};
   if($("#uSaveDraft"))$("#uSaveDraft").onclick=async e=>{e.target.disabled=true;if(await uniSaveRec("مسودة"))toast("تم حفظ المسودة في سجل النماذج");uniRender()};
@@ -2120,9 +2146,10 @@ function uniRecalc(){
     ${L.method==="hyd"?`<div class="rule">المعادلة: π × (القطر ÷ 2000)² × سرعة التدفق × ساعات الضخ × 3600</div>`:""}`;
   $("#uTotalCalc").innerHTML=`<div class="line"><span>المنفعة المفقودة</span><b>${fmt(c.loss)}</b></div><div class="line"><span>تكاليف الإصلاح</span><b>${fmt(c.repair)}</b></div>
     <div class="line" style="border-top:1px solid var(--line);margin-top:4px;padding-top:6px;font-size:1.05rem"><span><b>الإجمالي لتكاليف الإصلاح والمنفعة المفقودة</b></span><b>${fmt(c.total)} ريال</b></div>`;
-  const miss=uniMissing(c);$("#uMissing").textContent=miss.length?"البيانات الناقصة قبل الإصدار: "+miss.join("، "):"";
+  const miss=uniMissing(c);
+  $("#uMissing").innerHTML=miss.length?`<div class="missing"><b>أكمل البيانات التالية لتفعيل الاعتماد:</b><ul>${miss.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:`<div class="ready">البيانات مكتملة — النموذج جاهز للاعتماد وتحميل PDF.</div>`;
 }
-function uniMissing(c){const I=U.info,m=[];if(!I.no)m.push("رقم المخالفة");if(!I.name)m.push("اسم المخالف");if(!I.band)m.push("نوع المخالفة");if(!I.date)m.push("التاريخ");
+function uniMissing(c){const I=U.info,m=[];if(!I.no)m.push("رقم المخالفة");if(!c.repair&&uniCatalog(I.band))m.push("بنود تكاليف الإصلاح");if(!I.name)m.push("اسم المخالف");if(!I.band)m.push("نوع المخالفة");if(!I.date)m.push("التاريخ");
   if(U.boq.some(r=>{const it=uniItem(r.k);return it&&it.p==null&&!num(r.p)}))m.push("سعر البنود غير المسعّرة");
   if(U.lb.method==="break"){if(!c.hours)m.push("تاريخ ووقت الكسر والإقفال")}else if(!c.days)m.push("تواريخ المخالفة");
   return m}
@@ -2136,12 +2163,16 @@ async function uniLookup(raw){
   I.branch=govShort(v.gov||"")||I.branch;if(v.region&&SECTOR_OF[v.region])I.sector=SECTOR_OF[v.region];
   const it=(v.items||[]).find(x=>x.sev==="جسيمة")||v.items?.[0]||{};
   const nm=matchViolation(it.bnd,it.desc,uniV());const idx=nm?uniV().indexOf(nm)+1:0;
-  if(idx&&String(idx)!==String(I.band)){I.band=String(idx);U.boq=[{k:"",q:1,p:""}]}
+  await uniLoadTpl();
+  if(idx&&String(idx)!==String(I.band)){I.band=String(idx);U.boq=[];uniApplyTpl(true)}else uniApplyTpl(false);
   const cat=PROP_CAT[v.prop];if(cat){U.lb.cat=cat.startsWith("سكني")?"سكني":cat;if((UB().maxBenefit||[]).some(x=>x.cat===cat))U.lb.ccat=cat}
   if(/حكومي/.test(v.prop||""))I.ptype="جهة حكومية";
-  if(d&&!U.lb.end)U.lb.end=d;
+  /* المنفعة المفقودة جاهزة: تاريخ الزيارة نهاية المخالفة، والمدة غير معلومة (6 أشهر سكني / 12 شهراً تجاري وحكومي) */
+  if(d){U.lb.end=d;if(U.lb.method!=="break"){U.lb.method=U.lb.method||"hyd";U.lb.known=false;U.lb.start=""}}
   U.visit={no:v.no,region:v.region,gov:v.gov,prop:v.prop,items:v.items,matched:!!idx};
-  uniSave();uniRender();toast("تم جلب بيانات الزيارة "+v.no);
+  uniSave();uniRender();
+  const miss=uniMissing(uniCompute());
+  toast(miss.length?"تم جلب بيانات الزيارة "+v.no+" — أكمل: "+miss.join("، "):"النموذج جاهز ✓ راجع البيانات ثم اعتمد وحمّل PDF",5000);
 }
 /* ---------- النموذج المطبوع (PDF) ---------- */
 function uniSheetHtml(c){
@@ -2275,6 +2306,7 @@ async function uniExcel(){
 }
 async function showUnified(){
   if(!U)U=uniLoadDraft();
+  uniLoadTpl().then(()=>{if(!$("#tab-unified").hidden&&U&&UB())uniRender()});
   if(!UB()){uniRender();try{await uniEnsureData()}catch(e){$("#tab-unified").innerHTML=`<section class="block"><div class="body"><div class="rule warn">${esc(e.message)} — حدّث الصفحة.</div></div></section>`;return}}
   uniRender();
 }
