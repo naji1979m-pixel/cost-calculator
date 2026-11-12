@@ -178,6 +178,25 @@ body{background:radial-gradient(1200px 600px at 85% -10%,#0f3a6b 0%,transparent 
 .adm-menu .adm-h{font-size:.74rem;color:var(--muted);padding:6px 10px}
 .adm-menu button{background:none;border:0;color:var(--ink);font:inherit;font-size:.88rem;text-align:right;padding:9px 10px;border-radius:8px;cursor:pointer}
 .adm-menu button:hover{background:var(--soft)}
+#admPortal{margin-top:14px;border-top:1px solid var(--line);padding-top:10px}
+.nav-toggle{display:flex;align-items:center;gap:12px;width:100%;border:1px solid rgba(242,166,94,.35);background:rgba(242,166,94,.08);color:var(--ink);font:inherit;font-size:.9rem;font-weight:600;padding:10px 12px;border-radius:10px;cursor:pointer;text-align:right}
+.nav-toggle svg{width:20px;height:20px;stroke:var(--warn);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav-toggle .chev{margin-inline-start:auto;transition:transform .2s}
+.nav-toggle[aria-expanded="true"] .chev{transform:rotate(180deg)}
+.nav-sub{display:flex;flex-direction:column;gap:2px;margin:4px 8px 0 0;padding-inline-start:0;border-inline-start:2px solid rgba(242,166,94,.3)}
+.nav-sub[hidden]{display:none}
+.nav-sub button{font-size:.86rem!important;padding:8px 10px!important}
+.tp-wrap{display:grid;grid-template-columns:300px minmax(0,1fr);gap:14px;align-items:start}
+.tp-side{position:sticky;top:12px}
+.tp-list{max-height:70vh;overflow:auto;display:flex;flex-direction:column;gap:3px}
+.tp-band{display:flex;gap:8px;align-items:flex-start;text-align:right;border:1px solid transparent;background:none;color:var(--ink2);font:inherit;font-size:.8rem;padding:7px 8px;border-radius:8px;cursor:pointer;line-height:1.5}
+.tp-band b{min-width:22px;color:var(--ink)}.tp-band span{flex:1}
+.tp-band:hover{background:var(--soft)}.tp-band.on{background:rgba(59,156,255,.18);border-color:var(--water);color:var(--ink)}
+.tp-band.dim{opacity:.55}
+.tp-badge{font-style:normal;font-size:.7rem;background:var(--ok);color:#06231a;border-radius:999px;padding:0 7px;white-space:nowrap}
+.tp-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px;padding:10px;border:1px solid var(--line);border-radius:10px;position:sticky;top:0;background:var(--card);z-index:5}
+tr.tp-on td{background:rgba(63,214,164,.08)}
+@media (max-width:980px){.tp-wrap{grid-template-columns:1fr}.tp-side{position:static}.tp-list{max-height:240px}}
 .nav-h{display:flex;align-items:center;gap:6px;font-size:.74rem;color:var(--muted);margin:14px 10px 4px;letter-spacing:.2px}
 .nav-h .nav-new{margin-inline-start:auto}
 .nav-new{margin-inline-start:auto;font-size:.68rem;background:var(--ok);color:#06231a;border-radius:999px;padding:1px 8px;font-weight:600}
@@ -293,7 +312,7 @@ dialog{background:#0b223c}
 <div id="app" class="shell" hidden>
 <aside class="side" id="side">
   <div class="brand"><img id="sideLogo" alt="شركة المياه الوطنية"></div>
-  <nav id="sideNav"><button type="button" data-go="home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><span>الرئيسية</span></button><div class="nav-h">حساب التكاليف الموحد<span class="nav-new">جديد</span></div><button type="button" data-go="unified"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M8 18h2M12 18h2"/></svg><span>النموذج الموحد</span></button><button type="button" data-go="urecs"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M9 13h6M9 17h6"/></svg><span>سجل النماذج الموحدة</span></button><button type="button" data-go="uboq"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/></svg><span>جدول الكميات الموحد</span></button><div class="nav-h">حساب التكاليف السابق</div><button type="button" data-go="form:sec-info"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg><span>بيانات المخالفة</span></button><button type="button" data-go="form:sec-repair"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg><span>تكاليف الإصلاح</span></button><button type="button" data-go="loss"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3s7 7.5 7 12a7 7 0 0 1-14 0c0-4.5 7-12 7-12z"/></svg><span>المنفعة المفقودة</span></button><button type="button" data-go="recs"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M9 13h6M9 17h6"/></svg><span>سجل النماذج</span></button><button type="button" data-go="boq"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/></svg><span>جدول الكميات</span></button><button type="button" data-go="rates"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="7" cy="7" r="3"/><circle cx="17" cy="17" r="3"/><path d="M5 19L19 5"/></svg><span>معدلات الفئات</span></button><div class="nav-h">عام</div><button type="button" data-go="comp"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M12 18v-6M9 15l3-3 3 3"/></svg><span>الملف الشامل</span></button><div class="sep"></div><button type="button" data-go="admin"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>إدارة النظام</span></button></nav>
+  <nav id="sideNav"><button type="button" data-go="home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><span>الرئيسية</span></button><div class="nav-h">حساب التكاليف الموحد<span class="nav-new">جديد</span></div><button type="button" data-go="unified"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M8 18h2M12 18h2"/></svg><span>النموذج الموحد</span></button><button type="button" data-go="urecs"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M9 13h6M9 17h6"/></svg><span>سجل النماذج الموحدة</span></button><button type="button" data-go="uboq"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/></svg><span>جدول الكميات الموحد</span></button><div class="nav-h">حساب التكاليف السابق</div><button type="button" data-go="form:sec-info"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg><span>بيانات المخالفة</span></button><button type="button" data-go="form:sec-repair"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg><span>تكاليف الإصلاح</span></button><button type="button" data-go="loss"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3s7 7.5 7 12a7 7 0 0 1-14 0c0-4.5 7-12 7-12z"/></svg><span>المنفعة المفقودة</span></button><button type="button" data-go="recs"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M9 13h6M9 17h6"/></svg><span>سجل النماذج</span></button><button type="button" data-go="boq"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/></svg><span>جدول الكميات</span></button><button type="button" data-go="rates"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="7" cy="7" r="3"/><circle cx="17" cy="17" r="3"/><path d="M5 19L19 5"/></svg><span>معدلات الفئات</span></button><div id="admPortal" class="admin-only" hidden><button type="button" class="nav-toggle" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg><span>بوابة الإدارة والهيكلة</span><span class="chev">▾</span></button><div class="nav-sub" hidden><button type="button" data-go="admtpl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg><span>بنود التكاليف لكل مخالفة</span></button><button type="button" data-go="staff"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.5a5 5 0 0 1 5.5 5"/></svg><span>بيانات الموظفين</span></button><button type="button" data-go="docs"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 11v5M9.5 13.5h5"/></svg><span>المستندات والمرفقات</span></button><button type="button" data-go="comp"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M12 18v-6M9 15l3-3 3 3"/></svg><span>الملف الشامل</span></button><button type="button" data-go="rates"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="7" cy="7" r="3"/><circle cx="17" cy="17" r="3"/><path d="M5 19L19 5"/></svg><span>معدلات الفئات</span></button><button type="button" data-go="boq"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/></svg><span>جدول الكميات (السابق)</span></button><button type="button" data-go="scope"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg><span>تغيير النطاق</span></button></div></div></nav>
   <div class="foot">إدارة المخالفات والتفتيش</div>
 </aside>
 <div class="side-mask" id="sideMask"></div>
@@ -304,11 +323,13 @@ dialog{background:#0b223c}
     <h1 id="pageTitle">الرئيسية</h1>
     <div class="who"><button class="theme-btn" id="themeBtn" type="button" aria-label="الوضع الفاتح / الغامق" title="فاتح / غامق"></button><span id="whoEmail"></span><span class="adm-wrap"><button id="whoRole" type="button" class="status a adm-btn" hidden aria-haspopup="true">مسؤول ▾</button>
       <div class="adm-menu" id="admMenu" hidden>
-        <div class="adm-h">أدوات المسؤول</div>
+        <div class="adm-h">بوابة الإدارة والهيكلة</div>
+        <button type="button" data-adm="admtpl">بنود التكاليف لكل مخالفة</button>
+        <button type="button" data-adm="staff">بيانات الموظفين</button>
+        <button type="button" data-adm="docs">المستندات والمرفقات</button>
         <button type="button" data-adm="comp">رفع / تحديث الملف الشامل</button>
-        <button type="button" data-adm="unified">قوالب بنود المخالفات (النموذج الموحد)</button>
-        <button type="button" data-adm="boq">تعديل جدول الكميات (الحساب السابق)</button>
         <button type="button" data-adm="rates">تعديل معدلات الفئات</button>
+        <button type="button" data-adm="boq">تعديل جدول الكميات (الحساب السابق)</button>
         <button type="button" data-adm="recs">النماذج المعتمدة — تعديل وحذف</button>
         <button type="button" data-adm="scope">تغيير النطاق</button>
       </div></span><button class="btn ghost" id="logoutBtn" hidden>خروج</button><button class="btn ghost" id="adminBtn">دخول المسؤول</button></div>
@@ -358,6 +379,9 @@ dialog{background:#0b223c}
 
   <!-- ===== UNIFIED ===== -->
   <div id="tab-unified" hidden></div>
+  <div id="tab-admtpl" hidden></div>
+  <div id="tab-staff" hidden></div>
+  <div id="tab-docs" hidden></div>
   <div id="tab-uboq" hidden><section class="block"><h2>جدول الكميات الموحد</h2><div class="body">
     <p style="margin-top:0" class="hint">الأسعار المعتمدة في ملفات توحيد العمل على تكاليف الإصلاح والمنفعة المفقودة — للاطلاع فقط.</p>
     <div class="grid" style="margin-bottom:12px"><label class="f" style="grid-column:1/-1">بند المخالفة<select id="ubBand"></select></label><label class="f">بحث في البنود<input id="ubQ" placeholder="مثال: عداد 25 مم"></label></div>
@@ -1105,23 +1129,24 @@ $("#saveRates").onclick=async()=>{
 
 /* ================= التبويبات ================= */
 let RECKIND="old";
-const PAGE_TITLES={home:"الرئيسية",unified:"حساب التكاليف الموحد",uboq:"جدول الكميات الموحد",form:"النموذج",loss:"المنفعة المفقودة",recs:"سجل النماذج",boq:"جدول الكميات",rates:"معدلات الفئات",comp:"الملف الشامل"};
+const PAGE_TITLES={home:"الرئيسية",unified:"حساب التكاليف الموحد",uboq:"جدول الكميات الموحد",admtpl:"بنود التكاليف لكل مخالفة",staff:"بيانات الموظفين",docs:"المستندات والمرفقات",form:"النموذج",loss:"المنفعة المفقودة",recs:"سجل النماذج",boq:"جدول الكميات",rates:"معدلات الفئات",comp:"الملف الشامل"};
 function switchTab(t,sec){
   document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("on",x.dataset.tab===t));
   if(t==="urecs"){RECKIND="unified";t="recs";sec="__u"}else if(t==="recs")RECKIND="old";
-  ["home","unified","uboq","form","recs","boq","rates","comp","loss"].forEach(k=>$("#tab-"+k).hidden=k!==t);
+  ["home","unified","uboq","admtpl","staff","docs","form","recs","boq","rates","comp","loss"].forEach(k=>$("#tab-"+k).hidden=k!==t);
   $("#totalbar").hidden=t!=="form";document.body.classList.toggle("has-bar",t==="form");
   const go=sec==="__u"?"urecs":sec?t+":"+sec:(t==="form"?"form:sec-info":t);
   document.querySelectorAll("#sideNav [data-go]").forEach(b=>b.classList.toggle("on",b.dataset.go===go));
+  {const ab=document.querySelector("#admPortal .nav-sub [data-go].on");if(ab&&ab.closest(".nav-sub").hidden){const sub=ab.closest(".nav-sub");sub.hidden=false;sub.previousElementSibling.setAttribute("aria-expanded","true")}}
   $("#pageTitle").textContent=sec==="__u"?"سجل النماذج الموحدة":t==="recs"?"سجل النماذج (الحساب السابق)":sec==="sec-repair"?"تكاليف الإصلاح":sec==="sec-info"?"بيانات المخالفة":PAGE_TITLES[t]||"";
   document.body.classList.remove("side-open");
   window.scrollTo(0,0);
-  if(t==="home")loadDash();else if(t==="unified")showUnified();else if(t==="uboq")showUBoq();else if(t==="form")showForm();else if(t==="recs")loadRecs();else if(t==="boq")renderCat();else if(t==="comp")loadCompInfo();else if(t==="loss"){if(!lossRows.length)loadLossList();else if(!lossUiReady)lossUiInit()}else renderRates();
+  if(t==="home")loadDash();else if(t==="unified")showUnified();else if(t==="uboq")showUBoq();else if(t==="admtpl")showAdmTpl();else if(t==="staff")showStaff();else if(t==="docs")showDocs();else if(t==="form")showForm();else if(t==="recs")loadRecs();else if(t==="boq")renderCat();else if(t==="comp")loadCompInfo();else if(t==="loss"){if(!lossRows.length)loadLossList();else if(!lossUiReady)lossUiInit()}else renderRates();
   if(sec&&sec!=="__u")setTimeout(()=>{const el=document.getElementById(sec);if(el){const y=el.getBoundingClientRect().top+window.scrollY-12;window.scrollTo({top:sec==="sec-info"?0:y,behavior:"smooth"})}},60);
 }
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
 document.querySelectorAll("#sideNav [data-go],.tiles [data-go]").forEach(b=>b.onclick=()=>{const g=b.dataset.go;
-  if(g==="admin"){document.body.classList.remove("side-open");if(user)openScope();else showLogin();return}
+  if(g==="admin"||g==="scope"){document.body.classList.remove("side-open");if(user)openScope();else showLogin();return}
   const [t,sec]=g.split(":");switchTab(t,sec)});
 $("#menuBtn").onclick=()=>document.body.classList.toggle("side-open");
 $("#sideMask").onclick=()=>document.body.classList.remove("side-open");
@@ -2011,7 +2036,7 @@ function uniItemOpts(cur){
 }
 function uniField(lbl,key,o={}){const v=key.split(".").reduce((a,k)=>a?.[k],U);const t=o.type||"text";
   if(o.sel)return`<label class="f"${o.full?' style="grid-column:1/-1"':""}><span>${lbl}</span><select data-u="${key}">${o.sel}</select></label>`;
-  return`<label class="f"${o.full?' style="grid-column:1/-1"':""}><span>${lbl}</span><input data-u="${key}" type="${t}" value="${esc(v??"")}"${o.ph?` placeholder="${esc(o.ph)}"`:""}${o.ltr?' dir="ltr" style="text-align:right"':""}${o.step?` step="${o.step}"`:""}${o.min!=null?` min="${o.min}"`:""}></label>`}
+  return`<label class="f"${o.full?' style="grid-column:1/-1"':""}><span>${lbl}</span><input data-u="${key}" type="${t}" value="${esc(v??"")}"${o.ph?` placeholder="${esc(o.ph)}"`:""}${o.ltr?' dir="ltr" style="text-align:right"':""}${o.step?` step="${o.step}"`:""}${o.min!=null?` min="${o.min}"`:""}${o.list?` list="${o.list}"`:""}></label>`}
 function uniRender(){
   const host=$("#tab-unified");if(!host)return;
   if(!UB()){host.innerHTML=`<section class="block"><div class="body"><div class="hint">جاري تحميل جدول الكميات الموحد…</div></div></section>`;return}
@@ -2083,7 +2108,8 @@ function uniRender(){
   </section>
   <section class="block"><h2><span class="n">4</span>الاعتماد والإصدار</h2>
     <div class="body">
-      <div class="grid">${uniField("مسؤول خدمات العملاء","sign.cs")}${uniField("مسؤول التشغيل والصيانة","sign.om")}</div>
+      <div class="grid">${uniField("مسؤول خدمات العملاء","sign.cs",{list:"uStCS"})}${uniField("مسؤول التشغيل والصيانة","sign.om",{list:"uStOM"})}</div>
+      ${uniStaffLists()}
       <div class="calc" id="uTotalCalc"></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
         ${U.status!=="معتمد"?`<button class="btn" type="button" id="uSaveDraft">حفظ مسودة</button>`:""}
@@ -2098,6 +2124,9 @@ function uniRender(){
   </section>`;
   uniBind();uniRecalc();
 }
+function uniStaffLists(){const st=(STAFF||[]).filter(s=>s.active!==false),br=String(U.info.branch||"");
+  const pick=role=>{const a=st.filter(s=>s.role===role);const near=a.filter(s=>!br||!s.branch||String(s.branch).includes(br)||br.includes(s.branch));return(near.length?near:a)};
+  return`<datalist id="uStCS">${pick("مسؤول خدمات العملاء").map(s=>`<option value="${esc(s.name)}">${esc(s.branch||"")}</option>`).join("")}</datalist><datalist id="uStOM">${pick("مسؤول التشغيل والصيانة").map(s=>`<option value="${esc(s.name)}">${esc(s.branch||"")}</option>`).join("")}</datalist>`}
 function uniVisitCard(){const v=U.visit;if(!v)return"";
   return`<div class="calc" style="margin-top:0"><div class="line"><span>من الملف الشامل</span><b dir="ltr">${esc(v.no)}</b></div>
   ${v.gov?`<div class="line"><span>المنطقة / المحافظة</span><b>${esc(v.region||"")} — ${esc(v.gov)}</b></div>`:""}
@@ -2331,7 +2360,7 @@ async function uniExcel(){
 }
 async function showUnified(){
   if(!U)U=uniLoadDraft();
-  uniLoadTpl().then(()=>{if(!$("#tab-unified").hidden&&U&&UB())uniRender()});
+  Promise.all([uniLoadTpl(),loadStaff()]).then(()=>{if(!$("#tab-unified").hidden&&U&&UB())uniRender()});
   if(!UB()){uniRender();try{await uniEnsureData()}catch(e){$("#tab-unified").innerHTML=`<section class="block"><div class="body"><div class="rule warn">${esc(e.message)} — حدّث الصفحة.</div></div></section>`;return}}
   uniRender();
 }
@@ -2388,7 +2417,6 @@ $("#whoRole").onclick=e=>{e.stopPropagation();$("#admMenu").hidden=!$("#admMenu"
 document.addEventListener("click",e=>{if(!e.target.closest(".adm-wrap"))$("#admMenu").hidden=true});
 document.querySelectorAll("#admMenu [data-adm]").forEach(b=>b.onclick=()=>{$("#admMenu").hidden=true;const a=b.dataset.adm;
   if(a==="scope"){openScope();return}
-  if(a==="unified"){switchTab("unified");toast("اختر نوع المخالفة وبنودها ثم اضغط «حفظ كقالب للبند» في قسم تكاليف الإصلاح",6000);return}
   switchTab(a)});
 
 /* ---------- تفاصيل أرقام لوحة المؤشرات: من أين جاء الرقم ---------- */
@@ -2440,6 +2468,162 @@ function kdExcel(){
 document.querySelectorAll(".kpi").forEach(k=>{const v=k.querySelector(".v");if(!v)return;k.setAttribute("role","button");k.tabIndex=0;k.title="اضغط لمعرفة مصدر الرقم";
   k.onclick=()=>openKpi(v.id);k.onkeydown=e=>{if(e.key==="Enter")openKpi(v.id)}});
 $("#kdClose").onclick=()=>$("#kpiDlg").close();$("#kdXls").onclick=kdExcel;
+
+/* ================= بوابة الإدارة والهيكلة (للمسؤول) ================= */
+/* البيانات المشتركة تُحفظ في صفوف خاصة بجدول الزيارات: __UTPL__ (بنود التكاليف لكل مخالفة)، __STAFF__ (الموظفون)، __DOCS__ (فهرس المستندات)
+   والملفات نفسها في حاوية التخزين cost-docs */
+async function metaGet(key){const {data,error}=await sb.from("cost_visits").select("data").eq("visit_no",key).maybeSingle();if(error)throw error;return data?.data||{}}
+async function metaSet(key,d){const {error}=await sb.from("cost_visits").upsert({visit_no:key,branch:null,violator_name:null,data:d,updated_at:new Date().toISOString()},{onConflict:"visit_no"});if(error)throw error}
+document.querySelectorAll(".nav-toggle").forEach(b=>b.onclick=()=>{const sub=b.nextElementSibling,open=sub.hidden;sub.hidden=!open;b.setAttribute("aria-expanded",String(open));
+  try{localStorage.setItem("cc-portal-open",open?"1":"0")}catch(e){}});
+try{if(localStorage.getItem("cc-portal-open")==="1"){const b=$("#admPortal .nav-toggle");b.nextElementSibling.hidden=false;b.setAttribute("aria-expanded","true")}}catch(e){}
+function admGuard(id){if(isAdmin)return true;$("#"+id).innerHTML=`<section class="block"><div class="body"><div class="rule warn">هذه الصفحة للمسؤول فقط — سجّل الدخول بحساب المسؤول.</div></div></section>`;return false}
+
+/* ---------- 1) بنود التكاليف لكل مخالفة ---------- */
+let TP={band:"",q:"",sel:{},dirty:false};
+async function showAdmTpl(){
+  if(!admGuard("tab-admtpl"))return;
+  $("#tab-admtpl").innerHTML=`<section class="block"><div class="body"><div class="hint">جاري التحميل…</div></div></section>`;
+  try{await uniEnsureData();UTPL=null;await uniLoadTpl()}catch(e){$("#tab-admtpl").innerHTML=`<section class="block"><div class="body"><div class="rule warn">${esc(e.message||e)}</div></div></section>`;return}
+  if(!TP.band){const first=uniV().findIndex((v,i)=>uniCatalog(i+1));TP.band=String(first+1)}
+  tpLoadSel();renderAdmTpl();
+}
+function tpLoadSel(){TP.sel={};(UTPL?.[TP.band]||[]).forEach(x=>TP.sel[x.k]={q:x.q??1,p:x.p??""});TP.dirty=false}
+function tpCount(band){return(UTPL?.[band]||[]).length}
+function renderAdmTpl(){
+  const band=TP.band,cat=uniCatalog(band),G=UB().general,V=uniV();
+  const list=V.map((v,i)=>{const n=i+1;if(TP.q&&!(String(n)===TP.q.trim()||v.includes(TP.q.trim())))return"";const c=tpCount(n),has=!!uniCatalog(n);
+    return`<button type="button" class="tp-band${String(n)===band?" on":""}${has?"":" dim"}" data-tpb="${n}"><b>${n}</b><span>${esc(v)}</span>${c?`<i class="tp-badge">✓ ${c}</i>`:""}</button>`}).join("");
+  const rowsFor=(items,pfx,codeFn)=>{let last=null,h="";items.forEach((it,i)=>{const k=pfx+":"+i,on=!!TP.sel[k];
+      if((it.g||"")!==last){last=it.g||"";if(last)h+=`<tr><td colspan="6" style="background:var(--soft);font-weight:600">${esc(last)}</td></tr>`}
+      h+=`<tr class="${on?"tp-on":""}"><td><input type="checkbox" data-tpk="${k}"${on?" checked":""} aria-label="اختيار"></td><td dir="ltr" style="text-align:right;white-space:nowrap">${esc(codeFn(i))}</td><td>${esc(it.d)}</td><td>${esc(it.u)}</td>
+        <td class="num">${it.p!=null?fmt(it.p):on?`<input type="number" min="0" step="0.01" data-tpp="${k}" value="${esc(TP.sel[k].p)}" placeholder="السعر" style="width:90px">`:'<span class="hint">غير مسعّر</span>'}</td>
+        <td>${on?`<input type="number" min="0" step="0.01" data-tpq="${k}" value="${esc(TP.sel[k].q)}" style="width:75px">`:""}</td></tr>`});return h};
+  const tot=Object.entries(TP.sel).reduce((a,[k,o])=>{const[t,i]=k.split(":");const it=t==="g"?G.items[+i]:cat?.items[+i];return a+(it?(it.p!=null?it.p:num(o.p))*num(o.q):0)},0);
+  const n=Object.keys(TP.sel).length;
+  $("#tab-admtpl").innerHTML=`
+  <div class="banner" style="margin-bottom:14px;padding:12px 14px;font-size:.88rem;line-height:1.8">حدد لكل نوع مخالفة بنود الإصلاح التي تحتاجها وكمياتها الافتراضية. عند إدخال رقم مخالفة من هذا النوع في <b>النموذج الموحد</b> تُضاف هذه البنود تلقائياً، ويمكن تعديل الكمية في النموذج.</div>
+  <div class="tp-wrap">
+    <section class="block tp-side"><h2>أنواع المخالفات</h2><div class="body" style="padding:10px">
+      <input id="tpQ" placeholder="بحث بالرقم أو الاسم" value="${esc(TP.q)}" style="width:100%;margin-bottom:8px">
+      <div class="tp-list">${list||'<div class="hint">لا توجد نتائج.</div>'}</div></div></section>
+    <section class="block tp-main"><h2>${esc(band)} - ${esc(V[+band-1]||"")}</h2><div class="body">
+      ${cat?.desc?`<div class="calc" style="margin-top:0;margin-bottom:10px"><div style="font-weight:600;margin-bottom:4px">${esc(cat.title||"")}</div><div class="hint" style="margin:0;line-height:1.7">${esc(cat.desc)}</div></div>`:`<div class="rule warn" style="margin-bottom:10px">لا يوجد جدول كميات موحد لهذه المخالفة — يمكن اختيار البنود العامة المساندة فقط.</div>`}
+      <div class="tp-bar"><span>المختار: <b>${n}</b> بند — قيمة القالب <b>${fmt(tot)}</b> ريال${TP.dirty?' <span class="status d">تغييرات غير محفوظة</span>':tpCount(band)?' <span class="status a">محفوظ</span>':""}</span>
+        <span style="display:flex;gap:6px;margin-inline-start:auto;flex-wrap:wrap"><button class="btn danger" type="button" id="tpClear"${n?"":" disabled"}>إلغاء كل البنود</button><button class="btn solid" type="button" id="tpSave"${TP.dirty?"":" disabled"}>حفظ بنود المخالفة ${esc(band)}</button></span></div>
+      ${cat?`<div class="sub">بنود المخالفة (${cat.items.length})</div><div class="tbl"><table class="t"><thead><tr><th></th><th>رقم الصنف</th><th style="min-width:260px">البند</th><th>الوحدة</th><th class="num">السعر</th><th>الكمية الافتراضية</th></tr></thead><tbody>${rowsFor(cat.items,"b",i=>uniCode(cat,i))}</tbody></table></div>`:""}
+      <details style="margin-top:14px"${Object.keys(TP.sel).some(k=>k.startsWith("g:"))||!cat?" open":""}><summary class="sub" style="cursor:pointer">البنود العامة المساندة (${G.items.length}) — حفر، سفلتة، سلامة، اختبارات</summary>
+        <div class="tbl"><table class="t"><thead><tr><th></th><th>رقم الصنف</th><th>البند</th><th>الوحدة</th><th class="num">السعر</th><th>الكمية الافتراضية</th></tr></thead><tbody>${rowsFor(G.items,"g",i=>"ع-"+(i+1))}</tbody></table></div></details>
+    </div></section>
+  </div>`;
+  const host=$("#tab-admtpl");
+  $("#tpQ").oninput=e=>{TP.q=e.target.value;const pos=e.target.selectionStart;renderAdmTpl();const q=$("#tpQ");q.focus();q.setSelectionRange(pos,pos)};
+  host.querySelectorAll("[data-tpb]").forEach(b=>b.onclick=()=>{if(TP.dirty&&!confirm("في تغييرات غير محفوظة على المخالفة "+TP.band+". الانتقال بدون حفظ؟"))return;TP.band=b.dataset.tpb;tpLoadSel();renderAdmTpl();window.scrollTo({top:0,behavior:"smooth"})});
+  host.querySelectorAll("[data-tpk]").forEach(c=>c.onchange=()=>{const k=c.dataset.tpk;if(c.checked)TP.sel[k]={q:1,p:""};else delete TP.sel[k];TP.dirty=true;const y=window.scrollY;renderAdmTpl();window.scrollTo(0,y)});
+  host.querySelectorAll("[data-tpq]").forEach(i=>i.onchange=()=>{TP.sel[i.dataset.tpq].q=i.value;TP.dirty=true;const y=window.scrollY;renderAdmTpl();window.scrollTo(0,y)});
+  host.querySelectorAll("[data-tpp]").forEach(i=>i.onchange=()=>{TP.sel[i.dataset.tpp].p=i.value;TP.dirty=true;const y=window.scrollY;renderAdmTpl();window.scrollTo(0,y)});
+  $("#tpClear").onclick=()=>{if(!confirm("إلغاء كل البنود المختارة لهذه المخالفة؟"))return;TP.sel={};TP.dirty=true;renderAdmTpl()};
+  $("#tpSave").onclick=async e=>{e.target.disabled=true;
+    const lines=Object.entries(TP.sel).map(([k,o])=>({k,q:num(o.q)||1,p:o.p||""})).sort((a,b)=>a.k.localeCompare(b.k,undefined,{numeric:true}));
+    try{const cur=await metaGet("__UTPL__");const t={...(cur.templates||{})};if(lines.length)t[TP.band]=lines;else delete t[TP.band];
+      await metaSet("__UTPL__",{templates:t});UTPL=t;TP.dirty=false;toast(lines.length?`تم حفظ ${lines.length} بند للمخالفة ${TP.band}`:`تم إلغاء بنود المخالفة ${TP.band}`);renderAdmTpl()}
+    catch(err){toast("تعذر الحفظ: "+(err.message||err),5000);e.target.disabled=false}};
+}
+
+/* ---------- 2) الموظفون ---------- */
+const STAFF_ROLES=["مسؤول خدمات العملاء","مسؤول التشغيل والصيانة","مأمور ضبط","مدقق","رئيس وحدة","إداري","أخرى"];
+let STAFF=null,STAFF_DIRTY=false;
+async function loadStaff(force){if(STAFF&&!force)return STAFF;try{STAFF=(await metaGet("__STAFF__")).staff||[]}catch(e){STAFF=STAFF||[]}return STAFF}
+async function showStaff(){
+  if(!admGuard("tab-staff"))return;
+  $("#tab-staff").innerHTML=`<section class="block"><div class="body"><div class="hint">جاري التحميل…</div></div></section>`;
+  await loadStaff(true);STAFF_DIRTY=false;renderStaff();
+}
+function renderStaff(){
+  const branches=[...new Set([...(LISTS.unit||[]),...STAFF.map(s=>s.branch).filter(Boolean)])];
+  $("#tab-staff").innerHTML=`<section class="block"><h2>بيانات الموظفين</h2><div class="body">
+    <p class="hint" style="margin-top:0">الموظفون المعتمدون في النماذج. أسماء <b>مسؤول خدمات العملاء</b> و<b>مسؤول التشغيل والصيانة</b> تظهر كاقتراحات في خانات التوقيع بالنموذج الموحد حسب الفرع.</p>
+    <div class="tbl"><table class="t"><thead><tr><th>#</th><th style="min-width:180px">الاسم</th><th>الرقم الوظيفي</th><th>المسمى الوظيفي</th><th>الدور في النموذج</th><th>الفرع / وحدة العمل</th><th>نشط</th><th></th></tr></thead>
+    <tbody>${STAFF.length?STAFF.map((s,i)=>`<tr><td>${i+1}</td>
+      <td><input data-st="${i}" data-f="name" value="${esc(s.name||"")}"></td>
+      <td><input data-st="${i}" data-f="empno" value="${esc(s.empno||"")}" dir="ltr" style="width:100px;text-align:right"></td>
+      <td><input data-st="${i}" data-f="title" value="${esc(s.title||"")}"></td>
+      <td><select data-st="${i}" data-f="role">${STAFF_ROLES.map(r=>`<option${r===s.role?" selected":""}>${r}</option>`).join("")}</select></td>
+      <td><input data-st="${i}" data-f="branch" value="${esc(s.branch||"")}" list="stBranches" style="width:130px"></td>
+      <td><input type="checkbox" data-st="${i}" data-f="active"${s.active!==false?" checked":""}></td>
+      <td><button class="btn ghost" type="button" data-stdel="${i}" aria-label="حذف">×</button></td></tr>`).join(""):`<tr><td colspan="8" class="hint">لا يوجد موظفون — أضف أول موظف.</td></tr>`}</tbody></table></div>
+    <datalist id="stBranches">${branches.map(b=>`<option value="${esc(b)}">`).join("")}</datalist>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn" type="button" id="stAdd">+ إضافة موظف</button>
+      <button class="btn solid" type="button" id="stSave"${STAFF_DIRTY?"":" disabled"}>حفظ التغييرات</button>${STAFF_DIRTY?'<span class="status d" style="align-self:center">تغييرات غير محفوظة</span>':""}</div>
+  </div></section>`;
+  const host=$("#tab-staff");
+  host.querySelectorAll("[data-st]").forEach(el=>el.addEventListener(el.type==="checkbox"||el.tagName==="SELECT"?"change":"input",()=>{const s=STAFF[+el.dataset.st];s[el.dataset.f]=el.type==="checkbox"?el.checked:el.value;
+    if(!STAFF_DIRTY){STAFF_DIRTY=true;$("#stSave").disabled=false}}));
+  host.querySelectorAll("[data-stdel]").forEach(b=>b.onclick=()=>{const s=STAFF[+b.dataset.stdel];if(s.name&&!confirm("حذف "+s.name+"؟"))return;STAFF.splice(+b.dataset.stdel,1);STAFF_DIRTY=true;renderStaff()});
+  $("#stAdd").onclick=()=>{STAFF.push({name:"",empno:"",title:"",role:STAFF_ROLES[0],branch:U?.info?.branch||"",active:true});STAFF_DIRTY=true;renderStaff();const ins=host.querySelectorAll('[data-f="name"]');ins[ins.length-1]?.focus()};
+  $("#stSave").onclick=async e=>{e.target.disabled=true;const clean=STAFF.filter(s=>String(s.name||"").trim()).map(s=>({...s,name:s.name.trim()}));
+    try{await metaSet("__STAFF__",{staff:clean});STAFF=clean;STAFF_DIRTY=false;toast("تم حفظ بيانات الموظفين");renderStaff()}catch(err){toast("تعذر الحفظ: "+(err.message||err),5000);e.target.disabled=false}};
+}
+
+/* ---------- 3) المستندات والمرفقات ---------- */
+const DOC_BUCKET="cost-docs",DOC_CATS=["ملفات توحيد العمل","القوالب والنماذج","التعاميم والتعليمات","العقود والاتفاقيات","أخرى"];
+let DOCS=null;
+async function showDocs(){
+  if(!admGuard("tab-docs"))return;
+  $("#tab-docs").innerHTML=`<section class="block"><div class="body"><div class="hint">جاري التحميل…</div></div></section>`;
+  try{DOCS=(await metaGet("__DOCS__")).docs||[]}catch(e){DOCS=[]}
+  renderDocs();
+}
+function docSize(b){return b>1048576?(b/1048576).toFixed(1)+" م.ب":Math.max(1,Math.round(b/1024))+" ك.ب"}
+function renderDocs(msg){
+  const by={};DOCS.forEach((d,i)=>(by[d.cat||"أخرى"]=by[d.cat||"أخرى"]||[]).push({...d,i}));
+  $("#tab-docs").innerHTML=`<section class="block"><h2>المستندات والمرفقات</h2><div class="body">
+    <p class="hint" style="margin-top:0">مستندات المنصة المرجعية: ملفات توحيد العمل، القوالب الرسمية، التعاميم. تُحفظ في التخزين الخاص بالمنصة.</p>
+    <div class="grid" style="align-items:end"><label class="f">التصنيف<select id="dcCat">${DOC_CATS.map(c=>`<option>${c}</option>`).join("")}</select></label>
+      <label class="f">الوصف (اختياري)<input id="dcNote" placeholder="مثال: جدول الأسعار المعتمد 2026"></label>
+      <label class="f">الملفات<input type="file" id="dcFile" multiple></label>
+      <div class="f"><button class="btn solid" type="button" id="dcUp">رفع</button></div></div>
+    <div id="dcMsg">${msg||""}</div>
+    ${DOCS.length?DOC_CATS.filter(c=>by[c]).map(c=>`<div class="sub" style="margin-top:14px">${c} (${by[c].length})</div>
+      <div class="tbl"><table class="t"><thead><tr><th>الملف</th><th>الوصف</th><th>الحجم</th><th>تاريخ الرفع</th><th></th></tr></thead><tbody>
+      ${by[c].map(d=>`<tr><td>${esc(d.name)}</td><td>${esc(d.note||"")}</td><td>${docSize(d.size||0)}</td><td>${dmy(String(d.at||"").slice(0,10))}</td>
+        <td style="white-space:nowrap"><button class="btn" type="button" data-dcopen="${d.i}">فتح</button> <button class="btn ghost" type="button" data-dcdel="${d.i}">حذف</button></td></tr>`).join("")}</tbody></table></div>`).join("")
+      :`<div class="hint" style="margin-top:12px">لا توجد مستندات مرفوعة بعد.</div>`}
+  </div></section>`;
+  $("#dcUp").onclick=docUpload;
+  document.querySelectorAll("[data-dcopen]").forEach(b=>b.onclick=()=>docOpen(DOCS[+b.dataset.dcopen]));
+  document.querySelectorAll("[data-dcdel]").forEach(b=>b.onclick=()=>docDel(+b.dataset.dcdel));
+}
+function docBucketHelp(err){return`<div class="rule warn" style="margin-top:10px;line-height:1.9">تعذر الرفع: ${esc(err)}<br>
+  إذا كانت الرسالة عن عدم وجود الحاوية (Bucket not found)، أنشئها مرة واحدة: افتح مشروع Supabase ← <b>Storage</b> ← <b>New bucket</b> ← الاسم <b dir="ltr">${DOC_BUCKET}</b> ← اتركها خاصة (Private) ← Create.
+  ثم من <b>Policies</b> للحاوية أضف سياسة تسمح للمستخدمين المسجلين (authenticated) بالقراءة والرفع والحذف.</div>`}
+async function docUpload(){
+  const files=[...($("#dcFile").files||[])];if(!files.length){toast("اختر ملفاً أولاً");return}
+  const b=$("#dcUp");b.disabled=true;const cat=$("#dcCat").value,note=$("#dcNote").value.trim();let ok=0,err="";
+  for(const f of files){
+    if(f.size>50*1048576){err="الملف "+f.name+" أكبر من 50 م.ب";continue}
+    const ext=(f.name.match(/\.[A-Za-z0-9]{1,6}$/)||[""])[0].toLowerCase();
+    const path=`${Date.now()}-${Math.random().toString(36).slice(2,8)}${ext}`;
+    $("#dcMsg").innerHTML=`<div class="hint">جاري رفع ${esc(f.name)}…</div>`;
+    const {error}=await sb.storage.from(DOC_BUCKET).upload(path,f,{contentType:f.type||"application/octet-stream",upsert:false});
+    if(error){err=error.message;break}
+    DOCS.push({name:f.name,path,size:f.size,type:f.type,cat,note,at:new Date().toISOString(),by:user?.email||""});ok++;
+  }
+  if(ok){try{await metaSet("__DOCS__",{docs:DOCS})}catch(e){err=e.message}}
+  b.disabled=false;
+  if(err)renderDocs(docBucketHelp(err));else{toast(`تم رفع ${ok} ملف`);renderDocs()}
+}
+async function docOpen(d){
+  const {data,error}=await sb.storage.from(DOC_BUCKET).createSignedUrl(d.path,600,{download:d.name});
+  if(error){toast("تعذر فتح الملف: "+error.message,5000);return}
+  const a=document.createElement("a");a.href=data.signedUrl;a.target="_blank";a.rel="noopener";document.body.appendChild(a);a.click();a.remove();
+}
+async function docDel(i){
+  const d=DOCS[i];if(!confirm("حذف الملف «"+d.name+"» نهائياً؟"))return;
+  const {error}=await sb.storage.from(DOC_BUCKET).remove([d.path]);
+  if(error&&!/not.?found/i.test(error.message)){toast("تعذر الحذف: "+error.message,5000);return}
+  DOCS.splice(i,1);try{await metaSet("__DOCS__",{docs:DOCS});toast("تم حذف الملف")}catch(e){toast("تعذر تحديث الفهرس: "+e.message,5000)}renderDocs();
+}
 
 /* ===== فاتح / غامق ===== */
 const SUN='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',MOON='<svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
