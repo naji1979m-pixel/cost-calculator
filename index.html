@@ -2082,6 +2082,8 @@ function uniRender(){
       ${uniField("رقم الهوية / رقم المنشأة الموحد","info.id",{ltr:1})}
       ${uniField("نوع المخالف","info.ptype",{sel:uniOpts(LISTS.ptype,I.ptype,"—")})}
       <label class="f" style="grid-column:1/-1"><span>نوع المخالفة (البند)</span><select data-u="info.band">${uniBandOpts()}</select></label>
+      ${uniField("المنطقة","info.region",{sel:uniOpts([...new Set([...Object.keys(REGIONS),I.region].filter(Boolean))].sort(),I.region,"—")})}
+      ${uniField("المحافظة","info.gov",{sel:uniOpts([...new Set([...govsOf(I.region),I.gov].filter(Boolean))],I.gov,"—")})}
       ${uniField("التاريخ","info.date",{type:"date"})}
       ${uniField("القطاع","info.sector",{sel:uniOpts(LISTS.sector,I.sector,"—")})}
       ${uniField("وحدة العمل / الفرع","info.branch")}
@@ -2163,12 +2165,14 @@ function uniVisitCard(){const v=U.visit;if(!v)return"";
   ${(v.items||[]).map(x=>`<div class="line"><span>البند ${esc(x.bnd||"")}</span><b style="font-weight:500">${esc(x.desc||"")}${x.sev?` — ${esc(x.sev)}`:""}</b></div>`).join("")}
   ${v.matched?"":`<div class="rule warn">لم يتم التعرف على نوع المخالفة تلقائياً — اختره يدوياً.</div>`}</div>`}
 function uniSet(key,val){const ks=key.split(".");let o=U;for(let i=0;i<ks.length-1;i++)o=o[ks[i]];o[ks.at(-1)]=val}
-const UNI_RERENDER=new Set(["info.band","lb.method","lb.known","emerg"]);
+const UNI_RERENDER=new Set(["info.band","info.region","info.gov","lb.method","lb.known","emerg"]);
 function uniBind(){
   const host=$("#tab-unified");
   host.querySelectorAll("[data-u]").forEach(el=>{const key=el.dataset.u;
     const h=()=>{let v=el.type==="checkbox"?el.checked:el.value;if(key==="lb.known")v=v==="1";uniSet(key,v);
       if(key==="info.band"){U.boq=[];uniApplyTpl(true)}
+      if(key==="info.region"){if(U.info.gov&&!govsOf(U.info.region).includes(U.info.gov))U.info.gov="";U.info.sector=SECTOR_OF[U.info.region]||U.info.sector}
+      if(key==="info.gov"){U.info.branch=govShort(U.info.gov)||U.info.branch}
       uniSave();if(UNI_RERENDER.has(key))uniRender();else uniRecalc()};
     el.addEventListener(el.tagName==="SELECT"||el.type==="checkbox"||el.type==="date"||el.type==="time"?"change":"input",h)});
   host.querySelectorAll("[data-ub]").forEach(el=>el.addEventListener(el.tagName==="SELECT"?"change":"input",()=>{const r=U.boq[+el.dataset.ub];r[el.dataset.f]=el.value;
