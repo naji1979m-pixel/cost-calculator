@@ -2080,7 +2080,7 @@ function uniRender(){
       <div class="f" style="grid-column:span 2;min-width:0"><span>رقم المخالفة (رقم الزيارة)</span><span style="display:flex;gap:6px"><input data-u="info.no" dir="ltr" style="text-align:right;flex:1" placeholder="SWA-..." value="${esc(I.no)}"><button class="btn" type="button" id="uLookup">جلب من الملف الشامل</button></span></div>
       ${uniField("اسم المخالف","info.name")}
       ${uniField("رقم الهوية / رقم المنشأة الموحد","info.id",{ltr:1})}
-      ${uniField("نوع المخالف","info.ptype",{sel:uniOpts(LISTS.ptype,I.ptype)})}
+      ${uniField("نوع المخالف","info.ptype",{sel:uniOpts(LISTS.ptype,I.ptype,"—")})}
       <label class="f" style="grid-column:1/-1"><span>نوع المخالفة (البند)</span><select data-u="info.band">${uniBandOpts()}</select></label>
       ${uniField("التاريخ","info.date",{type:"date"})}
       ${uniField("القطاع","info.sector",{sel:uniOpts(LISTS.sector,I.sector,"—")})}
@@ -2240,14 +2240,16 @@ async function uniLookup(raw){
   let no=String(raw||"").trim().toUpperCase();if(/^\d+$/.test(no))no="SWA-"+no;if(!/^SWA-\d+$/.test(no)){toast("أدخل رقم زيارة صحيح");return}
   const {data,error}=await sb.from("cost_visits").select("data").eq("visit_no",no).maybeSingle();
   if(error){toast("تعذر البحث في الملف الشامل",4000);return}
+  /* رقم مخالفة جديد = نموذج جديد: تُمسح كل البيانات السابقة وتُعبأ فقط مما في الملف الشامل (الفارغ يبقى فارغاً) */
+  {const keep={sign:U.sign,agr:U.info.agr};U=uniBlank();U.sign=keep.sign;U.info.agr=keep.agr||"";U.info.ptype="";}
   if(!data){U.info.no=no;U.visit=null;uniSave();uniRender();toast("الرقم غير موجود في الملف الشامل — أدخل البيانات يدوياً",4500);return}
   const v=data.data,I=U.info,d=compDate(v.start);
-  I.no=v.no;I.name=v.name||I.name;I.id=v.nid||I.id;if(d)I.date=d;I.region=v.region||"";I.gov=v.gov||"";
-  I.branch=govShort(v.gov||"")||I.branch;if(v.region&&SECTOR_OF[v.region])I.sector=SECTOR_OF[v.region];
+  I.no=v.no||no;I.name=v.name||"";I.id=v.nid||"";I.date=d||"";I.region=v.region||"";I.gov=v.gov||"";
+  I.branch=govShort(v.gov||"")||"";I.sector=(v.region&&SECTOR_OF[v.region])||"";
   const it=(v.items||[]).find(x=>x.sev==="جسيمة")||v.items?.[0]||{};
   const nm=matchViolation(it.bnd,it.desc,uniV());const idx=nm?uniV().indexOf(nm)+1:0;
   await uniLoadTpl();
-  if(idx&&String(idx)!==String(I.band)){I.band=String(idx);U.boq=[];uniApplyTpl(true)}else uniApplyTpl(false);
+  I.band=idx?String(idx):"";U.boq=[];uniApplyTpl(true);
   const cat=PROP_CAT[v.prop];if(cat){U.lb.cat=cat.startsWith("سكني")?"سكني":cat;if((UB().maxBenefit||[]).some(x=>x.cat===cat))U.lb.ccat=cat}
   if(/حكومي/.test(v.prop||""))I.ptype="جهة حكومية";
   /* المنفعة المفقودة جاهزة: تاريخ الزيارة نهاية المخالفة، والمدة غير معلومة (6 أشهر سكني / 12 شهراً تجاري وحكومي) */
@@ -2325,6 +2327,46 @@ async function uniSaveRec(status){
   U.id=res.data.id;U.status=status;uniSave();return U.id;
 }
 function uniOpenRec(rec){U=Object.assign(uniBlank(),rec.data,{id:rec.id,status:rec.status,lb:Object.assign(uniBlank().lb,rec.data.lb||{}),br:Object.assign(uniBlank().br,rec.data.br||{})});delete U.kind;uniSave();switchTab("unified")}
+
+/* ---------- جدول الكميات المختوم: يُرفق مع النموذج الموحد عند الطباعة ----------
+   ملفان في حاوية cost-docs: stamped/boq-1-51.pdf (البنود 1–51) و stamped/boq-other.pdf (بقية البنود والبنود العامة)
+   خريطة الصفحات: رقم بند المخالفة ← أرقام الصفحات في الملف المختوم */
+const STAMPED={
+  a:{path:"stamped/boq-1-51.pdf",label:"جدول الكميات المختوم — البنود 1 إلى 51",
+     pages:{1:[1],2:[2],3:[3,4],4:[5],5:[6,7,8,9,10],6:[11,12,13],7:[14],8:[15],11:[17],12:[18],13:[19],14:[20],15:[21],16:[22],17:[23],18:[24],19:[25],20:[26],21:[27],23:[28],24:[29],29:[30],30:[31],31:[32],32:[33],33:[34],47:[35],48:[36],49:[37],50:[38],51:[39],52:[40]}},
+  b:{path:"stamped/boq-other.pdf",label:"جدول الكميات المختوم — بقية البنود والبنود العامة",
+     general:[1],pages:{10:[2],22:[3],25:[4],26:[5],27:[6],28:[7],34:[8],35:[9],36:[10],37:[11],38:[12],39:[13],40:[14],41:[15],42:[16],43:[17],44:[18],45:[19],46:[20],53:[21],63:[22],64:[23,24]}}};
+const stampedCache={};
+async function stampedBytes(key){
+  if(stampedCache[key])return stampedCache[key];
+  const {data,error}=await sb.storage.from(DOC_BUCKET).createSignedUrl(STAMPED[key].path,300);
+  if(error||!data?.signedUrl)return null;
+  const r=await fetch(data.signedUrl);if(!r.ok)return null;
+  return stampedCache[key]=await r.arrayBuffer();
+}
+async function ensurePdfLib(){if(window.PDFLib)return;await new Promise((ok,no)=>{const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js";s.onload=ok;s.onerror=()=>no(new Error("تعذر تحميل مكتبة دمج PDF"));document.head.appendChild(s)})}
+/* يرجع قائمة الصفحات المطلوبة للمخالفة الحالية */
+function stampedNeed(c){
+  const band=Number(U.info.band),need=[];
+  for(const k of ["a","b"]){const pg=STAMPED[k].pages[band];if(pg)need.push({k,pages:pg})}
+  if(c.lines.some(x=>x.r.k.startsWith("g:")))need.push({k:"b",pages:STAMPED.b.general});
+  return need;
+}
+async function attachStamped(formBlob,c){
+  const need=stampedNeed(c);if(!need.length)return{blob:formBlob,note:""};
+  try{
+    await ensurePdfLib();const {PDFDocument}=window.PDFLib;
+    const out=await PDFDocument.load(await formBlob.arrayBuffer());let added=0,missing=[];
+    for(const n of need){
+      const bytes=await stampedBytes(n.k);if(!bytes){missing.push(STAMPED[n.k].label);continue}
+      const src=await PDFDocument.load(bytes,{ignoreEncryption:true});
+      const idx=n.pages.map(p=>p-1).filter(i=>i>=0&&i<src.getPageCount());
+      (await out.copyPages(src,idx)).forEach(pg=>{out.addPage(pg);added++});
+    }
+    const blob=new Blob([await out.save()],{type:"application/pdf"});
+    return{blob,note:missing.length?"لم يُرفق: "+missing.join("، ")+" — ارفعه من إدارة النظام ← المستندات والمرفقات":added?`أُرفق جدول الكميات المختوم (${added} صفحة)`:""};
+  }catch(e){return{blob:formBlob,note:"تعذر إرفاق جدول الكميات المختوم: "+(e.message||e)}}
+}
 async function uniPdf(skipCheck){
   const c=uniCompute(),miss=uniMissing(c);
   if(!skipCheck&&miss.length&&!confirm("بيانات ناقصة: "+miss.join("، ")+"\nإصدار PDF على أي حال؟"))return;
@@ -2342,7 +2384,9 @@ async function uniPdf(skipCheck){
       pdf.addImage(cv.toDataURL("image/jpeg",0.93),"JPEG",(297-w)/2,i?8:(210-h)/2,w,h);
     }
     pdf.setProperties({title:"تكاليف الإصلاح والمنفعة المفقودة - "+(U.info.no||"")});
-    showPdf(pdf.output("blob"),`حساب التكاليف الموحد - ${String(U.info.no||"نموذج").trim()}.pdf`.replace(/[\\/:*?"<>|]/g,"-"));
+    const att=await attachStamped(pdf.output("blob"),c);
+    showPdf(att.blob,`حساب التكاليف الموحد - ${String(U.info.no||"نموذج").trim()}.pdf`.replace(/[\\/:*?"<>|]/g,"-"));
+    if(att.note)toast(att.note,6000);
   }catch(err){toast("تعذر إنشاء PDF: "+(err?.message||err),6000)}
   finally{b.disabled=false;host.innerHTML=""}
 }
@@ -2613,6 +2657,10 @@ function renderDocs(msg){
       <label class="f">الملفات<input type="file" id="dcFile" multiple></label>
       <div class="f"><button class="btn solid" type="button" id="dcUp">رفع</button></div></div>
     <div id="dcMsg">${msg||""}</div>
+    <div class="sub" style="margin-top:16px">جدول الكميات المختوم — يُرفق تلقائياً مع نموذج الحساب الموحد عند الطباعة</div>
+    <div class="tbl"><table class="t"><thead><tr><th>الملف</th><th>الحالة</th><th></th></tr></thead><tbody>
+    ${["a","b"].map(k=>`<tr><td>${STAMPED[k].label}<div class="hint" style="margin:2px 0 0">${k==="a"?"الملف رقم 3 (PDF المختوم للبنود 1-51)":"الملف رقم 5 (PDF المختوم لبقية البنود)"}</div></td><td id="stSt-${k}"><span class="hint">جاري الفحص…</span></td>
+      <td style="white-space:nowrap"><label class="btn" style="cursor:pointer">رفع / استبدال<input type="file" accept="application/pdf" data-stup="${k}" hidden></label></td></tr>`).join("")}</tbody></table></div>
     ${DOCS.length?DOC_CATS.filter(c=>by[c]).map(c=>`<div class="sub" style="margin-top:14px">${c} (${by[c].length})</div>
       <div class="tbl"><table class="t"><thead><tr><th>الملف</th><th>الوصف</th><th>الحجم</th><th>تاريخ الرفع</th><th></th></tr></thead><tbody>
       ${by[c].map(d=>`<tr><td>${esc(d.name)}</td><td>${esc(d.note||"")}</td><td>${docSize(d.size||0)}</td><td>${dmy(String(d.at||"").slice(0,10))}</td>
@@ -2620,6 +2668,13 @@ function renderDocs(msg){
       :`<div class="hint" style="margin-top:12px">لا توجد مستندات مرفوعة بعد.</div>`}
   </div></section>`;
   $("#dcUp").onclick=docUpload;
+  ["a","b"].forEach(async k=>{const el=$("#stSt-"+k);if(!el)return;const {data,error}=await sb.storage.from(DOC_BUCKET).createSignedUrl(STAMPED[k].path,60);
+    el.innerHTML=!error&&data?.signedUrl?'<span class="status a">مرفوع ✓</span>':'<span class="status d">غير مرفوع</span>'});
+  document.querySelectorAll("[data-stup]").forEach(inp=>inp.onchange=async()=>{const f=inp.files[0],k=inp.dataset.stup;if(!f)return;
+    $("#stSt-"+k).innerHTML='<span class="hint">جاري الرفع…</span>';
+    const {error}=await sb.storage.from(DOC_BUCKET).upload(STAMPED[k].path,f,{contentType:"application/pdf",upsert:true});
+    if(error){renderDocs(docBucketHelp(error.message));return}
+    delete stampedCache[k];toast("تم رفع "+STAMPED[k].label);renderDocs()});
   document.querySelectorAll("[data-dcopen]").forEach(b=>b.onclick=()=>docOpen(DOCS[+b.dataset.dcopen]));
   document.querySelectorAll("[data-dcdel]").forEach(b=>b.onclick=()=>docDel(+b.dataset.dcdel));
 }
