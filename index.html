@@ -1328,6 +1328,8 @@ const UNIT_OF={"حفر الباطن":"الوحدة الشمالية","الخفج
 const SECTOR_OF={"الشرقية":"القطاع الشرقي"};
 const govShort=g=>String(g||"").replace(/^(محافظة|محافظ|مدينة)\s+/,"").trim();
 const COMP_COLS={no:"رقم الزيارة",region:"المنطقة",start:"تاريخ بدء الزيارة",gov:"المحافظة",coords:"الاحداثيات",sub:"التصنيف الفرعي",insp:"اسم المفتش",vstatus:"حالة الزيارة",vid:"معرف المخالفة",status:"حالة المخالفة",prop:"نوع العقار",bnd:"رقم البند",bdesc:"وصف البند",name:"اسم المخالف",nid:"هوية المخالف",sev:"نوع المخالفة",notes:"ملاحظات المفتش"};
+/* أسماء بديلة للأعمدة في الملف الشامل، ونوع الزيارة */
+const COMP_ALT={bdesc:["وصف بند اللائحة"],visittype:[]};COMP_COLS.visittype="نوع الزيارة";
 function xmlDecode(s){return s.indexOf("&")<0?s:s.replace(/&(lt|gt|amp|quot|apos|#(\d+)|#x([0-9a-fA-F]+));/g,(m,n,d,h)=>n==="lt"?"<":n==="gt"?">":n==="amp"?"&":n==="quot"?'"':n==="apos"?"'":String.fromCodePoint(d?+d:parseInt(h,16)))}
 function parseShared(xml){
   const out=[],re=/<si>([\s\S]*?)<\/si>/g,tr=/<t[^>]*>([\s\S]*?)<\/t>/g;let m;
@@ -1344,7 +1346,7 @@ function parseComprehensive(sheetXml,ss){
   while((m=rowRe.exec(sheetXml))){
     const r={};let c;cRe.lastIndex=0;
     while((c=cRe.exec(m[1])))r[c[1]]=val(c[2],c[3]);
-    if(first){first=false;col={};for(const k in COMP_COLS){const L=Object.keys(r).find(x=>String(r[x]).trim()===COMP_COLS[k]);if(L)col[k]=L}
+    if(first){first=false;col={};for(const k in COMP_COLS){const names=[COMP_COLS[k],...(COMP_ALT[k]||[])];for(const nm of names){const L=Object.keys(r).find(x=>String(r[x]).trim()===nm);if(L){col[k]=L;break}}}
       if(!col.no||!col.gov)throw new Error("الملف لا يحتوي على عمود رقم الزيارة أو المحافظة");continue}
     total++;
     const gov=String(r[col.gov]||"").trim(),region=col.region?String(r[col.region]||"").trim():"";
@@ -1353,7 +1355,7 @@ function parseComprehensive(sheetXml,ss){
     const g=k=>col[k]?String(r[col[k]]??"").trim():"";
     const item={bnd:g("bnd"),desc:g("bdesc"),vid:g("vid"),status:g("status"),sev:g("sev")};
     if(visits[no]){if(!visits[no].items.some(x=>x.vid===item.vid&&x.desc===item.desc))visits[no].items.push(item);continue}
-    visits[no]={no,region,gov,start:g("start"),coords:g("coords"),sub:g("sub"),insp:g("insp"),vstatus:g("vstatus"),prop:g("prop"),name:g("name"),nid:g("nid"),notes:g("notes").slice(0,300),items:[item]};
+    visits[no]={no,region,gov,start:g("start"),coords:g("coords"),sub:g("sub"),insp:g("insp"),vstatus:g("vstatus"),prop:g("prop"),name:g("name"),nid:g("nid"),vtype:g("visittype"),notes:g("notes").slice(0,300),items:[item]};
   }
   const regions={};for(const r in meta)regions[r]=Object.keys(meta[r]).filter(Boolean).sort();
   return{visits,total,regions};
@@ -2080,7 +2082,7 @@ function uniRender(){
       <div class="f" style="grid-column:span 2;min-width:0"><span>رقم المخالفة (رقم الزيارة)</span><span style="display:flex;gap:6px"><input data-u="info.no" dir="ltr" style="text-align:right;flex:1" placeholder="SWA-..." value="${esc(I.no)}"><button class="btn" type="button" id="uLookup">جلب من الملف الشامل</button></span></div>
       ${uniField("اسم المخالف","info.name")}
       ${uniField("رقم الهوية / رقم المنشأة الموحد","info.id",{ltr:1})}
-      ${uniField("نوع المخالف","info.ptype",{sel:uniOpts(LISTS.ptype,I.ptype,"—")})}
+      ${uniField("نوع المخالف (نوع الزيارة)","info.ptype",{list:"uPtypes"})}<datalist id="uPtypes">${[...new Set(["زيارة غير مجدولة","زيارة مجدولة",...LISTS.ptype])].map(x=>`<option value="${esc(x)}">`).join("")}</datalist>
       <label class="f" style="grid-column:1/-1"><span>نوع المخالفة (البند)</span><select data-u="info.band">${uniBandOpts()}</select></label>
       ${uniField("المنطقة (القطاع)","info.region",{sel:uniOpts([...new Set([...Object.keys(REGIONS),I.region].filter(Boolean))].sort(),I.region,"—")})}
       ${uniField("المحافظة","info.gov",{sel:uniOpts([...new Set([...govsOf(I.region),I.gov].filter(Boolean))],I.gov,"—")})}
@@ -2163,6 +2165,7 @@ function uniVisitCard(){const v=U.visit;if(!v)return"";
   return`<div class="calc" style="margin-top:0"><div class="line"><span>من الملف الشامل</span><b dir="ltr">${esc(v.no)}</b></div>
   ${v.gov?`<div class="line"><span>المنطقة / المحافظة</span><b>${esc(v.region||"")} — ${esc(v.gov)}</b></div>`:""}
   ${v.prop?`<div class="line"><span>نوع العقار</span><b>${esc(v.prop)}</b></div>`:""}
+  <div class="line"><span>نوع الزيارة</span><b>${v.vtype?esc(v.vtype):'<span class="hint">غير موجود — أعد رفع الملف الشامل لقراءة هذا العمود</span>'}</b></div>
   ${(v.items||[]).map(x=>`<div class="line"><span>البند ${esc(x.bnd||"")}</span><b style="font-weight:500">${esc(x.desc||"")}${x.sev?` — ${esc(x.sev)}`:""}</b></div>`).join("")}
   ${v.matched?"":`<div class="rule warn">لم يتم التعرف على نوع المخالفة تلقائياً — اختره يدوياً.</div>`}</div>`}
 function uniSet(key,val){const ks=key.split(".");let o=U;for(let i=0;i<ks.length-1;i++)o=o[ks[i]];o[ks.at(-1)]=val}
@@ -2256,10 +2259,10 @@ async function uniLookup(raw){
   await uniLoadTpl();
   I.band=idx?String(idx):"";U.boq=[];uniApplyTpl(true);
   const cat=PROP_CAT[v.prop];if(cat){U.lb.cat=cat.startsWith("سكني")?"سكني":cat;if((UB().maxBenefit||[]).some(x=>x.cat===cat))U.lb.ccat=cat}
-  if(/حكومي/.test(v.prop||""))I.ptype="جهة حكومية";
+  I.ptype=v.vtype||"";
   /* المنفعة المفقودة جاهزة: تاريخ الزيارة نهاية المخالفة، والمدة غير معلومة (6 أشهر سكني / 12 شهراً تجاري وحكومي) */
   if(d){U.lb.end=d;if(U.lb.method!=="break"){U.lb.method=U.lb.method||"hyd";U.lb.known=false;U.lb.start=""}}
-  U.visit={no:v.no,region:v.region,gov:v.gov,prop:v.prop,items:v.items,matched:!!idx};
+  U.visit={no:v.no,region:v.region,gov:v.gov,prop:v.prop,vtype:v.vtype,items:v.items,matched:!!idx};
   uniSave();uniRender();
   const miss=uniMissing(uniCompute());
   toast(miss.length?"تم جلب بيانات الزيارة "+v.no+" — أكمل: "+miss.join("، "):"النموذج جاهز ✓ راجع البيانات ثم اعتمد وحمّل PDF",5000);
