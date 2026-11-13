@@ -77,6 +77,13 @@ table.t{width:100%;border-collapse:collapse;font-size:.88rem}
 .status{display:inline-block;padding:2px 10px;border-radius:999px;font-size:.78rem;font-weight:600;border:1px solid currentColor}
 .status.d{color:var(--muted)}
 .status.a{color:var(--ok)}
+.sec-k{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.sec-kc{display:flex;flex-direction:column;gap:4px;align-items:flex-start;text-align:right;border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--soft);color:var(--ink);font:inherit;cursor:pointer}
+.sec-kc b{font-size:1.6rem;color:var(--ok)}.sec-kc span{font-size:.82rem;color:var(--muted)}
+.sec-kc.bad{border-color:#e05252}.sec-kc.bad b{color:#e05252}
+#secPill{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:9000;background:#C0392B;color:#fff;border-radius:12px;padding:8px 10px;display:flex;gap:8px;align-items:center;box-shadow:0 8px 22px rgba(0,0,0,.3);max-width:calc(100vw - 24px)}
+#secPill button{background:none;border:0;color:#fff;font:inherit;font-weight:700;cursor:pointer;text-align:right}
+#secPill #secX{background:#fff;color:#C0392B;border-radius:9px;padding:5px 10px;white-space:nowrap}
 .banner{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--water-soft);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:.88rem}
 .totalbar{position:fixed;bottom:0;left:0;right:0;background:var(--total-bg);color:var(--total-fg);padding:10px 16px;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:10}
 .totalbar .in{max-width:980px;margin:0 auto;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
@@ -335,7 +342,7 @@ dialog{background:#0b223c}
 <div id="app" class="shell" hidden>
 <aside class="side" id="side">
   <div class="brand"><img id="sideLogo" alt="شركة المياه الوطنية"></div>
-  <nav id="sideNav"><button type="button" data-go="home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><span>الرئيسية</span></button><div class="nav-grp g-uni"><div class="nav-gh"><span class="dot"></span>حساب التكاليف الموحد<span class="nav-new">جديد</span></div><button type="button" data-go="unified"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M8 18h2M12 18h2"/></svg><span>النموذج الموحد</span></button><button type="button" data-go="urecs"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M9 13h6M9 17h6"/></svg><span>سجل النماذج الموحدة</span></button><button type="button" data-go="uboq"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/></svg><span>جدول الكميات الموحد</span></button></div><div class="nav-grp g-old"><div class="nav-gh"><span class="dot"></span>حساب التكاليف السابق</div><button type="button" data-go="form:sec-info"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg><span>بيانات المخالفة</span></button><button type="button" data-go="form:sec-repair"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg><span>تكاليف الإصلاح</span></button><button type="button" data-go="loss"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3s7 7.5 7 12a7 7 0 0 1-14 0c0-4.5 7-12 7-12z"/></svg><span>المنفعة المفقودة</span></button><button type="button" data-go="recs"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M9 13h6M9 17h6"/></svg><span>سجل النماذج</span></button><button type="button" data-go="boq"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/></svg><span>جدول الكميات</span></button><button type="button" data-go="rates"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="7" cy="7" r="3"/><circle cx="17" cy="17" r="3"/><path d="M5 19L19 5"/></svg><span>معدلات الفئات</span></button></div><div id="admPortal" hidden><button type="button" class="nav-toggle" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg><span>إدارة النظام</span><span class="chev">▾</span></button><div class="nav-sub" hidden><button type="button" data-go="admtpl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg><span>بنود التكاليف لكل مخالفة</span></button><button type="button" data-go="staff"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.5a5 5 0 0 1 5.5 5"/></svg><span>بيانات الموظفين</span></button><button type="button" data-go="docs"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 11v5M9.5 13.5h5"/></svg><span>المستندات والمرفقات</span></button><button type="button" data-go="comp"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M12 18v-6M9 15l3-3 3 3"/></svg><span>الملف الشامل</span></button><button type="button" data-go="rates"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="7" cy="7" r="3"/><circle cx="17" cy="17" r="3"/><path d="M5 19L19 5"/></svg><span>معدلات الفئات</span></button><button type="button" data-go="boq"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/></svg><span>جدول الكميات (السابق)</span></button><button type="button" data-go="scope"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg><span>تغيير النطاق</span></button></div></div></nav>
+  <nav id="sideNav"><button type="button" data-go="home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><span>الرئيسية</span></button><div class="nav-grp g-uni"><div class="nav-gh"><span class="dot"></span>حساب التكاليف الموحد<span class="nav-new">جديد</span></div><button type="button" data-go="unified"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M8 18h2M12 18h2"/></svg><span>النموذج الموحد</span></button><button type="button" data-go="urecs"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M9 13h6M9 17h6"/></svg><span>سجل النماذج الموحدة</span></button><button type="button" data-go="uboq"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/></svg><span>جدول الكميات الموحد</span></button></div><div class="nav-grp g-old"><div class="nav-gh"><span class="dot"></span>حساب التكاليف السابق</div><button type="button" data-go="form:sec-info"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg><span>بيانات المخالفة</span></button><button type="button" data-go="form:sec-repair"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg><span>تكاليف الإصلاح</span></button><button type="button" data-go="loss"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3s7 7.5 7 12a7 7 0 0 1-14 0c0-4.5 7-12 7-12z"/></svg><span>المنفعة المفقودة</span></button><button type="button" data-go="recs"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M9 13h6M9 17h6"/></svg><span>سجل النماذج</span></button><button type="button" data-go="boq"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/></svg><span>جدول الكميات</span></button><button type="button" data-go="rates"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="7" cy="7" r="3"/><circle cx="17" cy="17" r="3"/><path d="M5 19L19 5"/></svg><span>معدلات الفئات</span></button></div><div id="admPortal" hidden><button type="button" class="nav-toggle" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg><span>إدارة النظام</span><span class="chev">▾</span></button><div class="nav-sub" hidden><button type="button" data-go="admtpl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg><span>بنود التكاليف لكل مخالفة</span></button><button type="button" data-go="staff"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.5a5 5 0 0 1 5.5 5"/></svg><span>بيانات الموظفين</span></button><button type="button" data-go="docs"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 11v5M9.5 13.5h5"/></svg><span>المستندات والمرفقات</span></button><button type="button" data-go="sec"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/><path d="M12 8v5M12 16h.01"/></svg><span>الحماية والإنذار</span></button><button type="button" data-go="comp"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M12 18v-6M9 15l3-3 3 3"/></svg><span>الملف الشامل</span></button><button type="button" data-go="rates"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="7" cy="7" r="3"/><circle cx="17" cy="17" r="3"/><path d="M5 19L19 5"/></svg><span>معدلات الفئات</span></button><button type="button" data-go="boq"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/></svg><span>جدول الكميات (السابق)</span></button><button type="button" data-go="scope"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg><span>تغيير النطاق</span></button></div></div></nav>
   <div class="foot">إدارة المخالفات والتفتيش</div>
 </aside>
 <div class="side-mask" id="sideMask"></div>
@@ -350,6 +357,7 @@ dialog{background:#0b223c}
         <button type="button" data-adm="admtpl">بنود التكاليف لكل مخالفة</button>
         <button type="button" data-adm="staff">بيانات الموظفين</button>
         <button type="button" data-adm="docs">المستندات والمرفقات</button>
+        <button type="button" data-adm="sec">🛡️ الحماية والإنذار</button>
         <button type="button" data-adm="comp">رفع / تحديث الملف الشامل</button>
         <button type="button" data-adm="rates">تعديل معدلات الفئات</button>
         <button type="button" data-adm="boq">تعديل جدول الكميات (الحساب السابق)</button>
@@ -405,6 +413,7 @@ dialog{background:#0b223c}
   <div id="tab-admtpl" hidden></div>
   <div id="tab-staff" hidden></div>
   <div id="tab-docs" hidden></div>
+  <div id="tab-sec" hidden></div>
   <div id="tab-uboq" hidden><section class="block"><h2>جدول الكميات الموحد</h2><div class="body">
     <p style="margin-top:0" class="hint">الأسعار المعتمدة في ملفات توحيد العمل على تكاليف الإصلاح والمنفعة المفقودة — للاطلاع فقط.</p>
     <div class="grid" style="margin-bottom:12px"><label class="f" style="grid-column:1/-1">بند المخالفة<select id="ubBand"></select></label><label class="f">بحث في البنود<input id="ubQ" placeholder="مثال: عداد 25 مم"></label></div>
@@ -802,26 +811,111 @@ const draftKey=()=>"cc-platform-draft-"+(user?.id||"anon");
 function blank(){return{id:null,status:"مسودة",info:{ptype:"مخالف",sector:SCOPE?(SECTOR_OF[SCOPE.region]||""):"القطاع الشرقي",branch:SCOPE?(SCOPE.gov?govShort(SCOPE.gov):""):"حفر الباطن",region:SCOPE?SCOPE.region||"":"الشرقية",gov:SCOPE?.gov||"",date:new Date().toISOString().slice(0,10)},boq:[{code:null,q:1}],eq:[],pt:[],ext:{},lb:{cat:rates[0]?.name||""},br:{},ex:{},sign:{}}}
 const locked=()=>S.status==="معتمد"&&!isAdmin;
 
+/* ================= الحماية والإنذار وسجل الدخول ================= */
+const SEC_LOCK_MSG=t=>{const m=Math.max(1,Math.ceil((new Date(t).getTime()-Date.now())/60000));return`🔒 الحساب مقفل مؤقتاً بسبب محاولات دخول خاطئة متكررة — حاول بعد ${m} دقيقة أو تواصل مع مدير النظام.`};
+const secDevice=()=>{const u=navigator.userAgent||"";const os=/iPhone/.test(u)?"آيفون":/iPad/.test(u)?"آيباد":/Android/.test(u)?"أندرويد":/Windows/.test(u)?"ويندوز":/Mac/.test(u)?"ماك":/Linux/.test(u)?"لينكس":"جهاز آخر";
+  const br=/Edg\//.test(u)?"Edge":/OPR\//.test(u)?"Opera":/CriOS|Chrome\//.test(u)?"Chrome":/FxiOS|Firefox\//.test(u)?"Firefox":/Safari\//.test(u)?"Safari":"";return os+(br?" — "+br:"")};
+let SESS_ID=null,SESS_T=0;try{SESS_ID=sessionStorage.getItem("cc-sess")||null}catch(e){}
+const sessKeep=id=>{SESS_ID=id;try{id?sessionStorage.setItem("cc-sess",id):sessionStorage.removeItem("cc-sess")}catch(e){}};
+const sessPage=()=>($("#pageTitle")?.textContent||"").slice(0,100);
+async function sessPing(){if(!user)return;try{
+  if(!SESS_ID){const r=await sb.rpc("cost_sess_start",{p_device:secDevice(),p_page:sessPage()});if(!r.error&&r.data)sessKeep(r.data);return}
+  const r=await sb.rpc("cost_sess_ping",{p_id:SESS_ID,p_page:sessPage()});if(!r.error&&r.data===false){sessKeep(null);sessPing()}}catch(e){}}
+function sessStart(){sessPing();clearInterval(SESS_T);SESS_T=setInterval(()=>{if(document.visibilityState!=="hidden")sessPing()},60000)}
+async function sessEnd(){clearInterval(SESS_T);SESS_T=0;if(!SESS_ID)return;try{await Promise.race([sb.rpc("cost_sess_end",{p_id:SESS_ID}),new Promise(r=>setTimeout(r,2500))])}catch(e){}sessKeep(null)}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&user&&SESS_T)sessPing()});
+async function secLogout(msg){await sessEnd();try{await sb.auth.signOut()}catch(e){}
+  if(msg)try{sessionStorage.setItem("cc-login-msg",msg)}catch(e){}location.reload()}
+/* الخروج التلقائي بعد 30 دقيقة بدون أي نشاط */
+const IDLE_MIN=30;let IDLE_AT=Date.now();
+["click","keydown","scroll","touchstart","mousemove"].forEach(ev=>document.addEventListener(ev,()=>{IDLE_AT=Date.now()},{passive:true}));
+setInterval(()=>{if(user&&Date.now()-IDLE_AT>IDLE_MIN*60000)secLogout(`تم تسجيل خروجك تلقائياً بعد ${IDLE_MIN} دقيقة بدون نشاط — للحماية.`)},30000);
+/* بعد الدخول: تسجيل الدخول الناجح، وطرد الحساب المقفل */
+async function secAfterLogin(){let first=false;try{first=sessionStorage.getItem("cc-just-login")==="1";sessionStorage.removeItem("cc-just-login")}catch(e){}
+  try{const r=await sb.rpc("cost_login_ok",{p_device:secDevice(),p_log:first});if(!r.error&&r.data&&new Date(r.data)>new Date()){await secLogout(SEC_LOCK_MSG(r.data));return false}}catch(e){}
+  sessStart();return true}
+
+/* ---------- صفحة الحماية والإنذار (مدير النظام) ---------- */
+let SEC={log:[],sess:[],locks:[],per:"d7",kind:"",err:""};
+const secTm=t=>t?new Date(t).toLocaleString("ar-SA-u-ca-gregory-nu-latn",{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}):"—";
+const secDur=s=>{const ms=Math.max(0,new Date(s.ended_at||s.last_seen)-new Date(s.started_at)),m=Math.round(ms/60000);if(m<1)return"أقل من دقيقة";const h=Math.floor(m/60),r=m%60;return(h?h+" س ":"")+(r||!h?r+" د":"")};
+const secOn=s=>!s.ended_at&&Date.now()-new Date(s.last_seen).getTime()<3*60000;
+const SEC_KIND={fail:["❌ محاولة فاشلة","d"],lock:["🔒 قفل الحساب","d"],ok:["✅ دخول ناجح","a"],blocked:["⛔ محاولة دخول وهو مقفل","d"],unlock:["🔓 فتح القفل","a"]};
+async function loadSecData(){SEC.err="";const from=new Date();from.setHours(0,0,0,0);from.setDate(from.getDate()-({d1:0,d7:6,d30:29,d90:89}[SEC.per]));
+  const [a,b,c]=await Promise.all([
+    sb.from("cost_sec_log").select("*").gte("at",new Date(Date.now()-90*864e5).toISOString()).order("at",{ascending:false}).limit(3000),
+    sb.from("cost_sessions").select("*").gte("started_at",from.toISOString()).order("started_at",{ascending:false}).limit(3000),
+    sb.from("cost_locks").select("*").gt("locked_until",new Date().toISOString())]);
+  const e=a.error||b.error||c.error;if(e){SEC.err=/relation|does not exist|schema cache/i.test(e.message)?"شغّل ملف «الحماية-والإنذار.sql» في Supabase أولاً.":e.message;return}
+  SEC.log=a.data||[];SEC.sess=b.data||[];SEC.locks=c.data||[]}
+async function showSec(){if(!admGuard("tab-sec"))return;$("#tab-sec").innerHTML=`<section class="block"><div class="body"><div class="hint">جاري التحميل…</div></div></section>`;await loadSecData();renderSec();secMarkSeen()}
+function renderSec(){const host=$("#tab-sec");
+  if(SEC.err){host.innerHTML=`<section class="block"><div class="body"><div class="rule warn">${esc(SEC.err)}</div></div></section>`;return}
+  const now=Date.now(),in24=x=>now-new Date(x.at).getTime()<864e5,in30=x=>now-new Date(x.at).getTime()<30*864e5,L=SEC.log;
+  const k=[["محاولات فاشلة — آخر 24 ساعة",L.filter(x=>x.kind==="fail"&&in24(x)).length,"fail"],["حسابات قُفلت — آخر 24 ساعة",L.filter(x=>x.kind==="lock"&&in24(x)).length,"lock"],["مقفلة الآن",SEC.locks.length,""],["محاولات بإيميلات غير مسجلة — 30 يوم",L.filter(x=>x.kind==="fail"&&!x.known&&in30(x)).length,"fail"]];
+  const on={};SEC.sess.filter(secOn).forEach(s=>{if(!on[s.email]||new Date(s.last_seen)>new Date(on[s.email].last_seen))on[s.email]=s});const OL=Object.values(on);
+  const G={};SEC.sess.forEach(s=>{const g=G[s.email]=G[s.email]||{c:0,t:0,last:s.last_seen,ips:new Set()};g.c++;g.t+=Math.max(0,new Date(s.ended_at||s.last_seen)-new Date(s.started_at));if(s.ip)g.ips.add(s.ip);if(new Date(s.last_seen)>new Date(g.last))g.last=s.last_seen});
+  const GS=Object.entries(G).sort((a,b)=>b[1].t-a[1].t),fmtT=ms=>secDur({started_at:0,ended_at:ms});
+  const FG={};L.filter(x=>x.kind==="fail"&&in30(x)).forEach(x=>{const g=FG[x.email]=FG[x.email]||{n:0,known:x.known,last:x.at,ips:new Set()};g.n++;if(x.ip)g.ips.add(x.ip)});
+  const EV=L.filter(x=>!SEC.kind||x.kind===SEC.kind).slice(0,1000);
+  const per=[["d1","اليوم"],["d7","آخر 7 أيام"],["d30","آخر 30 يوم"],["d90","آخر 90 يوم"]];
+  host.innerHTML=`<section class="block"><h2>🛡️ الحماية والإنذار</h2><div class="body">
+    <p class="hint" style="margin-top:0">كل محاولة دخول بكلمة مرور خاطئة تُسجَّل هنا بالوقت والجهاز وعنوان الشبكة (IP). بعد <b>5 محاولات فاشلة خلال 15 دقيقة</b> يُقفل الحساب تلقائياً 15 دقيقة، ولا يقرأ أي بيانات حتى لو كان داخل المنصة. ويُسجَّل خروج تلقائي بعد ${IDLE_MIN} دقيقة بدون نشاط.</p>
+    <div class="sec-k">${k.map(([l,n,kk])=>`<button type="button" class="sec-kc${n&&kk!==""?" bad":""}${n&&kk===""?" bad":""}" data-seck="${kk}"><b>${n}</b><span>${l}</span></button>`).join("")}</div>
+    ${SEC.locks.length?`<div class="sub" style="margin-top:14px">🔒 حسابات مقفلة الآن</div><div class="tbl"><table class="t"><thead><tr><th>البريد</th><th>مقفل حتى</th><th></th></tr></thead><tbody>${SEC.locks.map(x=>`<tr><td dir="ltr" style="text-align:right">${esc(x.email)}</td><td>${secTm(x.locked_until)}</td><td><button class="btn solid" type="button" data-unl="${esc(x.email)}">🔓 فتح القفل الآن</button></td></tr>`).join("")}</tbody></table></div>`:""}
+    <div class="sub" style="margin-top:16px">🟢 داخل المنصة الآن (${OL.length})</div>
+    ${OL.length?`<div class="tbl"><table class="t"><thead><tr><th>البريد</th><th>الصفحة الحالية</th><th>دخل</th><th>المدة</th><th>الجهاز</th><th>IP</th></tr></thead><tbody>${OL.map(s=>`<tr><td dir="ltr" style="text-align:right">${esc(s.email)}</td><td>${esc(s.page||"—")}</td><td>${secTm(s.started_at)}</td><td>${secDur(s)}</td><td>${esc(s.device||"")}</td><td dir="ltr">${esc(s.ip||"")}</td></tr>`).join("")}</tbody></table></div>`:'<div class="hint">لا يوجد أحد داخل المنصة الآن غيرك.</div>'}
+    <div class="sub" style="margin-top:16px">❌ المحاولات الفاشلة حسب البريد — آخر 30 يوم</div>
+    ${Object.keys(FG).length?`<div class="tbl"><table class="t"><thead><tr><th>البريد المستخدم</th><th>مسجّل في النظام؟</th><th>عدد المحاولات</th><th>آخر محاولة</th><th>عناوين الشبكة (IP)</th></tr></thead><tbody>${Object.entries(FG).sort((a,b)=>b[1].n-a[1].n).map(([e,g])=>`<tr><td dir="ltr" style="text-align:right">${esc(e)}</td><td>${g.known?"نعم":'<span class="status d">لا — إيميل غير موجود</span>'}</td><td><b>${g.n}</b></td><td>${secTm(g.last)}</td><td dir="ltr">${esc([...g.ips].join("، "))}</td></tr>`).join("")}</tbody></table></div>`:'<div class="hint">لا توجد محاولات فاشلة ✓</div>'}
+  </div></section>
+  <section class="block"><h2>👥 سجل الدخول والتواجد</h2><div class="body">
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">${per.map(([p,l])=>`<button type="button" class="btn${SEC.per===p?" solid":""}" data-secp="${p}">${l}</button>`).join("")}<button type="button" class="btn ghost" id="secRf">↻ تحديث</button></div>
+    <div class="sub">ملخص لكل مستخدم</div>
+    ${GS.length?`<div class="tbl"><table class="t"><thead><tr><th>البريد</th><th>مرات الدخول</th><th>إجمالي التواجد</th><th>آخر ظهور</th><th>عناوين الشبكة (IP)</th></tr></thead><tbody>${GS.map(([e,g])=>`<tr><td dir="ltr" style="text-align:right">${on[e]?"🟢 ":""}${esc(e)}</td><td>${g.c}</td><td>${fmtT(g.t)}</td><td>${on[e]?"متصل الآن":secTm(g.last)}</td><td dir="ltr">${esc([...g.ips].slice(0,4).join("، "))}</td></tr>`).join("")}</tbody></table></div>`:'<div class="hint">لا توجد زيارات في هذه الفترة.</div>'}
+    <div class="sub" style="margin-top:14px">سجل الدخول والخروج (${SEC.sess.length})</div>
+    ${SEC.sess.length?`<div class="tbl" style="max-height:420px;overflow:auto"><table class="t"><thead><tr><th>البريد</th><th>الدخول</th><th>الخروج</th><th>المدة</th><th>آخر صفحة</th><th>الجهاز</th><th>IP</th></tr></thead><tbody>${SEC.sess.slice(0,1000).map(s=>`<tr><td dir="ltr" style="text-align:right">${esc(s.email)}</td><td>${secTm(s.started_at)}</td><td>${secOn(s)?"<b>🟢 متصل الآن</b>":s.ended_at?secTm(s.ended_at):secTm(s.last_seen)+" (آخر نشاط)"}</td><td>${secDur(s)}</td><td>${esc(s.page||"")}</td><td>${esc(s.device||"")}</td><td dir="ltr">${esc(s.ip||"")}</td></tr>`).join("")}</tbody></table></div>`:""}
+  </div></section>
+  <section class="block"><h2>📜 السجل الأمني</h2><div class="body">
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"><button type="button" class="btn${!SEC.kind?" solid":""}" data-secf="">الكل</button>${Object.entries(SEC_KIND).map(([kk,[l]])=>`<button type="button" class="btn${SEC.kind===kk?" solid":""}" data-secf="${kk}">${l}</button>`).join("")}</div>
+    ${EV.length?`<div class="tbl" style="max-height:460px;overflow:auto"><table class="t"><thead><tr><th>الوقت</th><th>الحدث</th><th>البريد</th><th>الجهاز</th><th>IP</th></tr></thead><tbody>${EV.map(x=>`<tr><td>${secTm(x.at)}</td><td><span class="status ${(SEC_KIND[x.kind]||["","d"])[1]}">${(SEC_KIND[x.kind]||[x.kind])[0]}</span></td><td dir="ltr" style="text-align:right">${esc(x.email||"")}</td><td>${esc(x.device||"")}</td><td dir="ltr">${esc(x.ip||"")}</td></tr>`).join("")}</tbody></table></div>`:'<div class="hint">لا توجد أحداث.</div>'}
+    <p class="hint">يبدأ التسجيل من وقت تفعيل هذه الميزة. السجل الأمني يعرض آخر 90 يوماً.</p>
+  </div></section>`;
+  host.querySelectorAll("[data-secp]").forEach(b=>b.onclick=async()=>{SEC.per=b.dataset.secp;await loadSecData();renderSec()});
+  host.querySelectorAll("[data-secf]").forEach(b=>b.onclick=()=>{SEC.kind=b.dataset.secf;renderSec()});
+  host.querySelectorAll("[data-seck]").forEach(b=>b.onclick=()=>{SEC.kind=b.dataset.seck;renderSec();host.querySelector("section:last-child")?.scrollIntoView({behavior:"smooth"})});
+  $("#secRf").onclick=showSec;
+  host.querySelectorAll("[data-unl]").forEach(b=>b.onclick=async()=>{b.disabled=true;const r=await sb.rpc("cost_unlock",{p_email:b.dataset.unl});if(r.error){toast("تعذر: "+r.error.message,5000);b.disabled=false;return}toast("🔓 تم فتح قفل "+b.dataset.unl);showSec()})}
+/* تنبيه أحمر لمدير النظام عند وجود محاولات فاشلة جديدة */
+const secSeen=()=>{try{return+localStorage.getItem("cc-sec-seen")||0}catch(e){return 0}};
+function secMarkSeen(){const mx=Math.max(secSeen(),...SEC.log.map(x=>new Date(x.at).getTime()||0));try{localStorage.setItem("cc-sec-seen",String(mx))}catch(e){}$("#secPill")?.remove()}
+async function secAlert(){if(!isOwner)return;try{const {data,error}=await sb.from("cost_sec_log").select("kind,at").in("kind",["fail","lock","blocked"]).gt("at",new Date(Math.max(secSeen(),Date.now()-30*864e5)).toISOString()).limit(500);
+  if(error||!data?.length)return;const F=data.filter(x=>x.kind==="fail").length,Lk=data.filter(x=>x.kind==="lock").length;
+  const el=document.createElement("div");el.id="secPill";el.innerHTML=`<button type="button" id="secGo">⚠️ تنبيه أمني: ${F} محاولة دخول فاشلة${Lk?` و${Lk} حساب قُفل`:""} — اضغط للتفاصيل</button><button type="button" id="secX">تجاهل</button>`;document.body.appendChild(el);
+  $("#secGo").onclick=()=>{el.remove();switchTab("sec")};$("#secX").onclick=()=>{el.remove();try{localStorage.setItem("cc-sec-seen",String(Date.now()))}catch(e){}}}catch(e){}}
+
 /* ================= الدخول ================= */
 async function start(){
   if(SUPABASE_URL.includes("YOUR-PROJECT")){document.body.innerHTML='<div class="login"><div class="card"><h1>المنصة غير مربوطة بعد</h1><p>ضع رابط مشروع Supabase والمفتاح العام (anon key) في أعلى ملف index.html.</p></div></div>';return}
   const {data:{session}}=await sb.auth.getSession();
   user=session?.user||null;await boot();
 }
-function showLogin(){$("#login").hidden=false;$("#app").hidden=true;document.body.classList.remove("has-bar")}
+function showLogin(){try{const m=sessionStorage.getItem("cc-login-msg");if(m){$("#lgErr").textContent=m;sessionStorage.removeItem("cc-login-msg")}}catch(e){}$("#login").hidden=false;$("#app").hidden=true;document.body.classList.remove("has-bar")}
 $("#lgBtn").onclick=async()=>{
   const e=$("#lgEmail").value.trim(),p=$("#lgPass").value;$("#lgErr").textContent="";
   if(!e||!p){$("#lgErr").textContent="اكتب البريد الإلكتروني وكلمة المرور.";return}
   $("#lgBtn").disabled=true;
+  try{const g=await sb.rpc("cost_login_gate",{p_email:e});if(!g.error&&g.data&&new Date(g.data)>new Date()){$("#lgErr").textContent=SEC_LOCK_MSG(g.data);$("#lgBtn").disabled=false;return}}catch(x){}
   const {data,error}=await sb.auth.signInWithPassword({email:e,password:p});
-  $("#lgBtn").disabled=false;
-  if(error){$("#lgErr").textContent="البريد أو كلمة المرور غير صحيحة.";return}
+  if(error){let f=null;try{const r=await sb.rpc("cost_login_fail",{p_email:e,p_device:secDevice()});f=r.error?null:r.data}catch(x){}
+    $("#lgBtn").disabled=false;
+    $("#lgErr").textContent=f&&f.locked_until?SEC_LOCK_MSG(f.locked_until):f&&f.n>=3&&f.n<5?`البريد أو كلمة المرور غير صحيحة — متبقٍ ${5-f.n} محاولة قبل قفل الحساب مؤقتاً.`:"البريد أو كلمة المرور غير صحيحة.";return}
+  try{sessionStorage.setItem("cc-just-login","1")}catch(x){}
   location.reload();
 };
 $("#lgBack").onclick=()=>{$("#login").hidden=true;$("#app").hidden=false;document.body.classList.add("has-bar")};
 $("#adminBtn").onclick=()=>showLogin();
 $("#lgPass").addEventListener("keydown",e=>{if(e.key==="Enter")$("#lgBtn").click()});
-$("#logoutBtn").onclick=async()=>{await sb.auth.signOut();location.reload()};
+$("#logoutBtn").onclick=()=>secLogout();
 
 async function boot(){
   /* المنصة مقفلة: بدون حساب لا يظهر شيء ولا تُحمّل أي بيانات */
@@ -830,6 +924,7 @@ async function boot(){
   $("#whoEmail").textContent=user?.email||"";
   if(user){const {data:adm}=await sb.rpc("is_cost_admin");isAdmin=!!adm}
   isOwner=!!user&&isAdmin&&SYS_OWNERS.includes(String(user.email||"").toLowerCase());
+  if(!await secAfterLogin())return;
   $("#admPortal").hidden=!isOwner;
   $("#whoRole").textContent=isOwner?"مدير النظام ▾":isAdmin?"مسؤول":"مستخدم";$("#whoRole").classList.toggle("adm-btn",isOwner);
   $("#whoRole").hidden=!user;$("#logoutBtn").hidden=!user;$("#adminBtn").hidden=!!user;
@@ -842,6 +937,7 @@ async function boot(){
   showForm();
   try{if(location.hash)history.replaceState(null,"",location.pathname+location.search)}catch(e){}
   switchTab("home");
+  secAlert();
 }
 async function loadCatalogs(){
   const [a,b,c]=await Promise.all([
@@ -1159,11 +1255,11 @@ $("#saveRates").onclick=async()=>{
 
 /* ================= التبويبات ================= */
 let RECKIND="old";
-const PAGE_TITLES={home:"الرئيسية",unified:"حساب التكاليف الموحد",uboq:"جدول الكميات الموحد",admtpl:"بنود التكاليف لكل مخالفة",staff:"بيانات الموظفين",docs:"المستندات والمرفقات",form:"النموذج",loss:"المنفعة المفقودة",recs:"سجل النماذج",boq:"جدول الكميات",rates:"معدلات الفئات",comp:"الملف الشامل"};
+const PAGE_TITLES={sec:"الحماية والإنذار",home:"الرئيسية",unified:"حساب التكاليف الموحد",uboq:"جدول الكميات الموحد",admtpl:"بنود التكاليف لكل مخالفة",staff:"بيانات الموظفين",docs:"المستندات والمرفقات",form:"النموذج",loss:"المنفعة المفقودة",recs:"سجل النماذج",boq:"جدول الكميات",rates:"معدلات الفئات",comp:"الملف الشامل"};
 function switchTab(t,sec){
   document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("on",x.dataset.tab===t));
   if(t==="urecs"){RECKIND="unified";t="recs";sec="__u"}else if(t==="recs")RECKIND="old";
-  ["home","unified","uboq","admtpl","staff","docs","form","recs","boq","rates","comp","loss"].forEach(k=>$("#tab-"+k).hidden=k!==t);
+  ["home","unified","uboq","admtpl","staff","docs","sec","form","recs","boq","rates","comp","loss"].forEach(k=>$("#tab-"+k).hidden=k!==t);
   $("#totalbar").hidden=t!=="form";document.body.classList.toggle("has-bar",t==="form");
   const go=sec==="__u"?"urecs":sec?t+":"+sec:(t==="form"?"form:sec-info":t);
   document.querySelectorAll("#sideNav [data-go]").forEach(b=>b.classList.toggle("on",b.dataset.go===go));
@@ -1174,7 +1270,7 @@ function switchTab(t,sec){
    document.body.classList.toggle("mode-uni",uni);document.body.classList.toggle("mode-old",old);
    const k=$("#pageKind");k.hidden=!(uni||old);k.className="kind "+(uni?"uni":"old");k.textContent=uni?"حساب التكاليف الموحد":"حساب التكاليف السابق"}
   window.scrollTo(0,0);
-  if(t==="home")loadDash();else if(t==="unified")showUnified();else if(t==="uboq")showUBoq();else if(t==="admtpl")showAdmTpl();else if(t==="staff")showStaff();else if(t==="docs")showDocs();else if(t==="form")showForm();else if(t==="recs")loadRecs();else if(t==="boq")renderCat();else if(t==="comp")loadCompInfo();else if(t==="loss"){if(!lossRows.length)loadLossList();else if(!lossUiReady)lossUiInit()}else renderRates();
+  if(t==="home")loadDash();else if(t==="unified")showUnified();else if(t==="uboq")showUBoq();else if(t==="admtpl")showAdmTpl();else if(t==="staff")showStaff();else if(t==="docs")showDocs();else if(t==="sec")showSec();else if(t==="form")showForm();else if(t==="recs")loadRecs();else if(t==="boq")renderCat();else if(t==="comp")loadCompInfo();else if(t==="loss"){if(!lossRows.length)loadLossList();else if(!lossUiReady)lossUiInit()}else renderRates();
   if(sec&&sec!=="__u")setTimeout(()=>{const el=document.getElementById(sec);if(el){const y=el.getBoundingClientRect().top+window.scrollY-12;window.scrollTo({top:sec==="sec-info"?0:y,behavior:"smooth"})}},60);
 }
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
