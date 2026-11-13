@@ -2083,6 +2083,7 @@ function uniRender(){
       ${uniField("اسم المخالف","info.name")}
       ${uniField("رقم الهوية / رقم المنشأة الموحد","info.id",{ltr:1})}
       ${uniField("نوع المخالف (نوع الزيارة)","info.ptype",{list:"uPtypes"})}<datalist id="uPtypes">${[...new Set(["زيارة غير مجدولة","زيارة مجدولة",...LISTS.ptype])].map(x=>`<option value="${esc(x)}">`).join("")}</datalist>
+      ${uniField("نوع العقار","info.prop",{list:"uProps"})}<datalist id="uProps">${[...new Set(["مبنى سكني","فيلا","شقة","منشأة تجارية","منشأة حكومية",...Object.keys(PROP_CAT||{})])].map(x=>`<option value="${esc(x)}">`).join("")}</datalist>
       <label class="f" style="grid-column:1/-1"><span>نوع المخالفة (البند)</span><select data-u="info.band">${uniBandOpts()}</select></label>
       ${uniField("المنطقة (القطاع)","info.region",{sel:uniOpts([...new Set([...Object.keys(REGIONS),I.region].filter(Boolean))].sort(),I.region,"—")})}
       ${uniField("المحافظة","info.gov",{sel:uniOpts([...new Set([...govsOf(I.region),I.gov].filter(Boolean))],I.gov,"—")})}
@@ -2177,6 +2178,7 @@ function uniBind(){
       if(key==="info.band"){U.boq=[];uniApplyTpl(true)}
       if(key==="info.region"){if(U.info.gov&&!govsOf(U.info.region).includes(U.info.gov))U.info.gov="";U.info.sector=uniSector(U.info.region)}
       if(key==="info.gov"){U.info.branch=govShort(U.info.gov)||U.info.branch}
+      if(key==="info.prop"){const cat=PROP_CAT[U.info.prop];if(cat){U.lb.cat=cat.startsWith("سكني")?"سكني":cat;if((UB().maxBenefit||[]).some(x=>x.cat===cat))U.lb.ccat=cat;uniSave();uniRender();return}}
       uniSave();if(UNI_RERENDER.has(key))uniRender();else uniRecalc()};
     el.addEventListener(el.tagName==="SELECT"||el.type==="checkbox"||el.type==="date"||el.type==="time"?"change":"input",h)});
   host.querySelectorAll("[data-ub]").forEach(el=>el.addEventListener(el.tagName==="SELECT"?"change":"input",()=>{const r=U.boq[+el.dataset.ub];r[el.dataset.f]=el.value;
@@ -2258,6 +2260,7 @@ async function uniLookup(raw){
   const nm=matchViolation(it.bnd,it.desc,uniV());const idx=nm?uniV().indexOf(nm)+1:0;
   await uniLoadTpl();
   I.band=idx?String(idx):"";U.boq=[];uniApplyTpl(true);
+  I.prop=v.prop||"";
   const cat=PROP_CAT[v.prop];if(cat){U.lb.cat=cat.startsWith("سكني")?"سكني":cat;if((UB().maxBenefit||[]).some(x=>x.cat===cat))U.lb.ccat=cat}
   I.ptype=v.vtype||"";
   /* المنفعة المفقودة جاهزة: تاريخ الزيارة نهاية المخالفة، والمدة غير معلومة (6 أشهر سكني / 12 شهراً تجاري وحكومي) */
