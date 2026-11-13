@@ -188,6 +188,8 @@ body{background:radial-gradient(1200px 600px at 85% -10%,#0f3a6b 0%,transparent 
 .nav-sub button{font-size:.86rem!important;padding:8px 10px!important}
 .tp-wrap{display:grid;grid-template-columns:300px minmax(0,1fr);gap:14px;align-items:start}
 .tp-side{position:sticky;top:12px}
+input.ro{background:transparent!important;border-style:dashed!important;cursor:default;color:var(--ink)}
+.from-file{font-style:normal;font-size:.68rem;color:var(--ok);margin-inline-start:4px}
 .tp-list{max-height:70vh;overflow:auto;display:flex;flex-direction:column;gap:3px}
 .tp-band{display:flex;gap:8px;align-items:flex-start;text-align:right;border:1px solid transparent;background:none;color:var(--ink2);font:inherit;font-size:.8rem;padding:7px 8px;border-radius:8px;cursor:pointer;line-height:1.5}
 .tp-band b{min-width:22px;color:var(--ink)}.tp-band span{flex:1}
@@ -2065,6 +2067,15 @@ function uniItemOpts(cur){
   h+=grp(UB().general.items.map(x=>({...x,g:"بنود عامة مساندة"+(x.g?" — "+x.g:"")})),"g","بنود عامة مساندة");
   return h;
 }
+/* حقل بيانات المخالفة: إذا كانت المخالفة من الملف الشامل تُعرض القيمة كما هي (للقراءة فقط وبدون قوائم)،
+   والفارغ يبقى خانة كتابة عادية؛ القوائم المنسدلة فقط عند عدم وجود المخالفة في الملف الشامل */
+let FROMFILE=false;
+function uniF(lbl,key,o={}){
+  if(!FROMFILE)return uniField(lbl,key,o);
+  const v=key.split(".").reduce((a,k)=>a?.[k],U);
+  if(v!==""&&v!=null)return`<label class="f"${o.full?' style="grid-column:1/-1"':""}><span>${lbl} <i class="from-file">من الملف الشامل</i></span><input class="ro" readonly value="${esc(o.show??v)}"${o.ltr?' dir="ltr" style="text-align:right"':""}></label>`;
+  return uniField(lbl,key,{ltr:o.ltr,full:o.full,type:o.type==="date"?"date":undefined});
+}
 function uniField(lbl,key,o={}){const v=key.split(".").reduce((a,k)=>a?.[k],U);const t=o.type||"text";
   if(o.sel)return`<label class="f"${o.full?' style="grid-column:1/-1"':""}><span>${lbl}</span><select data-u="${key}">${o.sel}</select></label>`;
   return`<label class="f"${o.full?' style="grid-column:1/-1"':""}><span>${lbl}</span><input data-u="${key}" type="${t}" value="${esc(v??"")}"${o.ph?` placeholder="${esc(o.ph)}"`:""}${o.ltr?' dir="ltr" style="text-align:right"':""}${o.step?` step="${o.step}"`:""}${o.min!=null?` min="${o.min}"`:""}${o.list?` list="${o.list}"`:""}></label>`}
@@ -2072,6 +2083,7 @@ function uniRender(){
   const host=$("#tab-unified");if(!host)return;
   if(!UB()){host.innerHTML=`<section class="block"><div class="body"><div class="hint">جاري تحميل جدول الكميات الموحد…</div></div></section>`;return}
   const I=U.info,L=U.lb,B=U.br,cat=uniCatalog(I.band);
+  FROMFILE=!!(U.visit&&U.visit.no&&U.visit.no===I.no);
   host.innerHTML=`
   ${U.id?`<div class="banner" style="margin-bottom:10px;padding:10px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span class="status ${U.status==="معتمد"?"a":"d"}">${esc(U.status||"مسودة")}</span><span>نموذج موحد محفوظ في السجل — المخالفة ${esc(U.info.no||"")}</span>${uniLocked()?'<span class="hint" style="margin:0">النموذج معتمد ومقفل. للتعديل تواصل مع مسؤول المنصة.</span>':""}</div>`:""}
   <div class="banner" style="margin-bottom:14px;padding:12px 14px;font-size:.88rem;line-height:1.8">
@@ -2080,15 +2092,15 @@ function uniRender(){
   <section class="block"><h2><span class="n">1</span>بيانات المخالفة</h2>
     <div class="body grid">
       <div class="f" style="grid-column:span 2;min-width:0"><span>رقم المخالفة (رقم الزيارة)</span><span style="display:flex;gap:6px"><input data-u="info.no" dir="ltr" style="text-align:right;flex:1" placeholder="SWA-..." value="${esc(I.no)}"><button class="btn" type="button" id="uLookup">جلب من الملف الشامل</button></span></div>
-      ${uniField("اسم المخالف","info.name")}
-      ${uniField("رقم الهوية / رقم المنشأة الموحد","info.id",{ltr:1})}
-      ${uniField("نوع المخالف (نوع الزيارة)","info.ptype",{list:"uPtypes"})}<datalist id="uPtypes">${[...new Set(["زيارة غير مجدولة","زيارة مجدولة",...LISTS.ptype])].map(x=>`<option value="${esc(x)}">`).join("")}</datalist>
-      ${uniField("نوع العقار","info.prop",{list:"uProps"})}<datalist id="uProps">${[...new Set(["مبنى سكني","فيلا","شقة","منشأة تجارية","منشأة حكومية",...Object.keys(PROP_CAT||{})])].map(x=>`<option value="${esc(x)}">`).join("")}</datalist>
-      <label class="f" style="grid-column:1/-1"><span>نوع المخالفة (البند)</span><select data-u="info.band">${uniBandOpts()}</select></label>
-      ${uniField("المنطقة (القطاع)","info.region",{sel:uniOpts([...new Set([...Object.keys(REGIONS),I.region].filter(Boolean))].sort(),I.region,"—")})}
-      ${uniField("المحافظة","info.gov",{sel:uniOpts([...new Set([...govsOf(I.region),I.gov].filter(Boolean))],I.gov,"—")})}
-      ${uniField("التاريخ","info.date",{type:"date"})}
-      ${uniField("وحدة العمل / الفرع","info.branch")}
+      ${uniF("اسم المخالف","info.name")}
+      ${uniF("رقم الهوية / رقم المنشأة الموحد","info.id",{ltr:1})}
+      ${uniF("نوع المخالف (نوع الزيارة)","info.ptype",{list:"uPtypes"})}<datalist id="uPtypes">${[...new Set(["زيارة غير مجدولة","زيارة مجدولة",...LISTS.ptype])].map(x=>`<option value="${esc(x)}">`).join("")}</datalist>
+      ${uniF("نوع العقار","info.prop",{list:"uProps"})}<datalist id="uProps">${[...new Set(["مبنى سكني","فيلا","شقة","منشأة تجارية","منشأة حكومية",...Object.keys(PROP_CAT||{})])].map(x=>`<option value="${esc(x)}">`).join("")}</datalist>
+      ${FROMFILE&&I.band&&U.visit.matched?uniF("نوع المخالفة (البند)","info.band",{full:1,show:I.band+" - "+(uniV()[+I.band-1]||"")}):`<label class="f" style="grid-column:1/-1"><span>نوع المخالفة (البند)</span><select data-u="info.band">${uniBandOpts()}</select></label>`}
+      ${uniF("المنطقة (القطاع)","info.region",{sel:uniOpts([...new Set([...Object.keys(REGIONS),I.region].filter(Boolean))].sort(),I.region,"—")})}
+      ${uniF("المحافظة","info.gov",{sel:uniOpts([...new Set([...govsOf(I.region),I.gov].filter(Boolean))],I.gov,"—")})}
+      ${uniF("التاريخ","info.date",{type:"date",show:dmy(I.date)})}
+      ${uniF("وحدة العمل / الفرع","info.branch")}
       ${uniField("رقم الاتفاقية (اختياري)","info.agr",{ltr:1})}
     </div>
     <div class="body" id="uVisit" style="padding-top:0">${uniVisitCard()}</div>
