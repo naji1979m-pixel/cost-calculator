@@ -1331,7 +1331,7 @@ const SECTOR_OF={"الشرقية":"القطاع الشرقي"};
 const govShort=g=>String(g||"").replace(/^(محافظة|محافظ|مدينة)\s+/,"").trim();
 const COMP_COLS={no:"رقم الزيارة",region:"المنطقة",start:"تاريخ بدء الزيارة",gov:"المحافظة",coords:"الاحداثيات",sub:"التصنيف الفرعي",insp:"اسم المفتش",vstatus:"حالة الزيارة",vid:"معرف المخالفة",status:"حالة المخالفة",prop:"نوع العقار",bnd:"رقم البند",bdesc:"وصف البند",name:"اسم المخالف",nid:"هوية المخالف",sev:"نوع المخالفة",notes:"ملاحظات المفتش"};
 /* أسماء بديلة للأعمدة في الملف الشامل، ونوع الزيارة */
-const COMP_ALT={bdesc:["وصف بند اللائحة"],visittype:[]};COMP_COLS.visittype="نوع الزيارة";
+const COMP_ALT={bdesc:["وصف بند اللائحة"],visittype:["نوع المخالف","نوع الزياره","نوع زيارة"]};const hNorm=x=>String(x||"").replace(/[\u064B-\u0652\u0640]/g,"").replace(/[أإآ]/g,"ا").replace(/ة/g,"ه").replace(/\s+/g,"");COMP_COLS.visittype="نوع الزيارة";
 function xmlDecode(s){return s.indexOf("&")<0?s:s.replace(/&(lt|gt|amp|quot|apos|#(\d+)|#x([0-9a-fA-F]+));/g,(m,n,d,h)=>n==="lt"?"<":n==="gt"?">":n==="amp"?"&":n==="quot"?'"':n==="apos"?"'":String.fromCodePoint(d?+d:parseInt(h,16)))}
 function parseShared(xml){
   const out=[],re=/<si>([\s\S]*?)<\/si>/g,tr=/<t[^>]*>([\s\S]*?)<\/t>/g;let m;
@@ -1348,7 +1348,7 @@ function parseComprehensive(sheetXml,ss){
   while((m=rowRe.exec(sheetXml))){
     const r={};let c;cRe.lastIndex=0;
     while((c=cRe.exec(m[1])))r[c[1]]=val(c[2],c[3]);
-    if(first){first=false;col={};for(const k in COMP_COLS){const names=[COMP_COLS[k],...(COMP_ALT[k]||[])];for(const nm of names){const L=Object.keys(r).find(x=>String(r[x]).trim()===nm);if(L){col[k]=L;break}}}
+    if(first){first=false;col={};for(const k in COMP_COLS){const names=[COMP_COLS[k],...(COMP_ALT[k]||[])];for(const nm of names){const L=Object.keys(r).find(x=>hNorm(r[x])===hNorm(nm));if(L){col[k]=L;break}}}
       if(!col.no||!col.gov)throw new Error("الملف لا يحتوي على عمود رقم الزيارة أو المحافظة");continue}
     total++;
     const gov=String(r[col.gov]||"").trim(),region=col.region?String(r[col.region]||"").trim():"";
@@ -2074,7 +2074,7 @@ function uniF(lbl,key,o={}){
   if(!FROMFILE)return uniField(lbl,key,o);
   const v=key.split(".").reduce((a,k)=>a?.[k],U);
   if(v!==""&&v!=null)return`<label class="f"${o.full?' style="grid-column:1/-1"':""}><span>${lbl} <i class="from-file">من الملف الشامل</i></span><input class="ro" readonly value="${esc(o.show??v)}"${o.ltr?' dir="ltr" style="text-align:right"':""}></label>`;
-  return uniField(lbl,key,{ltr:o.ltr,full:o.full,type:o.type==="date"?"date":undefined});
+  return uniField(lbl,key,{ltr:o.ltr,full:o.full,type:o.type==="date"?"date":undefined,ph:key==="info.ptype"?"غير موجود في الملف الشامل المرفوع — أعد رفع الملف أو اكتبه":"فارغ في الملف الشامل"});
 }
 function uniField(lbl,key,o={}){const v=key.split(".").reduce((a,k)=>a?.[k],U);const t=o.type||"text";
   if(o.sel)return`<label class="f"${o.full?' style="grid-column:1/-1"':""}><span>${lbl}</span><select data-u="${key}">${o.sel}</select></label>`;
