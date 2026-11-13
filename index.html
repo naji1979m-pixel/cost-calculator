@@ -2082,10 +2082,9 @@ function uniRender(){
       ${uniField("رقم الهوية / رقم المنشأة الموحد","info.id",{ltr:1})}
       ${uniField("نوع المخالف","info.ptype",{sel:uniOpts(LISTS.ptype,I.ptype,"—")})}
       <label class="f" style="grid-column:1/-1"><span>نوع المخالفة (البند)</span><select data-u="info.band">${uniBandOpts()}</select></label>
-      ${uniField("المنطقة","info.region",{sel:uniOpts([...new Set([...Object.keys(REGIONS),I.region].filter(Boolean))].sort(),I.region,"—")})}
+      ${uniField("المنطقة (القطاع)","info.region",{sel:uniOpts([...new Set([...Object.keys(REGIONS),I.region].filter(Boolean))].sort(),I.region,"—")})}
       ${uniField("المحافظة","info.gov",{sel:uniOpts([...new Set([...govsOf(I.region),I.gov].filter(Boolean))],I.gov,"—")})}
       ${uniField("التاريخ","info.date",{type:"date"})}
-      ${uniField("القطاع","info.sector",{sel:uniOpts(LISTS.sector,I.sector,"—")})}
       ${uniField("وحدة العمل / الفرع","info.branch")}
       ${uniField("رقم الاتفاقية (اختياري)","info.agr",{ltr:1})}
     </div>
@@ -2155,6 +2154,8 @@ function uniRender(){
   </section>`;
   uniBind();uniRecalc();
 }
+/* القطاع = المنطقة: يُشتق منها دائماً (مثل الشرقية ← القطاع الشرقي) */
+function uniSector(r){return r?(SECTOR_OF[r]||r):""}
 function uniStaffLists(){const st=(STAFF||[]).filter(s=>s.active!==false),br=String(U.info.branch||"");
   const pick=role=>{const a=st.filter(s=>s.role===role);const near=a.filter(s=>!br||!s.branch||String(s.branch).includes(br)||br.includes(s.branch));return(near.length?near:a)};
   return`<datalist id="uStCS">${pick("مسؤول خدمات العملاء").map(s=>`<option value="${esc(s.name)}">${esc(s.branch||"")}</option>`).join("")}</datalist><datalist id="uStOM">${pick("مسؤول التشغيل والصيانة").map(s=>`<option value="${esc(s.name)}">${esc(s.branch||"")}</option>`).join("")}</datalist>`}
@@ -2171,7 +2172,7 @@ function uniBind(){
   host.querySelectorAll("[data-u]").forEach(el=>{const key=el.dataset.u;
     const h=()=>{let v=el.type==="checkbox"?el.checked:el.value;if(key==="lb.known")v=v==="1";uniSet(key,v);
       if(key==="info.band"){U.boq=[];uniApplyTpl(true)}
-      if(key==="info.region"){if(U.info.gov&&!govsOf(U.info.region).includes(U.info.gov))U.info.gov="";U.info.sector=SECTOR_OF[U.info.region]||U.info.sector}
+      if(key==="info.region"){if(U.info.gov&&!govsOf(U.info.region).includes(U.info.gov))U.info.gov="";U.info.sector=uniSector(U.info.region)}
       if(key==="info.gov"){U.info.branch=govShort(U.info.gov)||U.info.branch}
       uniSave();if(UNI_RERENDER.has(key))uniRender();else uniRecalc()};
     el.addEventListener(el.tagName==="SELECT"||el.type==="checkbox"||el.type==="date"||el.type==="time"?"change":"input",h)});
@@ -2249,7 +2250,7 @@ async function uniLookup(raw){
   if(!data){U.info.no=no;U.visit=null;uniSave();uniRender();toast("الرقم غير موجود في الملف الشامل — أدخل البيانات يدوياً",4500);return}
   const v=data.data,I=U.info,d=compDate(v.start);
   I.no=v.no||no;I.name=v.name||"";I.id=v.nid||"";I.date=d||"";I.region=v.region||"";I.gov=v.gov||"";
-  I.branch=govShort(v.gov||"")||"";I.sector=(v.region&&SECTOR_OF[v.region])||"";
+  I.branch=govShort(v.gov||"")||"";I.sector=uniSector(v.region);
   const it=(v.items||[]).find(x=>x.sev==="جسيمة")||v.items?.[0]||{};
   const nm=matchViolation(it.bnd,it.desc,uniV());const idx=nm?uniV().indexOf(nm)+1:0;
   await uniLoadTpl();
@@ -2265,6 +2266,7 @@ async function uniLookup(raw){
 }
 /* ---------- النموذج المطبوع (PDF) ---------- */
 function uniSheetHtml(c){
+  if(U.info.region)U.info.sector=uniSector(U.info.region);
   const I=U.info,L=U.lb,B=U.br,V=uniV()[+I.band-1]||"";
   const lines=c.lines.slice(0,13),eq=U.eq.filter(e=>e.n).slice(0,13),pt=U.pt.filter(p=>p.d||num(p.p)).slice(0,8);
   let body="";
@@ -2398,7 +2400,7 @@ async function uniPdf(skipCheck){
 const uniSerial=d=>d?Math.round((new Date(d+"T00:00:00Z")-Date.UTC(1899,11,30))/864e5):"";
 function uniExcelCells(c){
   const I=U.info,L=U.lb,B=U.br,m={},brk=L.method==="break";
-  m.B7=I.name||"";m.G7=I.no||"";m.L7=I.sector||"";
+  m.B7=I.name||"";m.G7=I.no||"";m.L7=uniSector(I.region)||I.sector||"";
   m.B8=I.id||"";m.G8=(I.band?I.band+" - ":"")+(uniV()[+I.band-1]||"");
   m.B9=I.ptype||"";m.G9=dmy(I.date);m.L9=I.branch||"";
   const eq=U.eq.filter(e=>e.n),pt=U.pt.filter(p=>p.d||num(p.p));
