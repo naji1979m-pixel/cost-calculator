@@ -2828,7 +2828,17 @@ function docBucketHelp(err){return`<div class="rule warn" style="margin-top:10px
 async function docUpload(){
   const files=[...($("#dcFile").files||[])];if(!files.length){toast("اختر ملفاً أولاً");return}
   const b=$("#dcUp");b.disabled=true;const cat=$("#dcCat").value,note=$("#dcNote").value.trim();let ok=0,err="";
+  let pf=0;
   for(const f of files){
+    /* ملفات بيانات المنصة تُوجَّه تلقائياً لمكانها المحمي بدل قائمة المستندات */
+    const pk=Object.keys(PLATFORM_FILES).find(k=>PLATFORM_FILES[k].path.split("/").pop().toLowerCase()===f.name.toLowerCase().replace(/\s*\(\d+\)(?=\.)/,""));
+    if(pk){
+      if(pk==="boq"){try{const j=JSON.parse(await f.text());if(!j.violations)throw 0}catch(e){err="الملف "+f.name+" غير صحيح";continue}}
+      $("#dcMsg").innerHTML=`<div class="hint">جاري تحديث ${esc(PLATFORM_FILES[pk].label)}…</div>`;
+      const {error}=await sb.storage.from(DOC_BUCKET).upload(PLATFORM_FILES[pk].path,f,{contentType:PLATFORM_FILES[pk].type,upsert:true});
+      if(error){err=error.message;break}
+      if(pk==="boq"){window.UNIFIED_BOQ=null;uniLoading=null}else window.UNIFIED_XLSX_TPL=null;
+      pf++;toast("تم تحديث "+PLATFORM_FILES[pk].label+" ✓",5000);continue}
     if(f.size>50*1048576){err="الملف "+f.name+" أكبر من 50 م.ب";continue}
     const ext=(f.name.match(/\.[A-Za-z0-9]{1,6}$/)||[""])[0].toLowerCase();
     const path=`${Date.now()}-${Math.random().toString(36).slice(2,8)}${ext}`;
@@ -2839,7 +2849,7 @@ async function docUpload(){
   }
   if(ok){try{await metaSet("__DOCS__",{docs:DOCS})}catch(e){err=e.message}}
   b.disabled=false;
-  if(err)renderDocs(docBucketHelp(err));else{toast(`تم رفع ${ok} ملف`);renderDocs()}
+  if(err)renderDocs(docBucketHelp(err));else{if(ok)toast(`تم رفع ${ok} ملف`);else if(pf)toast("تم تحديث بيانات المنصة المحمية ✓",5000);renderDocs()}
 }
 async function docOpen(d){
   const {data,error}=await sb.storage.from(DOC_BUCKET).createSignedUrl(d.path,600,{download:d.name});
