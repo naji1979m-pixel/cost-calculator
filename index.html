@@ -2100,7 +2100,8 @@ function uniItem(k){if(!k)return null;const[t,i]=k.split(":");const band=U.info.
   if(t==="g")return UB().general.items[+i]?{...UB().general.items[+i],code:"ع-"+(+i+1),src:"بنود عامة"}:null;
   const c=uniCatalog(band);return c&&c.items[+i]?{...c.items[+i],code:uniCode(c,+i),src:"بند "+band}:null}
 /* رقم الصنف بنفس ترقيم الملف الرسمي: رقم الورقة - رقم البند */
-function uniCode(c,i){const s=String(c.sheet);if(s.includes("+")){const[a,b]=s.split("+");return i<c.splitAt?a+"-"+(i+1):b+"-"+(i-c.splitAt+1)}return s+"-"+(i+1)}
+function uniIdx(items){const ix=items.map((_,i)=>i);if(!items.some(x=>x.c))return ix;const n=i=>items[i].c?+String(items[i].c).split("-").pop():i+1;return ix.sort((a,b)=>n(a)-n(b))}
+function uniCode(c,i){if(c.items?.[i]?.c)return c.items[i].c;const s=String(c.sheet);if(s.includes("+")){const[a,b]=s.split("+");return i<c.splitAt?a+"-"+(i+1):b+"-"+(i-c.splitAt+1)}return s+"-"+(i+1)}
 /* القوالب الافتراضية لكل بند مخالفة (يحفظها المسؤول) — صف خاص في جدول الزيارات */
 let UTPL=null;
 async function uniLoadTpl(){if(UTPL)return;try{const {data}=await sb.from("cost_visits").select("data").eq("visit_no","__UTPL__").maybeSingle();UTPL=data?.data?.templates||{}}catch(e){UTPL={}}}
@@ -2109,7 +2110,7 @@ function uniApplyTpl(force){
   if(!force&&U.boq.some(r=>r.k))return false;
   const t=UTPL?.[band],c=uniCatalog(band);
   if(t?.length){U.boq=t.map(x=>({k:x.k,q:x.q??1,p:x.p??""}));return true}
-  if(c&&c.items.length===1){U.boq=[{k:"b:0",q:1,p:""}];return true}
+  const vis=c?c.items.map((x,i)=>x.x?-1:i).filter(i=>i>=0):[];if(vis.length===1){U.boq=[{k:"b:"+vis[0],q:1,p:""}];return true}
   U.boq=[{k:"",q:1,p:""}];return false;
 }
 async function uniSaveTpl(){
@@ -2167,7 +2168,7 @@ function uniOpts(list,cur,ph){return(ph!=null?`<option value="">${esc(ph)}</opti
 function uniBandOpts(){return`<option value="">— اختر بند المخالفة —</option>`+uniV().map((v,i)=>{const n=i+1,has=!!uniCatalog(n);return`<option value="${n}"${String(n)===String(U.info.band)?" selected":""}>${n} - ${esc(v)}${has?"":" (لا يوجد جدول كميات)"}</option>`}).join("")}
 function uniItemOpts(cur){
   const c=uniCatalog(U.info.band);let h=`<option value="">— اختر البند —</option>`;
-  const grp=(items,pfx,label)=>{let last=null,o="";items.forEach((it,i)=>{const g=it.g||label;if(g!==last){if(last!==null)o+="</optgroup>";o+=`<optgroup label="${esc(g)}">`;last=g}
+  const grp=(items,pfx,label)=>{let last=null,o="";uniIdx(items).forEach(i=>{const it=items[i];if(it.x&&pfx+":"+i!==cur)return;const g=it.g||label;if(g!==last){if(last!==null)o+="</optgroup>";o+=`<optgroup label="${esc(g)}">`;last=g}
       const k=pfx+":"+i;o+=`<option value="${k}"${k===cur?" selected":""}>${esc(it.d.length>110?it.d.slice(0,110)+"…":it.d)} — ${it.p!=null?fmt(it.p)+" ريال/"+esc(it.u):"غير مسعّر"}</option>`});return o+(last!==null?"</optgroup>":"")};
   if(c)h+=grp(c.items,"b",c.title||"بنود المخالفة");
   h+=grp(UB().general.items.map(x=>({...x,g:"بنود عامة مساندة"+(x.g?" — "+x.g:"")})),"g","بنود عامة مساندة");
@@ -2603,7 +2604,7 @@ function renderUBoq(){
   const cat=b==="g"?UB().general:uniCatalog(b);if(!cat)return;
   $("#ubScope").innerHTML=cat.desc?`<div class="calc" style="margin-top:0;margin-bottom:10px">${cat.title?`<div style="font-weight:600;margin-bottom:4px">${esc(cat.title)}</div>`:""}<div class="hint" style="margin:0;line-height:1.7">${esc(cat.desc)}</div></div>`:"";
   let last=null,rows="",n=0;
-  cat.items.forEach((it,i)=>{if(q&&!(it.d+" "+(it.g||"")).includes(q))return;n++;
+  uniIdx(cat.items).forEach(i=>{const it=cat.items[i];if(it.x)return;if(q&&!(it.d+" "+(it.g||"")).includes(q))return;n++;
     if((it.g||"")!==last){last=it.g||"";if(last)rows+=`<tr><td colspan="4" style="background:var(--soft);font-weight:600">${esc(last)}</td></tr>`}
     const k=(b==="g"?"g:":"b:")+i,line=(b==="g"||String(U.info.band)===String(b))?U.boq.find(r=>r.k===k):null,inForm=!!line;
     rows+=`<tr><td dir="ltr" style="text-align:right">${b==="g"?"ع-"+(i+1):uniCode(cat,i)}</td><td>${esc(it.d)}</td><td>${esc(it.u)}</td><td class="num">${it.p!=null?fmt(it.p):'<span class="hint">غير مسعّر</span>'}</td>
@@ -2612,7 +2613,7 @@ function renderUBoq(){
   $("#ubRows").querySelectorAll("[data-ubadd]").forEach(x=>x.onclick=()=>ubAdd(b,x.dataset.ubadd));
   $("#ubRows").querySelectorAll("[data-ubdel]").forEach(x=>x.onclick=()=>{U.boq=U.boq.filter(r=>r.k!==x.dataset.ubdel);if(!U.boq.length)U.boq=[{k:"",q:1,p:""}];uniSave();toast("تمت إزالة البند");renderUBoq()});
   ubCart();
-  $("#ubInfo").textContent=`${n} بند`+(cat.items.some(x=>x.p==null)?` — البنود غير المسعّرة يُدخل سعرها يدوياً في النموذج`:"");
+  $("#ubInfo").textContent=`${n} بند`+(cat.items.some(x=>x.p==null&&!x.x)?` — البنود غير المسعّرة يُدخل سعرها يدوياً في النموذج`:"");
 }
 
 /* ---------- قائمة أدوات المسؤول ---------- */
@@ -2697,7 +2698,7 @@ function renderAdmTpl(){
   const band=TP.band,cat=uniCatalog(band),G=UB().general,V=uniV();
   const list=V.map((v,i)=>{const n=i+1;if(TP.q&&!(String(n)===TP.q.trim()||v.includes(TP.q.trim())))return"";const c=tpCount(n),has=!!uniCatalog(n);
     return`<button type="button" class="tp-band${String(n)===band?" on":""}${has?"":" dim"}" data-tpb="${n}"><b>${n}</b><span>${esc(v)}</span>${c?`<i class="tp-badge">✓ ${c}</i>`:""}</button>`}).join("");
-  const rowsFor=(items,pfx,codeFn)=>{let last=null,h="";items.forEach((it,i)=>{const k=pfx+":"+i,on=!!TP.sel[k];
+  const rowsFor=(items,pfx,codeFn)=>{let last=null,h="";uniIdx(items).forEach(i=>{const it=items[i];const k=pfx+":"+i,on=!!TP.sel[k];if(it.x&&!on)return;
       if((it.g||"")!==last){last=it.g||"";if(last)h+=`<tr><td colspan="6" style="background:var(--soft);font-weight:600">${esc(last)}</td></tr>`}
       h+=`<tr class="${on?"tp-on":""}"><td><input type="checkbox" data-tpk="${k}"${on?" checked":""} aria-label="اختيار"></td><td dir="ltr" style="text-align:right;white-space:nowrap">${esc(codeFn(i))}</td><td>${esc(it.d)}</td><td>${esc(it.u)}</td>
         <td class="num">${it.p!=null?fmt(it.p):on?`<input type="number" min="0" step="0.01" data-tpp="${k}" value="${esc(TP.sel[k].p)}" placeholder="السعر" style="width:90px">`:'<span class="hint">غير مسعّر</span>'}</td>
@@ -2714,7 +2715,7 @@ function renderAdmTpl(){
       ${cat?.desc?`<div class="calc" style="margin-top:0;margin-bottom:10px"><div style="font-weight:600;margin-bottom:4px">${esc(cat.title||"")}</div><div class="hint" style="margin:0;line-height:1.7">${esc(cat.desc)}</div></div>`:`<div class="rule warn" style="margin-bottom:10px">لا يوجد جدول كميات موحد لهذه المخالفة — يمكن اختيار البنود العامة المساندة فقط.</div>`}
       <div class="tp-bar"><span>المختار: <b>${n}</b> بند — قيمة القالب <b>${fmt(tot)}</b> ريال${TP.dirty?' <span class="status d">تغييرات غير محفوظة</span>':tpCount(band)?' <span class="status a">محفوظ</span>':""}</span>
         <span style="display:flex;gap:6px;margin-inline-start:auto;flex-wrap:wrap"><button class="btn danger" type="button" id="tpClear"${n?"":" disabled"}>إلغاء كل البنود</button><button class="btn solid" type="button" id="tpSave"${TP.dirty?"":" disabled"}>حفظ بنود المخالفة ${esc(band)}</button></span></div>
-      ${cat?`<div class="sub">بنود المخالفة (${cat.items.length})</div><div class="tbl"><table class="t"><thead><tr><th></th><th>رقم الصنف</th><th style="min-width:260px">البند</th><th>الوحدة</th><th class="num">السعر</th><th>الكمية الافتراضية</th></tr></thead><tbody>${rowsFor(cat.items,"b",i=>uniCode(cat,i))}</tbody></table></div>`:""}
+      ${cat?`<div class="sub">بنود المخالفة (${cat.items.filter(x=>!x.x).length})</div><div class="tbl"><table class="t"><thead><tr><th></th><th>رقم الصنف</th><th style="min-width:260px">البند</th><th>الوحدة</th><th class="num">السعر</th><th>الكمية الافتراضية</th></tr></thead><tbody>${rowsFor(cat.items,"b",i=>uniCode(cat,i))}</tbody></table></div>`:""}
       <details style="margin-top:14px"${Object.keys(TP.sel).some(k=>k.startsWith("g:"))||!cat?" open":""}><summary class="sub" style="cursor:pointer">البنود العامة المساندة (${G.items.length}) — حفر، سفلتة، سلامة، اختبارات</summary>
         <div class="tbl"><table class="t"><thead><tr><th></th><th>رقم الصنف</th><th>البند</th><th>الوحدة</th><th class="num">السعر</th><th>الكمية الافتراضية</th></tr></thead><tbody>${rowsFor(G.items,"g",i=>"ع-"+(i+1))}</tbody></table></div></details>
     </div></section>
