@@ -2074,9 +2074,12 @@ const UNI_VEL=1,UNI_D7=7,UNI_HRS=10,UNI_DIA=19;
 /* المنفعة المفقودة: الكسور (خطوط، صمامات، توصيلات، حنفيات، طبات…) بمعادلة سرعة التدفق وقطر الأنبوب — وغيرها (سكني/تجاري/حكومي) بمعدل الفئة */
 const UNI_BREAK=new Set([...LINE_BANDS,"7"]);
 const uniRateCat=prop=>RATE_PROPS[prop]||PROP_CAT[prop]||"";
+/* جدول المعدل (أقصى منفعة لكل فئة) من بيانات الجدول الموحد: المعدل الشهري = الاستهلاك اليومي × 30 */
+const uniRates=()=>(UB()?.maxBenefit||[]).map(x=>({name:x.cat,monthly:num(x.daily)*30,max:num(x.max),months:Math.round(num(x.days)/30)}));
+const uniRate=n=>{const L=uniRates();return L.find(x=>x.name===n)||L[0]||{name:"",monthly:0,max:0,months:6}};
 function uniAutoLoss(){const L=U.lb,b=String(U.info.band||"");
   if(b)L.method=UNI_BREAK.has(b)?"break":"rate";
-  const rc=uniRateCat(U.info.prop);if(rc&&rates.some(r=>r.name===rc))L.rcat=rc;else if(!L.rcat||!rates.some(r=>r.name===L.rcat))L.rcat=rates[0]?.name||"";
+  const RL=uniRates(),rc=uniRateCat(U.info.prop);if(rc&&RL.some(r=>r.name===rc))L.rcat=rc;else if(!L.rcat||!RL.some(r=>r.name===L.rcat))L.rcat=RL[0]?.name||"";
   L.cat=String(L.rcat||"").startsWith("سكني")?"سكني":(L.rcat||L.cat)}
 let U=null,uniReady=false,uniLoading=null;
 function uniBlank(){return{info:{no:"",name:"",id:"",ptype:"مخالف",band:"",date:"",sector:"",unit:"",branch:"",region:"",gov:"",agr:""},
@@ -2149,9 +2152,9 @@ function uniCompute(){
   c.months=L.cat==="سكني"?6:12;
   c.wRate=UNI_WATER;c.sRate=UNI_SEWER;
   if(L.method==="rate"){
-    if(!L.rcat||!rates.some(r=>r.name===L.rcat))L.rcat=rates[0]?.name||"";
+    if(!L.rcat||!uniRates().some(r=>r.name===L.rcat))L.rcat=uniRates()[0]?.name||"";
     /* معدل استهلاك الفئة الشهري × 6 ريال (أعلى شريحة) × عدد الأشهر — المدة القياسية: 6 أشهر سكني، 12 شهراً تجاري وحكومي */
-    const R=rateOf(L.rcat),MX=String(L.rcat||"").startsWith("سكني")?6:12;c.R=R;c.maxM=MX;c.end=L.end;
+    const R=uniRate(L.rcat),MX=String(L.rcat||"").startsWith("سكني")?6:12;c.R=R;c.maxM=MX;c.end=L.end;
     if(unk){c.days=MX*30;c.start=L.end?uniAddMonths(L.end,-MX):""}
     else{c.start=L.start;c.days=Math.max(0,uniDays(c.start,c.end))}
     c.mo=Math.min(c.days/30,MX);c.capped=c.days/30>MX;
@@ -2264,7 +2267,7 @@ function uniRender(){
       <div class="grid">
         ${uniField("طريقة الاحتساب","lb.method",{sel:[["rate","حسب معدل الفئة (سكني / تجاري / حكومي)"],["break","كسر — حسب سرعة التدفق وقطر الأنبوب"],["hyd","حسب قطر التوصيلة وساعات الضخ"],["cons","حسب الاستهلاك التقديري (أقصى المنفعة)"]].filter(([v])=>v==="rate"||v==="break"||L.method===v).map(([v,t])=>`<option value="${v}"${L.method===v?" selected":""}>${t}</option>`).join(""),full:1})}
         ${L.method!=="break"?`${uniField("مدة المخالفة","lb.known",{sel:`<option value="1"${L.known?" selected":""}>معلوم المدة</option><option value="0"${!L.known?" selected":""}>غير معلوم المدة</option>`})}
-          ${L.method==="rate"?uniField("الفئة","lb.rcat",{sel:uniOpts(rates.map(r=>r.name),L.rcat)}):L.method==="cons"?uniField("الفئة","lb.ccat",{sel:uniOpts((UB().maxBenefit||[]).map(x=>x.cat),L.ccat)}):uniField("فئة المخالف","lb.cat",{sel:uniOpts(UNI_CATS,L.cat)})}
+          ${L.method==="rate"?uniField("الفئة","lb.rcat",{sel:uniOpts(uniRates().map(r=>r.name),L.rcat)}):L.method==="cons"?uniField("الفئة","lb.ccat",{sel:uniOpts((UB().maxBenefit||[]).map(x=>x.cat),L.ccat)}):uniField("فئة المخالف","lb.cat",{sel:uniOpts(UNI_CATS,L.cat)})}
           ${L.known?uniField("تاريخ بداية المخالفة","lb.start",{type:"date"}):""}
           ${uniField(L.known?"تاريخ نهاية المخالفة":"تاريخ اكتشاف المخالفة","lb.end",{type:"date"})}`:""}
         ${L.method==="hyd"?`${uniField("قطر التوصيلة (ملم)","lb.dia",{type:"number",min:0,step:"0.1"})}${uniField("عدد أيام الضخ بالأسبوع","lb.d7",{type:"number",min:1,step:1})}${uniField("عدد ساعات الضخ يومياً","lb.hrs",{type:"number",min:0,step:"0.5"})}${uniField("سرعة التدفق (م/ث)","lb.vel",{type:"number",min:0,step:"0.1"})}`:""}
@@ -2359,7 +2362,7 @@ function uniRecalc(){
     const R=c.R;
     lines=`<div class="line"><span>فترة الاحتساب</span><b>${c.start?dmy(c.start):"—"} ← ${c.end?dmy(c.end):"—"}${!L.known?` (غير معلوم المدة: ${c.maxM===6?"6 أشهر":"12 شهراً"} للفئة)`:""}</b></div>
       <div class="line"><span>عدد أيام المخالفة</span><b>${c.days||0} يوم</b></div>
-      <div class="line"><span>معدل استهلاك الفئة (${esc(R.name)})</span><b>${fmt(R.monthly)} م³/شهر</b></div>
+      <div class="line"><span>معدل استهلاك الفئة (${esc(R.name)}) — أقصى فاقد ${fmt(R.max).replace(".00","")} م³</span><b>${fmt(R.monthly)} م³/شهر</b></div>
       <div class="line"><span>عدد الأشهر المحتسبة (بحد أقصى ${c.maxM===6?"6 أشهر":"12 شهراً"} — ${c.maxM===6?"سكني":"تجاري / حكومي"})</span><b>${(c.mo||0).toLocaleString("en-US",{maximumFractionDigits:2})} شهر</b></div>
       ${c.capped?`<div class="rule">تم تطبيق الحد الأقصى للفئة (${c.maxM===6?"6 أشهر":"12 شهراً"}).</div>`:""}`;
   }else if(L.method==="break"){
