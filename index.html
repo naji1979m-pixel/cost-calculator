@@ -2078,7 +2078,7 @@ const uniRateCat=prop=>RATE_PROPS[prop]||PROP_CAT[prop]||"";
 const uniRates=()=>(UB()?.maxBenefit||[]).map(x=>({name:x.cat,monthly:num(x.daily)*30,max:num(x.max),months:Math.round(num(x.days)/30)}));
 const uniRate=n=>{const L=uniRates();return L.find(x=>x.name===n)||L[0]||{name:"",monthly:0,max:0,months:6}};
 function uniAutoLoss(){const L=U.lb,b=String(U.info.band||"");
-  if(b)L.method=UNI_BREAK.has(b)?"break":"rate";
+  L.method=b?(UNI_BREAK.has(b)?"break":"rate"):(L.method==="break"?"break":"rate");
   const RL=uniRates(),rc=uniRateCat(U.info.prop);if(rc&&RL.some(r=>r.name===rc))L.rcat=rc;else if(!L.rcat||!RL.some(r=>r.name===L.rcat))L.rcat=RL[0]?.name||"";
   L.cat=String(L.rcat||"").startsWith("سكني")?"سكني":(L.rcat||L.cat)}
 let U=null,uniReady=false,uniLoading=null;
@@ -2209,6 +2209,8 @@ function uniField(lbl,key,o={}){const v=key.split(".").reduce((a,k)=>a?.[k],U);c
 function uniRender(){
   const host=$("#tab-unified");if(!host)return;
   if(!UB()){host.innerHTML=`<section class="block"><div class="body"><div class="hint">جاري تحميل جدول الكميات الموحد…</div></div></section>`;return}
+  /* النماذج والمسودات القديمة (طريقة قطر التوصيلة / الاستهلاك) تتحول تلقائياً للطريقة المعتمدة ما لم تكن معتمدة */
+  if((U.lb.method==="hyd"||U.lb.method==="cons"||!U.lb.method)&&U.status!=="معتمد"){uniAutoLoss();if(!U.lb.end&&U.info.date){U.lb.end=U.info.date}uniSave()}
   const I=U.info,L=U.lb,B=U.br,cat=uniCatalog(I.band);
   FROMFILE=!!(U.visit&&U.visit.no&&U.visit.no===I.no);
   host.innerHTML=`
