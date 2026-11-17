@@ -2083,7 +2083,7 @@ function uniAutoLoss(){const L=U.lb,b=String(U.info.band||"");
   L.cat=String(L.rcat||"").startsWith("سكني")?"سكني":(L.rcat||L.cat)}
 let U=null,uniReady=false,uniLoading=null;
 function uniBlank(){return{info:{no:"",name:"",id:"",ptype:"مخالف",band:"",date:"",sector:"",unit:"",branch:"",region:"",gov:"",agr:""},
-  boq:[{k:"",q:1,p:""}],emerg:false,eq:[],ext:{size:"",type:"",len:"",price:""},pt:[],
+  boq:[{k:"",q:1,p:""}],emerg:false,vat:false,eq:[],ext:{size:"",type:"",len:"",price:""},pt:[],
   lb:{method:"rate",rcat:"",known:true,start:"",end:"",d7:UNI_D7,hrs:UNI_HRS,dia:UNI_DIA,vel:UNI_VEL,cat:"سكني",ccat:"سكني – فيلا",sewer:true},
   br:{repDate:"",repTime:"",brDate:"",brTime:"",offDate:"",offTime:"",dia:""},sign:{cs:"",om:""},visit:null}}
 function uniSave(){try{localStorage.setItem(UNI_KEY,JSON.stringify(U))}catch(e){}}
@@ -2180,7 +2180,7 @@ function uniCompute(){
     }
   }
   c.water=c.m3*c.wRate;c.sewer=L.sewer?c.m3*c.sRate:0;c.loss=c.water+c.sewer;
-  c.total=c.repair+c.loss;
+  c.sub=c.repair+c.loss;c.vat=U.vat?c.sub*0.15:0;c.total=c.sub+c.vat;
   return c;
 }
 /* ---------- الواجهة ---------- */
@@ -2284,6 +2284,7 @@ function uniRender(){
     <div class="body">
       <div class="grid">${uniField("مسؤول خدمات العملاء","sign.cs",{list:"uStCS"})}${uniField("مسؤول التشغيل والصيانة","sign.om",{list:"uStOM"})}</div>
       ${uniStaffLists()}
+      <label style="display:flex;gap:6px;align-items:center;font-size:.9rem;margin-top:8px"><input type="checkbox" data-u="vat"${U.vat?" checked":""}> إضافة ضريبة القيمة المضافة 15%</label>
       <div class="calc" id="uTotalCalc"></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
         ${U.status!=="معتمد"?`<button class="btn" type="button" id="uSaveDraft">حفظ مسودة</button>`:""}
@@ -2311,7 +2312,7 @@ function uniVisitCard(){const v=U.visit;if(!v)return"";
   ${(v.items||[]).map(x=>`<div class="line"><span>البند ${esc(x.bnd||"")}</span><b style="font-weight:500">${esc(x.desc||"")}${x.sev?` — ${esc(x.sev)}`:""}</b></div>`).join("")}
   ${v.matched?"":`<div class="rule warn">لم يتم التعرف على نوع المخالفة تلقائياً — اختره يدوياً.</div>`}</div>`}
 function uniSet(key,val){const ks=key.split(".");let o=U;for(let i=0;i<ks.length-1;i++)o=o[ks[i]];o[ks.at(-1)]=val}
-const UNI_RERENDER=new Set(["info.band","info.region","info.gov","lb.method","lb.known","lb.rcat","emerg"]);
+const UNI_RERENDER=new Set(["info.band","info.region","info.gov","lb.method","lb.known","lb.rcat","emerg","vat"]);
 function uniBind(){
   const host=$("#tab-unified");
   host.querySelectorAll("[data-u]").forEach(el=>{const key=el.dataset.u;
@@ -2386,7 +2387,8 @@ function uniRecalc(){
     <div class="line" style="border-top:1px solid var(--line);margin-top:4px;padding-top:6px"><span><b>المنفعة المفقودة</b></span><b>${fmt(c.loss)} ريال</b></div>
     ${L.method==="hyd"?`<div class="rule">المعادلة: π × (القطر ÷ 2000)² × سرعة التدفق × ساعات الضخ × 3600</div>`:L.method==="break"?`<div class="rule">المعادلة: π × (قطر الأنبوب ÷ 2000)² × سرعة التدفق × ساعات التسريب × 3600</div>`:L.method==="rate"?(L.known?`<div class="rule">المعادلة: عدد الأيام × المعدل اليومي × ${UNI_WATER} ريال (أعلى شريحة)</div>`:`<div class="rule">المعادلة: المعدل الشهري × ${UNI_WATER} ريال (أعلى شريحة) × عدد الأشهر</div>`):""}`;
   $("#uTotalCalc").innerHTML=`<div class="line"><span>المنفعة المفقودة</span><b>${fmt(c.loss)}</b></div><div class="line"><span>تكاليف الإصلاح</span><b>${fmt(c.repair)}</b></div>
-    <div class="line" style="border-top:1px solid var(--line);margin-top:4px;padding-top:6px;font-size:1.05rem"><span><b>الإجمالي لتكاليف الإصلاح والمنفعة المفقودة</b></span><b>${fmt(c.total)} ريال</b></div>`;
+    ${U.vat?`<div class="line" style="border-top:1px solid var(--line);margin-top:4px;padding-top:6px"><span>الإجمالي قبل الضريبة</span><b>${fmt(c.sub)}</b></div><div class="line"><span>ضريبة القيمة المضافة 15%</span><b>${fmt(c.vat)}</b></div>`:""}
+    <div class="line" style="border-top:1px solid var(--line);margin-top:4px;padding-top:6px;font-size:1.05rem"><span><b>الإجمالي لتكاليف الإصلاح والمنفعة المفقودة${U.vat?" شامل الضريبة":""}</b></span><b>${fmt(c.total)} ريال</b></div>`;
   const miss=uniMissing(c);
   $("#uMissing").innerHTML=miss.length?`<div class="missing"><b>أكمل البيانات التالية لتفعيل الاعتماد:</b><ul>${miss.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:`<div class="ready">البيانات مكتملة — النموذج جاهز للاعتماد وتحميل PDF.</div>`;
 }
@@ -2458,7 +2460,8 @@ ${body}
 <tr style="height:30px">${td(fmt(c.water),{cs:8,c:"big"})}${td(L.sewer?fmt(c.sewer):"—",{cs:7,c:"big"})}</tr>
 <tr>${td("قيمة إحتساب المنفعة المفقودة",{cs:13,c:"tot"})}${td(fmt(c.loss),{c:"tot"})}${td("ريال",{c:"tot"})}</tr>
 <tr>${td(" تكاليف الإصلاح ",{cs:13,c:"tot"})}${td(fmt(c.repair),{c:"tot"})}${td("ريال",{c:"tot"})}</tr>
-<tr>${td("الإجمالي لتكاليف الإصلاح والمنفعة المفقودة",{cs:13,c:"tot ye"})}${td(fmt(c.total)+" ريال",{cs:2,c:"tot ye"})}</tr>
+${U.vat?`<tr>${td("ضريبة القيمة المضافة 15%",{cs:13,c:"tot"})}${td(fmt(c.vat),{c:"tot"})}${td("ريال",{c:"tot"})}</tr>`:""}
+<tr>${td("الإجمالي لتكاليف الإصلاح والمنفعة المفقودة"+(U.vat?" شامل ضريبة القيمة المضافة":""),{cs:13,c:"tot ye"})}${td(fmt(c.total)+" ريال",{cs:2,c:"tot ye"})}</tr>
 <tr>${td(" مسؤول خدمات العملاء: "+esc(U.sign.cs),{cs:8})}${td("مسؤول التشغيل والصيانة: "+esc(U.sign.om),{cs:7})}</tr>
 <tr style="height:46px">${td("توقيع")}${td("",{cs:7})}${td("توقيع ")}${td("",{cs:6})}</tr>
 </table></div>`;
