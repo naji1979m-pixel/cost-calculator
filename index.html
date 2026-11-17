@@ -2071,10 +2071,17 @@ $("#dbReload").onclick=()=>loadDash(true);
 const UNI_KEY="cc-unified-draft",UNI_WATER=6,UNI_SEWER=3;
 const UNI_CATS=["سكني","تجاري","حكومي"];
 const UNI_VEL=1,UNI_D7=7,UNI_HRS=10,UNI_DIA=19;
+/* المنفعة المفقودة: الكسور (خطوط، صمامات، توصيلات، حنفيات، طبات…) بمعادلة سرعة التدفق وقطر الأنبوب — وغيرها (سكني/تجاري/حكومي) بمعدل الفئة */
+const UNI_BREAK=new Set([...LINE_BANDS,"7"]);
+const uniRateCat=prop=>RATE_PROPS[prop]||PROP_CAT[prop]||"";
+function uniAutoLoss(){const L=U.lb,b=String(U.info.band||"");
+  if(b)L.method=UNI_BREAK.has(b)?"break":"rate";
+  const rc=uniRateCat(U.info.prop);if(rc&&rates.some(r=>r.name===rc))L.rcat=rc;else if(!L.rcat||!rates.some(r=>r.name===L.rcat))L.rcat=rates[0]?.name||"";
+  L.cat=String(L.rcat||"").startsWith("سكني")?"سكني":(L.rcat||L.cat)}
 let U=null,uniReady=false,uniLoading=null;
 function uniBlank(){return{info:{no:"",name:"",id:"",ptype:"مخالف",band:"",date:"",sector:"",unit:"",branch:"",region:"",gov:"",agr:""},
   boq:[{k:"",q:1,p:""}],emerg:false,eq:[],ext:{size:"",type:"",len:"",price:""},pt:[],
-  lb:{method:"hyd",known:true,start:"",end:"",d7:UNI_D7,hrs:UNI_HRS,dia:UNI_DIA,vel:UNI_VEL,cat:"سكني",ccat:"سكني – فيلا",sewer:true},
+  lb:{method:"rate",rcat:"",known:true,start:"",end:"",d7:UNI_D7,hrs:UNI_HRS,dia:UNI_DIA,vel:UNI_VEL,cat:"سكني",ccat:"سكني – فيلا",sewer:true},
   br:{repDate:"",repTime:"",brDate:"",brTime:"",offDate:"",offTime:"",dia:""},sign:{cs:"",om:""},visit:null}}
 function uniSave(){try{localStorage.setItem(UNI_KEY,JSON.stringify(U))}catch(e){}}
 function uniLoadDraft(){try{const d=JSON.parse(localStorage.getItem(UNI_KEY)||"null");if(d&&d.info)return Object.assign(uniBlank(),d,{lb:Object.assign(uniBlank().lb,d.lb||{}),br:Object.assign(uniBlank().br,d.br||{})})}catch(e){}return uniBlank()}
@@ -2140,7 +2147,15 @@ function uniCompute(){
   /* المنفعة المفقودة */
   const unk=!L.known;
   c.months=L.cat==="سكني"?6:12;
-  if(L.method==="break"){
+  c.wRate=UNI_WATER;c.sRate=UNI_SEWER;
+  if(L.method==="rate"){
+    if(!L.rcat||!rates.some(r=>r.name===L.rcat))L.rcat=rates[0]?.name||"";
+    const R=rateOf(L.rcat);c.R=R;c.wRate=R.water;c.sRate=R.sewer;c.end=L.end;
+    if(unk){c.days=Math.round(R.months*30);c.start=L.end?uniAddMonths(L.end,-R.months):""}
+    else{c.start=L.start;c.days=Math.max(0,uniDays(c.start,c.end))}
+    c.mo=Math.min(c.days/30,R.months);c.capped=c.days/30>R.months;
+    c.m3=R.monthly*c.mo;
+  }else if(L.method==="break"){
     c.hours=uniBreakHours();const d=num(U.br.dia)||num(L.dia);
     c.area=Math.PI*Math.pow(d/2000,2);c.dia=d;
     c.m3=c.hours?c.area*num(L.vel||1)*c.hours*3600:0;c.days=c.hours?Math.ceil(c.hours/24):0;
@@ -2159,7 +2174,7 @@ function uniCompute(){
       c.m3=c.area*num(L.vel)*c.hrs*3600;
     }
   }
-  c.water=c.m3*UNI_WATER;c.sewer=L.sewer?c.m3*UNI_SEWER:0;c.loss=c.water+c.sewer;
+  c.water=c.m3*c.wRate;c.sewer=L.sewer?c.m3*c.sRate:0;c.loss=c.water+c.sewer;
   c.total=c.repair+c.loss;
   return c;
 }
@@ -2246,14 +2261,14 @@ function uniRender(){
   <section class="block"><h2><span class="n">3</span>المنفعة المفقودة</h2>
     <div class="body">
       <div class="grid">
-        ${uniField("طريقة الاحتساب","lb.method",{sel:[["hyd","حسب قطر التوصيلة وساعات الضخ (النموذج الموحد)"],["break","كسر / تسريب (حسب ساعات التسريب)"],["cons","حسب الاستهلاك التقديري للفئة (أقصى المنفعة)"]].map(([v,t])=>`<option value="${v}"${L.method===v?" selected":""}>${t}</option>`).join(""),full:1})}
+        ${uniField("طريقة الاحتساب","lb.method",{sel:[["rate","حسب معدل الفئة (سكني / تجاري / حكومي)"],["break","كسر — حسب سرعة التدفق وقطر الأنبوب"],["hyd","حسب قطر التوصيلة وساعات الضخ"],["cons","حسب الاستهلاك التقديري (أقصى المنفعة)"]].filter(([v])=>v==="rate"||v==="break"||L.method===v).map(([v,t])=>`<option value="${v}"${L.method===v?" selected":""}>${t}</option>`).join(""),full:1})}
         ${L.method!=="break"?`${uniField("مدة المخالفة","lb.known",{sel:`<option value="1"${L.known?" selected":""}>معلوم المدة</option><option value="0"${!L.known?" selected":""}>غير معلوم المدة</option>`})}
-          ${L.method==="cons"?uniField("الفئة","lb.ccat",{sel:uniOpts((UB().maxBenefit||[]).map(x=>x.cat),L.ccat)}):uniField("فئة المخالف","lb.cat",{sel:uniOpts(UNI_CATS,L.cat)})}
+          ${L.method==="rate"?uniField("الفئة","lb.rcat",{sel:uniOpts(rates.map(r=>r.name),L.rcat)}):L.method==="cons"?uniField("الفئة","lb.ccat",{sel:uniOpts((UB().maxBenefit||[]).map(x=>x.cat),L.ccat)}):uniField("فئة المخالف","lb.cat",{sel:uniOpts(UNI_CATS,L.cat)})}
           ${L.known?uniField("تاريخ بداية المخالفة","lb.start",{type:"date"}):""}
           ${uniField(L.known?"تاريخ نهاية المخالفة":"تاريخ اكتشاف المخالفة","lb.end",{type:"date"})}`:""}
         ${L.method==="hyd"?`${uniField("قطر التوصيلة (ملم)","lb.dia",{type:"number",min:0,step:"0.1"})}${uniField("عدد أيام الضخ بالأسبوع","lb.d7",{type:"number",min:1,step:1})}${uniField("عدد ساعات الضخ يومياً","lb.hrs",{type:"number",min:0,step:"0.5"})}${uniField("سرعة التدفق (م/ث)","lb.vel",{type:"number",min:0,step:"0.1"})}`:""}
         ${L.method==="break"?`${uniField("تاريخ البلاغ","br.repDate",{type:"date"})}${uniField("وقت البلاغ","br.repTime",{type:"time"})}${uniField("تاريخ وقوع الكسر","br.brDate",{type:"date"})}${uniField("وقت وقوع الكسر","br.brTime",{type:"time"})}${uniField("تاريخ بدء إقفال المياه","br.offDate",{type:"date"})}${uniField("وقت بدء إقفال المياه","br.offTime",{type:"time"})}${uniField("قطر الكسر (ملم)","br.dia",{type:"number",min:0,step:"0.1"})}${uniField("سرعة التدفق (م/ث)","lb.vel",{type:"number",min:0,step:"0.1"})}`:""}
-        <label class="f" style="justify-content:flex-end"><span style="display:flex;gap:6px;align-items:center"><input type="checkbox" data-u="lb.sewer"${L.sewer?" checked":""}> احتساب منفعة الصرف الصحي (${UNI_SEWER} ريال/م³)</span></label>
+        <label class="f" style="justify-content:flex-end"><span style="display:flex;gap:6px;align-items:center"><input type="checkbox" data-u="lb.sewer"${L.sewer?" checked":""}> احتساب منفعة الصرف الصحي (${L.method==="rate"?rateOf(L.rcat).sewer:UNI_SEWER} ريال/م³)</span></label>
       </div>
       <div class="calc" id="uLossCalc"></div>
     </div>
@@ -2289,15 +2304,15 @@ function uniVisitCard(){const v=U.visit;if(!v)return"";
   ${(v.items||[]).map(x=>`<div class="line"><span>البند ${esc(x.bnd||"")}</span><b style="font-weight:500">${esc(x.desc||"")}${x.sev?` — ${esc(x.sev)}`:""}</b></div>`).join("")}
   ${v.matched?"":`<div class="rule warn">لم يتم التعرف على نوع المخالفة تلقائياً — اختره يدوياً.</div>`}</div>`}
 function uniSet(key,val){const ks=key.split(".");let o=U;for(let i=0;i<ks.length-1;i++)o=o[ks[i]];o[ks.at(-1)]=val}
-const UNI_RERENDER=new Set(["info.band","info.region","info.gov","lb.method","lb.known","emerg"]);
+const UNI_RERENDER=new Set(["info.band","info.region","info.gov","lb.method","lb.known","lb.rcat","emerg"]);
 function uniBind(){
   const host=$("#tab-unified");
   host.querySelectorAll("[data-u]").forEach(el=>{const key=el.dataset.u;
     const h=()=>{let v=el.type==="checkbox"?el.checked:el.value;if(key==="lb.known")v=v==="1";uniSet(key,v);
-      if(key==="info.band"){U.boq=[];uniApplyTpl(true)}
+      if(key==="info.band"){U.boq=[];uniApplyTpl(true);uniAutoLoss()}
       if(key==="info.region"){if(U.info.gov&&!govsOf(U.info.region).includes(U.info.gov))U.info.gov="";U.info.sector=uniSector(U.info.region)}
       if(key==="info.gov"){U.info.branch=govShort(U.info.gov)||U.info.branch}
-      if(key==="info.prop"){const cat=PROP_CAT[U.info.prop];if(cat){U.lb.cat=cat.startsWith("سكني")?"سكني":cat;if((UB().maxBenefit||[]).some(x=>x.cat===cat))U.lb.ccat=cat;uniSave();uniRender();return}}
+      if(key==="info.prop"){const cat=PROP_CAT[U.info.prop];if(cat){U.lb.cat=cat.startsWith("سكني")?"سكني":cat;if((UB().maxBenefit||[]).some(x=>x.cat===cat))U.lb.ccat=cat}if(uniRateCat(U.info.prop)){uniAutoLoss();uniSave();uniRender();return}}
       uniSave();if(UNI_RERENDER.has(key))uniRender();else uniRecalc()};
     el.addEventListener(el.tagName==="SELECT"||el.type==="checkbox"||el.type==="date"||el.type==="time"?"change":"input",h)});
   host.querySelectorAll("[data-ub]").forEach(el=>el.addEventListener(el.tagName==="SELECT"?"change":"input",()=>{const r=U.boq[+el.dataset.ub];r[el.dataset.f]=el.value;
@@ -2339,7 +2354,14 @@ function uniRecalc(){
     <div class="line"><span>المعدات</span><b>${fmt(c.eq)}</b></div><div class="line"><span>قطع الغيار والتمديدات</span><b>${fmt(c.pt)}</b></div>
     <div class="line" style="border-top:1px solid var(--line);margin-top:4px;padding-top:6px"><span><b>تكاليف الإصلاح</b></span><b>${fmt(c.repair)} ريال</b></div>`;
   let lines="";
-  if(L.method==="break"){
+  if(L.method==="rate"){
+    const R=c.R;
+    lines=`<div class="line"><span>فترة الاحتساب</span><b>${c.start?dmy(c.start):"—"} ← ${c.end?dmy(c.end):"—"}${!L.known?` (غير معلوم المدة: الحد الأقصى ${fmt(R.months).replace(".00","")} شهر)`:""}</b></div>
+      <div class="line"><span>عدد أيام المخالفة</span><b>${c.days||0} يوم</b></div>
+      <div class="line"><span>معدل استهلاك الفئة (${esc(R.name)})</span><b>${fmt(R.monthly)} م³/شهر</b></div>
+      <div class="line"><span>عدد الأشهر المحتسبة (الأيام ÷ 30، بحد أقصى ${fmt(R.months).replace(".00","")} شهر)</span><b>${(c.mo||0).toLocaleString("en-US",{maximumFractionDigits:2})} شهر</b></div>
+      ${c.capped?`<div class="rule">تم تطبيق الحد الأقصى للفئة (${fmt(R.months).replace(".00","")} شهر).</div>`:""}`;
+  }else if(L.method==="break"){
     lines=`<div class="line"><span>مدة التسريب</span><b>${c.hours?fmt(c.hours)+" ساعة":"أدخل تاريخ ووقت الكسر والإقفال"}</b></div>
       <div class="line"><span>مساحة مقطع الكسر (قطر ${fmt(c.dia||0)} ملم)</span><b dir="ltr">${(c.area||0).toFixed(6)} م²</b></div>`;
   }else{
@@ -2352,10 +2374,10 @@ function uniRecalc(){
       <div class="line"><span>أقصى منفعة للفئة</span><b>${fmt(c.max||0)} م³</b></div>${c.capped?`<div class="rule">تم تطبيق الحد الأقصى للفئة بدل ${fmt(c.m3raw)} م³.</div>`:""}`;
   }
   $("#uLossCalc").innerHTML=lines+`<div class="line"><span>كمية المياه المفقودة</span><b>${fmt(c.m3)} م³</b></div>
-    <div class="line"><span>قيمة المياه (${UNI_WATER} ريال/م³)</span><b>${fmt(c.water)}</b></div>
-    <div class="line"><span>قيمة الصرف الصحي (${UNI_SEWER} ريال/م³)</span><b>${L.sewer?fmt(c.sewer):"غير محتسب"}</b></div>
+    <div class="line"><span>قيمة المياه (${fmt(c.wRate).replace(".00","")} ريال/م³)</span><b>${fmt(c.water)}</b></div>
+    <div class="line"><span>قيمة الصرف الصحي (${fmt(c.sRate).replace(".00","")} ريال/م³)</span><b>${L.sewer?fmt(c.sewer):"غير محتسب"}</b></div>
     <div class="line" style="border-top:1px solid var(--line);margin-top:4px;padding-top:6px"><span><b>المنفعة المفقودة</b></span><b>${fmt(c.loss)} ريال</b></div>
-    ${L.method==="hyd"?`<div class="rule">المعادلة: π × (القطر ÷ 2000)² × سرعة التدفق × ساعات الضخ × 3600</div>`:""}`;
+    ${L.method==="hyd"?`<div class="rule">المعادلة: π × (القطر ÷ 2000)² × سرعة التدفق × ساعات الضخ × 3600</div>`:L.method==="break"?`<div class="rule">المعادلة: π × (قطر الأنبوب ÷ 2000)² × سرعة التدفق × ساعات التسريب × 3600</div>`:L.method==="rate"?`<div class="rule">المعادلة: معدل الفئة الشهري × عدد الأشهر (الأيام ÷ 30، بحد أقصى ${fmt(c.R.months).replace(".00","")} شهر)</div>`:""}`;
   $("#uTotalCalc").innerHTML=`<div class="line"><span>المنفعة المفقودة</span><b>${fmt(c.loss)}</b></div><div class="line"><span>تكاليف الإصلاح</span><b>${fmt(c.repair)}</b></div>
     <div class="line" style="border-top:1px solid var(--line);margin-top:4px;padding-top:6px;font-size:1.05rem"><span><b>الإجمالي لتكاليف الإصلاح والمنفعة المفقودة</b></span><b>${fmt(c.total)} ريال</b></div>`;
   const miss=uniMissing(c);
@@ -2383,7 +2405,8 @@ async function uniLookup(raw){
   const cat=PROP_CAT[v.prop];if(cat){U.lb.cat=cat.startsWith("سكني")?"سكني":cat;if((UB().maxBenefit||[]).some(x=>x.cat===cat))U.lb.ccat=cat}
   I.ptype=v.vtype||"";
   /* المنفعة المفقودة جاهزة: تاريخ الزيارة نهاية المخالفة، والمدة غير معلومة (6 أشهر سكني / 12 شهراً تجاري وحكومي) */
-  if(d){U.lb.end=d;if(U.lb.method!=="break"){U.lb.method=U.lb.method||"hyd";U.lb.known=false;U.lb.start=""}}
+  uniAutoLoss();
+  if(d){U.lb.end=d;if(U.lb.method!=="break"){U.lb.known=false;U.lb.start=""}else{U.br.repDate=U.br.repDate||d}}
   U.visit={no:v.no,region:v.region,gov:v.gov,prop:v.prop,vtype:v.vtype,items:v.items,matched:!!idx};
   uniSave();uniRender();
   const miss=uniMissing(uniCompute());
@@ -2419,8 +2442,8 @@ ${body}
 <tr>${td("المجموع ( ريال )"+(U.emerg?` — شامل تنفيذ طارئ ${UB().emergencyPct}%`:""),{cs:4,c:"gn"})}${td(fmt(c.boq),{c:"gn"})}${td("المجموع ( ريال )",{cs:4,c:"gn"})}${td(fmt(c.eq),{c:"gn"})}${td("المجموع ( ريال )",{cs:4,c:"gn"})}${td(fmt(c.pt),{c:"gn"})}</tr>
 <tr>${td("الإنكسارات",{cs:9,c:"ye"})}${td("القيمة الكلية لاحتساب المنفعة المفقودة لمدة المخالفة",{cs:6,c:"ye"})}</tr>
 <tr>${td("تاريخ البلاغ",{c:"lb"})}${td(brk?dmy(B.repDate):"",{cs:2})}${td("تاريخ بدء اقفال المياه",{c:"lb"})}${td(brk?dmy(B.offDate):"",{cs:2})}${td("قطر الكسر (ملم)",{c:"lb"})}${td(brk&&num(B.dia)?num(B.dia):"",{cs:2})}${td("تاريخ بداية المخالفة",{c:"lb"})}${td(dmy(c.start))}${td("عدد أيام المخالفة",{c:"lb"})}${td(c.days||"",{cs:3,c:"b"})}</tr>
-<tr>${td("تاريخ وقوع الكسر",{c:"lb"})}${td(brk?dmy(B.brDate):"",{cs:2})}${td("وقت بدء اقفال المياه",{c:"lb"})}${td(brk?esc(B.offTime):"",{cs:2})}${td("مدة التسريب (تاريخ)",{c:"lb"})}${td(brk&&hrs?Math.floor(hrs/24)+" يوم و "+fmt(hrs%24)+" ساعة":"",{cs:2})}${td("تاريخ نهاية المخالفة",{c:"lb"})}${td(dmy(c.end))}${td("قيمة إحتساب المياه المفقودة",{c:"lb"})}${td(UNI_WATER+" ريال للمتر المكعب",{cs:3})}</tr>
-<tr>${td("وقت وقوع الكسر",{c:"lb"})}${td(brk?esc(B.brTime):"",{cs:2})}${td("وقت البلاغ ",{c:"lb"})}${td(brk?esc(B.repTime):"",{cs:2})}${td("مدة التسريب (ساعة)",{c:"lb"})}${td(brk&&hrs?fmt(hrs):"",{cs:2})}${td("قيمة إحتساب الصرف المفقودة",{c:"lb"})}${td(L.sewer?UNI_SEWER+" ريال":"—")}${td("الفئة ",{c:"lb"})}${td(esc(L.method==="cons"?L.ccat:L.cat),{cs:3})}</tr>
+<tr>${td("تاريخ وقوع الكسر",{c:"lb"})}${td(brk?dmy(B.brDate):"",{cs:2})}${td("وقت بدء اقفال المياه",{c:"lb"})}${td(brk?esc(B.offTime):"",{cs:2})}${td("مدة التسريب (تاريخ)",{c:"lb"})}${td(brk&&hrs?Math.floor(hrs/24)+" يوم و "+fmt(hrs%24)+" ساعة":"",{cs:2})}${td("تاريخ نهاية المخالفة",{c:"lb"})}${td(dmy(c.end))}${td("قيمة إحتساب المياه المفقودة",{c:"lb"})}${td(fmt(c.wRate).replace(".00","")+" ريال للمتر المكعب",{cs:3})}</tr>
+<tr>${td("وقت وقوع الكسر",{c:"lb"})}${td(brk?esc(B.brTime):"",{cs:2})}${td("وقت البلاغ ",{c:"lb"})}${td(brk?esc(B.repTime):"",{cs:2})}${td("مدة التسريب (ساعة)",{c:"lb"})}${td(brk&&hrs?fmt(hrs):"",{cs:2})}${td("قيمة إحتساب الصرف المفقودة",{c:"lb"})}${td(L.sewer?fmt(c.sRate).replace(".00","")+" ريال":"—")}${td("الفئة ",{c:"lb"})}${td(esc(L.method==="rate"?L.rcat:L.method==="cons"?L.ccat:L.cat),{cs:3})}</tr>
 <tr>${td("كمية مقدار المياه الضائعة م3 =",{cs:4,c:"gr b"})}${td(fmt(c.m3),{cs:4,c:"big"})}${td("حساب المنفعة المفقودة للصرف الصحي",{cs:7,c:"gr b"})}</tr>
 <tr>${td("احتساب فترة المخالفة للمياه"+(!L.known&&!brk?" (غير معلوم المدة)":""),{cs:8,c:"lb"})}${td("احتساب فترة المخالفة للصرف",{cs:7,c:"lb"})}</tr>
 <tr>${td(c.days?c.days+" يوم":"",{cs:8})}${td(L.sewer&&c.days?c.days+" يوم":"—",{cs:7})}</tr>
@@ -2536,8 +2559,8 @@ function uniExcelCells(c){
   pt.slice(0,8).forEach((p,k)=>{const row=17+k;m["K"+row]=p.d||"";m["L"+row]=((p.q||"")+" "+(p.u||"")).trim();m["M"+row]=num(p.p);m["N"+row]=num(p.q)*num(p.p)});
   m.E25=c.boq;m.J25=c.eq;m.O25=c.pt;
   m.B27=brk?dmy(B.repDate):"";m.E27=brk?dmy(B.offDate):"";m.H27=brk&&num(B.dia)?num(B.dia):"";m.K27=dmy(c.start);m.M27=c.days||0;
-  m.B28=brk?dmy(B.brDate):"";m.E28=brk?(B.offTime||""):"";m.H28=brk&&c.hours?Math.floor(c.hours/24)+" يوم و "+fmt(c.hours%24)+" ساعة":"";m.K28=dmy(c.end);m.M28=UNI_WATER+" ريال للمتر المكعب";
-  m.B29=brk?(B.brTime||""):"";m.E29=brk?(B.repTime||""):"";m.H29=brk&&c.hours?Math.round(c.hours*100)/100:"";m.M29=L.method==="cons"?L.ccat:L.cat;
+  m.B28=brk?dmy(B.brDate):"";m.E28=brk?(B.offTime||""):"";m.H28=brk&&c.hours?Math.floor(c.hours/24)+" يوم و "+fmt(c.hours%24)+" ساعة":"";m.K28=dmy(c.end);m.M28=fmt(c.wRate).replace(".00","")+" ريال للمتر المكعب";
+  m.B29=brk?(B.brTime||""):"";m.E29=brk?(B.repTime||""):"";m.H29=brk&&c.hours?Math.round(c.hours*100)/100:"";m.M29=L.method==="rate"?L.rcat:L.method==="cons"?L.ccat:L.cat;
   m.E30=c.m3;m.A32=c.days||0;m.I32=L.sewer?(c.days||0):"—";m.A34=c.water;m.I34=c.sewer;
   m.N36=c.loss;m.N37=c.repair;m.N38=c.total;
   m.A39=" مسؤول خدمات العملاء: "+(U.sign.cs||"");m.I39="مسؤول التشغيل والصيانة: "+(U.sign.om||"");
