@@ -2150,10 +2150,11 @@ function uniCompute(){
   c.wRate=UNI_WATER;c.sRate=UNI_SEWER;
   if(L.method==="rate"){
     if(!L.rcat||!rates.some(r=>r.name===L.rcat))L.rcat=rates[0]?.name||"";
-    const R=rateOf(L.rcat);c.R=R;c.wRate=R.water;c.sRate=R.sewer;c.end=L.end;
-    if(unk){c.days=Math.round(R.months*30);c.start=L.end?uniAddMonths(L.end,-R.months):""}
+    /* معدل استهلاك الفئة الشهري × 6 ريال (أعلى شريحة) × عدد الأشهر — المدة القياسية: 6 أشهر سكني، 12 شهراً تجاري وحكومي */
+    const R=rateOf(L.rcat),MX=String(L.rcat||"").startsWith("سكني")?6:12;c.R=R;c.maxM=MX;c.end=L.end;
+    if(unk){c.days=MX*30;c.start=L.end?uniAddMonths(L.end,-MX):""}
     else{c.start=L.start;c.days=Math.max(0,uniDays(c.start,c.end))}
-    c.mo=Math.min(c.days/30,R.months);c.capped=c.days/30>R.months;
+    c.mo=Math.min(c.days/30,MX);c.capped=c.days/30>MX;
     c.m3=R.monthly*c.mo;
   }else if(L.method==="break"){
     c.hours=uniBreakHours();const d=num(U.br.dia)||num(L.dia);
@@ -2268,7 +2269,7 @@ function uniRender(){
           ${uniField(L.known?"تاريخ نهاية المخالفة":"تاريخ اكتشاف المخالفة","lb.end",{type:"date"})}`:""}
         ${L.method==="hyd"?`${uniField("قطر التوصيلة (ملم)","lb.dia",{type:"number",min:0,step:"0.1"})}${uniField("عدد أيام الضخ بالأسبوع","lb.d7",{type:"number",min:1,step:1})}${uniField("عدد ساعات الضخ يومياً","lb.hrs",{type:"number",min:0,step:"0.5"})}${uniField("سرعة التدفق (م/ث)","lb.vel",{type:"number",min:0,step:"0.1"})}`:""}
         ${L.method==="break"?`${uniField("تاريخ البلاغ","br.repDate",{type:"date"})}${uniField("وقت البلاغ","br.repTime",{type:"time"})}${uniField("تاريخ وقوع الكسر","br.brDate",{type:"date"})}${uniField("وقت وقوع الكسر","br.brTime",{type:"time"})}${uniField("تاريخ بدء إقفال المياه","br.offDate",{type:"date"})}${uniField("وقت بدء إقفال المياه","br.offTime",{type:"time"})}${uniField("قطر الكسر (ملم)","br.dia",{type:"number",min:0,step:"0.1"})}${uniField("سرعة التدفق (م/ث)","lb.vel",{type:"number",min:0,step:"0.1"})}`:""}
-        <label class="f" style="justify-content:flex-end"><span style="display:flex;gap:6px;align-items:center"><input type="checkbox" data-u="lb.sewer"${L.sewer?" checked":""}> احتساب منفعة الصرف الصحي (${L.method==="rate"?rateOf(L.rcat).sewer:UNI_SEWER} ريال/م³)</span></label>
+        <label class="f" style="justify-content:flex-end"><span style="display:flex;gap:6px;align-items:center"><input type="checkbox" data-u="lb.sewer"${L.sewer?" checked":""}> احتساب منفعة الصرف الصحي (${UNI_SEWER} ريال/م³)</span></label>
       </div>
       <div class="calc" id="uLossCalc"></div>
     </div>
@@ -2356,11 +2357,11 @@ function uniRecalc(){
   let lines="";
   if(L.method==="rate"){
     const R=c.R;
-    lines=`<div class="line"><span>فترة الاحتساب</span><b>${c.start?dmy(c.start):"—"} ← ${c.end?dmy(c.end):"—"}${!L.known?` (غير معلوم المدة: الحد الأقصى ${fmt(R.months).replace(".00","")} شهر)`:""}</b></div>
+    lines=`<div class="line"><span>فترة الاحتساب</span><b>${c.start?dmy(c.start):"—"} ← ${c.end?dmy(c.end):"—"}${!L.known?` (غير معلوم المدة: ${c.maxM===6?"6 أشهر":"12 شهراً"} للفئة)`:""}</b></div>
       <div class="line"><span>عدد أيام المخالفة</span><b>${c.days||0} يوم</b></div>
       <div class="line"><span>معدل استهلاك الفئة (${esc(R.name)})</span><b>${fmt(R.monthly)} م³/شهر</b></div>
-      <div class="line"><span>عدد الأشهر المحتسبة (الأيام ÷ 30، بحد أقصى ${fmt(R.months).replace(".00","")} شهر)</span><b>${(c.mo||0).toLocaleString("en-US",{maximumFractionDigits:2})} شهر</b></div>
-      ${c.capped?`<div class="rule">تم تطبيق الحد الأقصى للفئة (${fmt(R.months).replace(".00","")} شهر).</div>`:""}`;
+      <div class="line"><span>عدد الأشهر المحتسبة (بحد أقصى ${c.maxM===6?"6 أشهر":"12 شهراً"} — ${c.maxM===6?"سكني":"تجاري / حكومي"})</span><b>${(c.mo||0).toLocaleString("en-US",{maximumFractionDigits:2})} شهر</b></div>
+      ${c.capped?`<div class="rule">تم تطبيق الحد الأقصى للفئة (${c.maxM===6?"6 أشهر":"12 شهراً"}).</div>`:""}`;
   }else if(L.method==="break"){
     lines=`<div class="line"><span>مدة التسريب</span><b>${c.hours?fmt(c.hours)+" ساعة":"أدخل تاريخ ووقت الكسر والإقفال"}</b></div>
       <div class="line"><span>مساحة مقطع الكسر (قطر ${fmt(c.dia||0)} ملم)</span><b dir="ltr">${(c.area||0).toFixed(6)} م²</b></div>`;
@@ -2377,7 +2378,7 @@ function uniRecalc(){
     <div class="line"><span>قيمة المياه (${fmt(c.wRate).replace(".00","")} ريال/م³)</span><b>${fmt(c.water)}</b></div>
     <div class="line"><span>قيمة الصرف الصحي (${fmt(c.sRate).replace(".00","")} ريال/م³)</span><b>${L.sewer?fmt(c.sewer):"غير محتسب"}</b></div>
     <div class="line" style="border-top:1px solid var(--line);margin-top:4px;padding-top:6px"><span><b>المنفعة المفقودة</b></span><b>${fmt(c.loss)} ريال</b></div>
-    ${L.method==="hyd"?`<div class="rule">المعادلة: π × (القطر ÷ 2000)² × سرعة التدفق × ساعات الضخ × 3600</div>`:L.method==="break"?`<div class="rule">المعادلة: π × (قطر الأنبوب ÷ 2000)² × سرعة التدفق × ساعات التسريب × 3600</div>`:L.method==="rate"?`<div class="rule">المعادلة: معدل الفئة الشهري × عدد الأشهر (الأيام ÷ 30، بحد أقصى ${fmt(c.R.months).replace(".00","")} شهر)</div>`:""}`;
+    ${L.method==="hyd"?`<div class="rule">المعادلة: π × (القطر ÷ 2000)² × سرعة التدفق × ساعات الضخ × 3600</div>`:L.method==="break"?`<div class="rule">المعادلة: π × (قطر الأنبوب ÷ 2000)² × سرعة التدفق × ساعات التسريب × 3600</div>`:L.method==="rate"?`<div class="rule">المعادلة: معدل استهلاك الفئة الشهري × ${UNI_WATER} ريال (أعلى شريحة) × عدد الأشهر</div>`:""}`;
   $("#uTotalCalc").innerHTML=`<div class="line"><span>المنفعة المفقودة</span><b>${fmt(c.loss)}</b></div><div class="line"><span>تكاليف الإصلاح</span><b>${fmt(c.repair)}</b></div>
     <div class="line" style="border-top:1px solid var(--line);margin-top:4px;padding-top:6px;font-size:1.05rem"><span><b>الإجمالي لتكاليف الإصلاح والمنفعة المفقودة</b></span><b>${fmt(c.total)} ريال</b></div>`;
   const miss=uniMissing(c);
