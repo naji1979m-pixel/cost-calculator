@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#083b6b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="حاسبة الفاقد">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<title>حاسبة المياه المفقودة والقيمة المالية</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef2f7;--card:#fff;--ink:#0d1b2e;--muted:#64748b;--line:#dfe5ee;
+  --brand:#0a5ea8;--brand2:#0b7fc7;--brand-soft:#e7f1fb;
+  --ok:#0b8a64;--ok-soft:#e6f6f0;--bad:#c62828;--bad-soft:#fdecec;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Tajawal',system-ui,sans-serif;line-height:1.55}
+.top{background:linear-gradient(135deg,#083b6b,var(--brand) 55%,var(--brand2));color:#fff;padding:calc(22px + env(safe-area-inset-top)) 18px 70px}
+.top h1{margin:0;font-size:1.35rem;font-weight:800}
+.top p{margin:4px 0 0;opacity:.85;font-size:.92rem}
+.wrap{max-width:780px;margin:-54px auto 0;padding:0 14px calc(40px + env(safe-area-inset-bottom))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;margin-bottom:14px;box-shadow:0 6px 20px rgba(13,27,46,.05)}
+.card h2{font-size:1.05rem;margin:0 0 14px;font-weight:800;display:flex;align-items:center;gap:8px}
+.badge{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:9px;background:var(--brand);color:#fff;font-size:.82rem}
+.row{margin-bottom:16px}
+.row:last-child{margin-bottom:0}
+.lbl{display:flex;justify-content:space-between;align-items:baseline;font-size:.93rem;font-weight:700;color:#24344d;margin-bottom:7px}
+.lbl small{font-weight:400;color:var(--muted);font-size:.8rem}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:560px){.grid2{grid-template-columns:1fr}}
+.field{display:flex;align-items:stretch;border:1.5px solid var(--line);border-radius:14px;background:#fff;overflow:hidden;transition:.15s}
+.field:focus-within{border-color:var(--brand);box-shadow:0 0 0 3px rgba(10,94,168,.12)}
+.field.invalid{border-color:var(--bad);background:var(--bad-soft)}
+.field input{flex:1;min-width:0;border:0;background:transparent;padding:13px 14px;font:inherit;font-size:1.15rem;font-weight:700;color:var(--ink);outline:none;direction:ltr;text-align:right}
+.field input[type=date]{font-size:1rem;font-weight:500;text-align:center}
+.unit{display:flex;align-items:center;padding:0 13px;background:#f5f8fc;border-inline-start:1.5px solid var(--line);color:#475569;font-size:.86rem;font-weight:700;white-space:nowrap}
+.pair{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px}
+.swap{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--brand-soft);color:var(--brand);font-weight:800}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.chip{direction:ltr;unicode-bidi:isolate;border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:5px 12px;font:inherit;font-size:.88rem;font-weight:700;color:#334155;cursor:pointer}
+.chip.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.seg{display:flex;background:#f1f5f9;border-radius:12px;padding:4px;gap:4px;margin-bottom:10px}
+.seg button{flex:1;white-space:nowrap;border:0;background:transparent;border-radius:9px;padding:8px;font:inherit;font-size:.9rem;font-weight:700;color:#475569;cursor:pointer}
+.seg button.on{background:#fff;color:var(--brand);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.msg{font-size:.8rem;color:var(--bad);margin-top:5px;min-height:0}
+.hint{font-size:.8rem;color:var(--muted);margin-top:5px}
+.hero{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:560px){.hero{grid-template-columns:1fr}}
+.big{border-radius:16px;padding:15px 16px}
+.big .k{font-size:.88rem;color:#475569;font-weight:500}
+.big .v{font-size:1.9rem;font-weight:800;direction:ltr;text-align:right;line-height:1.25;font-variant-numeric:tabular-nums}
+.big .v small{font-size:1rem;color:var(--muted);font-weight:700}
+.big.w{background:var(--brand-soft)} .big.w .v{color:#0a4f8f}
+.big.m{background:var(--ok-soft)} .big.m .v{color:var(--ok)}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+@media(max-width:560px){.kpis{grid-template-columns:1fr 1fr}}
+.kpi{background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+.kpi .k{font-size:.75rem;color:var(--muted)}
+.kpi .v{font-weight:800;font-size:.98rem;direction:ltr;text-align:right;font-variant-numeric:tabular-nums}
+.empty{text-align:center;color:var(--muted);padding:10px}
+.step{border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.step .t{font-weight:800;font-size:.96rem;margin-bottom:6px;display:flex;gap:8px;align-items:center}
+.step .t .badge{width:22px;height:22px;font-size:.75rem;border-radius:7px}
+.eq{direction:ltr;text-align:left;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.88rem;background:#f1f5f9;border-radius:10px;padding:8px 10px;margin:4px 0;overflow-x:auto;white-space:nowrap}
+.eq.g{background:transparent;color:var(--muted);padding:2px 10px}
+.eq .a{color:var(--ok);font-weight:800}
+.note{font-size:.82rem;color:var(--muted);margin-top:4px}
+.final{background:linear-gradient(135deg,#fff8eb,#fff);border:1.5px solid #f2d39b;border-radius:14px;padding:12px 14px}
+.final .eq{background:#fff}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center}
+.btn{border:0;background:var(--brand);color:#fff;font:inherit;font-weight:800;border-radius:12px;padding:11px 18px;cursor:pointer}
+.btn.o{background:#fff;color:var(--brand);border:1.5px solid var(--brand)}
+.toast{color:var(--ok);font-size:.86rem;font-weight:700;display:none}
+table{width:100%;border-collapse:collapse;font-size:.84rem}
+th,td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:right}
+th{color:var(--muted);font-weight:700;font-size:.78rem}
+td.n{direction:ltr;text-align:right;font-variant-numeric:tabular-nums}
+tr.cur td{background:var(--brand-soft);font-weight:800}
+.scroll{overflow-x:auto}
+html,body{overflow-x:hidden}
+.card,.grid2>*,.row,.step,.final{min-width:0}
+.lbl{flex-wrap:wrap;gap:4px}
+.eq.g{direction:rtl;text-align:right;white-space:normal;font-family:inherit;font-weight:700}
+.eq{max-width:100%;white-space:normal;overflow-wrap:anywhere;line-height:1.7}
+@media(max-width:560px){table{font-size:.74rem}th,td{padding:7px 3px}.eq{font-size:.82rem}}
+.unit{padding:0 10px}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:6px;margin-bottom:14px;box-shadow:0 6px 20px rgba(13,27,46,.05)}
+.tabs a{text-align:center;text-decoration:none;color:#475569;font-weight:800;font-size:.92rem;padding:11px 6px;border-radius:11px}
+.tabs a.on{background:var(--brand);color:#fff}
+.cats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cat{border:1.5px solid var(--line);background:#fff;border-radius:14px;padding:12px;font:inherit;text-align:right;cursor:pointer}
+.cat b{display:block;font-size:1rem;color:var(--ink)}
+.cat span{font-size:.8rem;color:var(--muted)}
+.cat.on{border-color:var(--brand);background:var(--brand-soft);box-shadow:0 0 0 3px rgba(10,94,168,.12)}
+.tog{display:flex;align-items:center;gap:10px;font-weight:700;font-size:.95rem;cursor:pointer}
+.tog input{width:20px;height:20px;accent-color:var(--brand)}
+input:disabled{opacity:.5}
+.wheel{flex:1;min-width:0;border:0;background:transparent;padding:13px 14px;font:inherit;font-size:1.15rem;font-weight:700;color:var(--ink);outline:none;direction:ltr;text-align:right;text-align-last:right;-webkit-appearance:none;appearance:none;cursor:pointer;
+background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%230a5ea8' stroke-width='2' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:left 14px center}
+.hfield{align-items:center}
+.hb{width:52px;align-self:stretch;border:0;background:#f5f8fc;color:var(--brand);font-size:1.5rem;font-weight:800;cursor:pointer;font-family:inherit}
+.hb:active{background:var(--brand-soft)}
+.hval{flex:1;border:0;background:transparent;font:inherit;font-size:1.2rem;font-weight:800;color:var(--ink);padding:12px;cursor:pointer}
+.hval small{font-size:.85rem;color:var(--muted);font-weight:700}
+.hfield.off{opacity:.45;pointer-events:none}
+.sheet-bg{position:fixed;inset:0;background:rgba(13,27,46,.45);display:none;align-items:flex-end;justify-content:center;z-index:50}
+.sheet-bg.open{display:flex}
+.sheet{background:#fff;width:100%;max-width:520px;border-radius:22px 22px 0 0;padding:14px 16px calc(18px + env(safe-area-inset-bottom))}
+.sheet-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.sheet-h .btn{padding:8px 20px}
+.wheelbox{position:relative;height:220px}
+.wsel{position:absolute;left:0;right:0;top:88px;height:44px;border-radius:12px;background:var(--brand-soft);pointer-events:none}
+.wlist{position:relative;height:220px;overflow-y:scroll;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+  -webkit-mask-image:linear-gradient(transparent,#000 30%,#000 70%,transparent);mask-image:linear-gradient(transparent,#000 30%,#000 70%,transparent)}
+.wlist::-webkit-scrollbar{display:none}
+.witem{height:44px;display:flex;align-items:center;justify-content:center;scroll-snap-align:center;font-size:1.3rem;font-weight:700;color:#94a3b8;cursor:pointer}
+.witem.on{color:var(--brand);font-size:1.55rem;font-weight:800}
+.wpad{height:88px}
+.sb{width:46px;font-size:1.25rem;direction:ltr;unicode-bidi:bidi-override}
+#fQ.calcd{background:var(--ok-soft);border-color:#9fd9c4}
+#fQ.calcd input{color:var(--ok)}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>حاسبة المياه المفقودة والمنفعة المفقودة</h1>
+  <p id="sub1">حساب كمية المياه المهدرة من فتحة أو توصيلة وقيمتها المالية، مع تفصيل المعادلة</p>
+  <p id="sub2" style="display:none">حساب المنفعة المفقودة حسب فئة العقار وأقصى استهلاك مفقود</p>
+</div>
+
+<div class="wrap">
+<nav class="tabs">
+  <a href="#flow" data-p="flow" class="on">حسب القطر والسرعة</a>
+  <a href="#rate" data-p="rate">حسب الفئة (المعدل)</a>
+</nav>
+<div id="pgflow">
+
+<section class="card">
+  <h2><span class="badge">1</span> المدخلات</h2>
+
+  <div class="row">
+    <div class="lbl">قطر الفتحة <small>اكتب في أي خانة وتتحول الثانية تلقائياً</small></div>
+    <div class="pair">
+      <div class="field" id="fIn"><input id="dIn" inputmode="decimal" autocomplete="off" value="1"><span class="unit">بوصة</span></div>
+      <div class="swap">⇄</div>
+      <div class="field" id="fMm"><input id="dMm" inputmode="decimal" autocomplete="off" value="25.4"><span class="unit">ملم</span></div>
+    </div>
+    <div class="chips" id="sizes"></div>
+    <div class="msg" id="eD"></div>
+  </div>
+
+  <div class="row">
+    <div class="lbl">سرعة التدفق <small>المعتاد في الشبكات 1 – 2 م/ث</small></div>
+    <div class="field" id="fV"><input id="v" inputmode="decimal" autocomplete="off" value="1.5"><span class="unit">متر / ثانية</span></div>
+    <div class="chips" id="vchips"></div>
+    <div class="msg" id="eV"></div>
+  </div>
+
+  <div class="row">
+    <div class="lbl">مدة التسرب</div>
+    <div class="seg" id="mode">
+      <button type="button" data-m="hours">بالساعة</button>
+      <button type="button" data-m="days" class="on">باليوم</button>
+      <button type="button" data-m="months">بالشهر</button>
+      <button type="button" data-m="dates">بالتاريخ</button>
+    </div>
+    <div id="byDays">
+      <div class="field" id="fDays"><input id="days" inputmode="decimal" autocomplete="off" value="180"><span class="unit" id="durUnit">يوم</span></div>
+      <div class="hint" id="durHint"></div>
+    </div>
+    <div id="byDates" style="display:none">
+      <div class="grid2">
+        <div><div class="hint" style="margin:0 0 4px">تاريخ البداية</div><div class="field" id="fFrom"><input id="from" type="date"></div></div>
+        <div><div class="hint" style="margin:0 0 4px">تاريخ النهاية</div><div class="field" id="fTo"><input id="to" type="date"></div></div>
+      </div>
+      <div class="hint" id="dateInfo"></div>
+    </div>
+    <div class="msg" id="eDays"></div>
+  </div>
+
+  <div class="grid2">
+    <div class="row">
+      <div class="lbl">ساعات التدفق يومياً <small>24 = مستمر</small></div>
+      <div class="field hfield" id="fH">
+        <button type="button" class="hb" id="hMinus" aria-label="إنقاص">−</button>
+        <button type="button" class="hval" id="hOpen"><span id="hShow">24</span> <small>ساعة</small></button>
+        <button type="button" class="hb" id="hPlus" aria-label="زيادة">+</button>
+        <input type="hidden" id="hrs" value="24">
+      </div>
+      <div class="msg" id="eH"></div>
+    </div>
+    <div class="row">
+      <div class="lbl">سعر المتر المكعب</div>
+      <div class="field" id="fP"><input id="p" inputmode="decimal" autocomplete="off" value="6"><span class="unit">ريال / م³</span></div>
+      <div class="msg" id="eP"></div>
+    </div>
+  </div>
+</section>
+
+<section class="card">
+  <h2><span class="badge">2</span> النتيجة</h2>
+  <div id="resBox">
+    <div class="hero">
+      <div class="big w"><div class="k">كمية المياه المفقودة</div><div class="v" id="rVol">—</div></div>
+      <div class="big m"><div class="k">إجمالي القيمة المالية</div><div class="v" id="rCost">—</div></div>
+    </div>
+    <div class="kpis">
+      <div class="kpi"><div class="k">القطر (بوصة)</div><div class="v" id="kIn">—</div></div>
+      <div class="kpi"><div class="k">القطر (ملم)</div><div class="v" id="kMm">—</div></div>
+      <div class="kpi"><div class="k">المساحة (ملم²)</div><div class="v" id="kA">—</div></div>
+      <div class="kpi"><div class="k">التدفق (لتر/ث)</div><div class="v" id="kLs">—</div></div>
+      <div class="kpi"><div class="k">التدفق (م³/ساعة)</div><div class="v" id="kQh">—</div></div>
+      <div class="kpi"><div class="k">التدفق (م³/يوم)</div><div class="v" id="kQd">—</div></div>
+      <div class="kpi"><div class="k">عدد الأيام</div><div class="v" id="kDays">—</div></div>
+      <div class="kpi"><div class="k">القيمة اليومية</div><div class="v" id="kCd">—</div></div>
+      <div class="kpi"><div class="k">القيمة الشهرية</div><div class="v" id="kCm">—</div></div>
+    </div>
+  </div>
+  <div class="empty" id="resEmpty" style="display:none">أكمل المدخلات بشكل صحيح لعرض النتيجة</div>
+</section>
+
+<section class="card">
+  <h2><span class="badge">3</span> تفصيل المعادلة خطوة بخطوة</h2>
+  <div id="steps"></div>
+  <div class="btns">
+    <button class="btn" id="copy" type="button">نسخ التفصيل</button>
+    <button class="btn o" id="reset" type="button">القيم الافتراضية</button>
+    <span class="toast" id="toast">تم النسخ ✓</span>
+  </div>
+</section>
+
+<section class="card">
+  <h2><span class="badge">4</span> جدول مرجعي للمقاسات</h2>
+  <div class="hint" style="margin:-6px 0 8px">بنفس السرعة والمدة والسعر المدخلة أعلاه</div>
+  <div class="scroll"><table>
+    <thead><tr><th>القطر</th><th>ملم</th><th>م³/يوم</th><th>الكمية م³</th><th>القيمة ريال</th></tr></thead>
+    <tbody id="ref"></tbody>
+  </table></div>
+</section>
+
+<section class="card">
+  <h2>الرموز والثوابت</h2>
+  <table><tbody>
+    <tr><td><b>D</b></td><td>قطر الفتحة بالمتر — 1 بوصة = 25.4 ملم = 0.0254 م</td></tr>
+    <tr><td><b>A</b></td><td>مساحة المقطع = π × D² ÷ 4</td></tr>
+    <tr><td><b>V</b></td><td>سرعة التدفق (م/ث)</td></tr>
+    <tr><td><b>Q</b></td><td>معدل التدفق = A × V (م³/ث)</td></tr>
+    <tr><td><b>T</b></td><td>زمن التسرب بالثواني = الأيام × الساعات × 3600</td></tr>
+    <tr><td><b>Vol</b></td><td>كمية المياه المفقودة = Q × T (م³)</td></tr>
+    <tr><td><b>C</b></td><td>القيمة المالية = Vol × السعر (ريال)</td></tr>
+  </tbody></table>
+</section>
+</div><!-- /pgflow -->
+
+<div id="pgrate" style="display:none">
+<section class="card">
+  <h2><span class="badge">1</span> اختر فئة العقار</h2>
+  <div class="cats" id="cats"></div>
+  <div class="row" style="margin-top:16px">
+    <label class="tog"><input type="checkbox" id="sew" checked> <span>يشمل منفعة الصرف الصحي</span></label>
+  </div>
+  <div class="row">
+    <div class="lbl">طريقة تحديد الكمية</div>
+    <div class="seg" id="qmode">
+      <button type="button" data-m="fixed" class="on">حسب الجدول</button>
+      <button type="button" data-m="days">بالأيام</button>
+      <button type="button" data-m="months">بالأشهر</button>
+    </div>
+    <div id="qdurBox" style="display:none">
+      <div class="field" id="fQd"><input id="qdur" inputmode="decimal" autocomplete="off" value="30"><span class="unit" id="qdurUnit">يوم</span></div>
+      <div class="lbl" style="margin-top:12px">المعدل اليومي للفاقد <small>حسب الفئة ويمكن تعديله</small></div>
+      <div class="field" id="fDr"><input id="drate" inputmode="decimal" autocomplete="off" value="1.5"><span class="unit">م³ / يوم</span></div>
+      <div class="hint" id="drHint"></div>
+      <div class="msg" id="eDr"></div>
+      <div class="msg" id="eQd"></div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="lbl"><span id="qLbl">الكمية المفقودة</span> <small id="qSub">من الجدول ويمكن تعديلها</small></div>
+    <div class="field" id="fQ"><input id="qty" inputmode="decimal" autocomplete="off"><span class="unit">م³</span></div>
+    <div class="msg" id="eQ"></div>
+  </div>
+  <div class="grid2">
+    <div class="row">
+      <div class="lbl">عدد الوحدات <small>عادةً 1</small></div>
+      <div class="field" id="fU"><input id="units" inputmode="decimal" autocomplete="off" value="1"><span class="unit">وحدة</span></div>
+      <div class="msg" id="eU"></div>
+    </div>
+    <div class="row">
+      <div class="lbl">سعر المتر – مياه</div>
+      <div class="field" id="fPw"><input id="pw" inputmode="decimal" autocomplete="off" value="6"><span class="unit">ريال / م³</span></div>
+      <div class="msg" id="ePw"></div>
+    </div>
+    <div class="row">
+      <div class="lbl">سعر المتر – صرف صحي</div>
+      <div class="field" id="fPs"><input id="ps" inputmode="decimal" autocomplete="off" value="3"><span class="unit">ريال / م³</span></div>
+      <div class="msg" id="ePs"></div>
+    </div>
+  </div>
+</section>
+
+<section class="card">
+  <h2><span class="badge">2</span> النتيجة</h2>
+  <div id="r2Box">
+    <div class="hero">
+      <div class="big w"><div class="k">منفعة مفقودة – مياه</div><div class="v" id="r2W">—</div></div>
+      <div class="big w" id="r2SBox"><div class="k">منفعة مفقودة – صرف صحي</div><div class="v" id="r2S">—</div></div>
+    </div>
+    <div class="big m" style="margin-top:12px"><div class="k">إجمالي المنفعة المفقودة</div><div class="v" id="r2T">—</div></div>
+    <div class="kpis">
+      <div class="kpi"><div class="k">الفئة</div><div class="v" id="k2C" style="direction:rtl">—</div></div>
+      <div class="kpi"><div class="k">الكمية المفقودة (م³)</div><div class="v" id="k2Q">—</div></div>
+      <div class="kpi"><div class="k">سعر المتر الإجمالي</div><div class="v" id="k2P">—</div></div>
+      <div class="kpi"><div class="k">المعدل اليومي (م³)</div><div class="v" id="k2D">—</div></div>
+      <div class="kpi"><div class="k">المدة</div><div class="v" id="k2T" style="direction:rtl">—</div></div>
+    </div>
+  </div>
+  <div class="empty" id="r2Empty" style="display:none">أكمل المدخلات بشكل صحيح لعرض النتيجة</div>
+</section>
+
+<section class="card">
+  <h2><span class="badge">3</span> تفصيل المعادلة خطوة بخطوة</h2>
+  <div id="steps2"></div>
+  <div class="btns">
+    <button class="btn" id="copy2" type="button">نسخ التفصيل</button>
+    <button class="btn o" id="reset2" type="button">القيم الافتراضية</button>
+    <span class="toast" id="toast2">تم النسخ ✓</span>
+  </div>
+</section>
+
+<section class="card">
+  <h2><span class="badge">4</span> جدول المعدلات</h2>
+  <div class="hint" id="ref2Hint" style="margin:-6px 0 8px"></div>
+  <div class="scroll"><table>
+    <thead id="ref2Head"></thead>
+    <tbody id="ref2"></tbody>
+  </table></div>
+</section>
+</div><!-- /pgrate -->
+</div>
+
+<div class="sheet-bg" id="sheetBg">
+  <div class="sheet" role="dialog" aria-label="اختيار عدد الساعات">
+    <div class="sheet-h"><b id="wTitle">ساعات التدفق يومياً</b><button type="button" class="btn" id="hDone">تم</button></div>
+    <div class="wheelbox"><div class="wsel"></div><div class="wlist" id="wlist"></div></div>
+  </div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const PI=Math.PI;
+
+/* يقبل الأرقام العربية ٠-٩ والفاصلة العشرية العربية */
+function norm(str){
+  return String(str||'')
+    .replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d))
+    .replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
+    .replace(/[٫,،]/g,'.')
+    .replace(/[^\d.]/g,'')
+    .replace(/(\..*)\./g,'$1');
+}
+function num(id){const s=norm($(id).value);return s===''||s==='.'?NaN:parseFloat(s);}
+const f=(n,d=2)=>isFinite(n)?n.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}):'—';
+const g=n=>{if(!isFinite(n))return'—';const a=Math.abs(n);if(a===0)return'0';if(a>=1000)return f(n,2);if(a>=1)return n.toLocaleString('en-US',{maximumFractionDigits:4});return parseFloat(n.toPrecision(5)).toString();};
+const r=(n,k)=>parseFloat(n.toFixed(k)).toString();
+
+const SIZES=[['0.5','½"'],['0.75','¾"'],['1','1"'],['1.25','1¼"'],['1.5','1½"'],['2','2"'],['3','3"'],['4','4"'],['6','6"']];
+SIZES.forEach(([s,l])=>{const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=l;b.dataset.s=s;
+  b.onclick=()=>{$('dIn').value=s;sync('in');};$('sizes').appendChild(b);});
+['1','1.5','2','2.5','3'].forEach(s=>{const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=s+' م/ث';b.dataset.v=s;
+  b.onclick=()=>{$('v').value=s;calc();};$('vchips').appendChild(b);});
+
+let src='in', mode='days', prevMode='days', lastText='';
+
+function sync(which){
+  src=which;
+  if(which==='in'){const x=num('dIn');$('dMm').value=x>0?r(x*25.4,2):'';}
+  else{const x=num('dMm');$('dIn').value=x>0?r(x/25.4,4):'';}
+  calc();
+}
+
+function setErr(fid,eid,bad,msg){$(fid).classList.toggle('invalid',bad);$(eid).textContent=bad?msg:'';}
+
+function getDays(){
+  if(mode!=='dates'){const n=num('days');const d=mode==='hours'?n/24:mode==='months'?n*30:n;return{days:d,n:n,ok:n>0};}
+  const a=$('from').value,b=$('to').value;
+  if(!a||!b){$('dateInfo').textContent='اختر تاريخ البداية والنهاية';return{days:NaN,ok:false,silent:true};}
+  const d=Math.round((new Date(b)-new Date(a))/86400000);
+  $('dateInfo').textContent=d>0?`المدة المحسوبة: ${d} يوم`:'';
+  return{days:d,ok:d>0};
+}
+
+function calc(){
+  const dIn=num('dIn'),dMm=num('dMm');
+  const dv=src==='in'?dIn:dMm;
+  const v=num('v'),h=num('hrs'),p=num('p');
+  const dd=getDays();
+
+  const isH=mode==='hours';
+  const okD=dv>0,okV=v>0,okH=isH||(h>0&&h<=24),okP=p>0,okT=dd.ok;
+  setErr(src==='in'?'fIn':'fMm','eD',!okD,'أدخل قطراً أكبر من صفر');
+  $(src==='in'?'fMm':'fIn').classList.remove('invalid');
+  setErr('fV','eV',!okV,'أدخل سرعة أكبر من صفر');
+  setErr('fH','eH',!okH,'من 1 إلى 24 ساعة');
+  setErr('fP','eP',!okP,'أدخل سعراً أكبر من صفر');
+  if(mode!=='dates')setErr('fDays','eDays',!okT,'أدخل مدة أكبر من صفر');
+  else{const bad=!okT&&!dd.silent;$('fFrom').classList.toggle('invalid',bad);$('fTo').classList.toggle('invalid',bad);$('eDays').textContent=bad?'تاريخ النهاية يجب أن يكون بعد تاريخ البداية':'';}
+
+  const D=src==='in'?dv*0.0254:dv/1000;
+  const inch=D/0.0254, mm=D*1000;
+  document.querySelectorAll('#sizes .chip').forEach(c=>c.classList.toggle('on',okD&&Math.abs(+c.dataset.s-inch)<1e-6));
+  document.querySelectorAll('#vchips .chip').forEach(c=>c.classList.toggle('on',+c.dataset.v===v));
+
+  const ok=okD&&okV&&okH&&okP&&okT;
+  $('resBox').style.display=ok?'':'none';$('resEmpty').style.display=ok?'none':'';
+  if(!ok){$('steps').innerHTML='<div class="empty">ستظهر المعادلة هنا بعد إكمال المدخلات</div>';$('ref').innerHTML='';lastText='';return;}
+
+  const days=dd.days;
+  const A=PI*D*D/4, Amm=A*1e6;
+  const Q=A*v, Qh=Q*3600, spd=h*3600, Qd=Q*spd;
+  const T=isH?dd.n*3600:days*spd, Vol=Q*T, C=Vol*p;
+
+  $('rVol').innerHTML=f(Vol)+' <small>م³</small>';
+  $('rCost').innerHTML=f(C)+' <small>ريال</small>';
+  $('kIn').textContent=g(inch)+'"';
+  $('kMm').textContent=f(mm,2);
+  $('kA').textContent=f(Amm,2);
+  $('kLs').textContent=f(Q*1000,3);
+  $('kQh').textContent=f(Qh,3);
+  $('kQd').textContent=f(Qd,2);
+  $('kDays').textContent=g(days);
+  $('kCd').textContent=f(Qd*p,2);
+  $('kCm').textContent=f(Qd*30*p,2);
+
+  const S=[];
+  S.push({t:'تحويل القطر إلى متر',g:src==='in'?'D = القطر (بوصة) × 0.0254':'D = القطر (ملم) ÷ 1000',
+    e:[(src==='in'?`D = ${g(dv)} × 0.0254`:`D = ${g(dv)} ÷ 1000`)+` = <span class="a">${g(D)} m</span>`],
+    n:`القطر = ${g(inch)} بوصة = ${f(mm,2)} ملم.`});
+  S.push({t:'مساحة مقطع الفتحة',g:'A = π × D² ÷ 4',
+    e:[`A = 3.14159 × (${g(D)})² ÷ 4 = <span class="a">${g(A)} m²</span>`,`A = 3.14159 × (${f(mm,2)})² ÷ 4 = <span class="a">${f(Amm,2)} mm²</span>`],
+    n:'1 م² = 1,000,000 ملم².'});
+  S.push({t:'معدل التدفق',g:'Q = A × V',
+    e:[`Q = ${g(A)} × ${g(v)} = <span class="a">${g(Q)} m³/s</span>`],
+    n:`= ${f(Q*1000,3)} لتر/ثانية = ${f(Qh,3)} م³/ساعة.`});
+  S.push({t:'التدفق اليومي',g:'Q(يوم) = Q × 3600 × ساعات التدفق',
+    e:[`Q(day) = ${g(Q)} × 3600 × ${g(h)} = <span class="a">${f(Qd,4)} m³/day</span>`],
+    n:isH?'في الحساب بالساعة يُستخدم عدد الساعات مباشرة (هذه الخطوة للمرجع).':h===24?'تدفق مستمر: 86,400 ثانية في اليوم.':`تدفق ${g(h)} ساعة يومياً = ${spd.toLocaleString('en-US')} ثانية.`});
+  if(isH){
+    S.push({t:'كمية المياه المفقودة',g:'Vol = Q × عدد الساعات × 3600',
+      e:[`Vol = ${g(Q)} × ${g(dd.n)} × 3600 = <span class="a">${f(Vol)} m³</span>`],
+      n:`المدة ${g(dd.n)} ساعة = ${(dd.n*3600).toLocaleString('en-US')} ثانية.`});
+  } else {
+    const pre=mode==='months'?[`Days = ${g(dd.n)} × 30 = ${g(days)}`]:[];
+    S.push({t:'كمية المياه المفقودة',g:'Vol = Q(يوم) × عدد الأيام',
+      e:pre.concat([`Vol = ${f(Qd,4)} × ${g(days)} = <span class="a">${f(Vol)} m³</span>`]),
+      n:mode==='dates'?`المدة من ${$('from').value} إلى ${$('to').value} = ${days} يوم.`:mode==='months'?`المدة ${g(dd.n)} شهر × 30 يوم = ${g(days)} يوم.`:`المدة ${g(days)} يوم.`});
+  }
+  S.push({t:'القيمة المالية',g:'C = Vol × السعر',
+    e:[`C = ${f(Vol)} × ${g(p)} = <span class="a">${f(C)} SAR</span>`],
+    n:`سعر المتر المكعب ${g(p)} ريال.`});
+
+  $('steps').innerHTML=S.map((s,i)=>`<div class="step"><div class="t"><span class="badge">${i+1}</span>${s.t}</div><div class="eq g">${s.g}</div>${s.e.map(x=>`<div class="eq">${x}</div>`).join('')}<div class="note">${s.n}</div></div>`).join('')
+   +`<div class="final"><div style="font-weight:800;margin-bottom:6px">المعادلة الكاملة</div>
+     <div class="eq g">${isH?'C = (π × D² ÷ 4) × V × 3600 × Hours × P':'C = (π × D² ÷ 4) × V × 3600 × H × Days × P'}</div>
+     <div class="eq">C = (3.14159 × ${g(D)}² ÷ 4) × ${g(v)} × 3600 × ${isH?g(dd.n):g(h)+' × '+g(days)} × ${g(p)}</div>
+     <div class="eq">C = <span class="a">${f(C)} SAR</span></div></div>`;
+
+  lastText=`حساب المياه المفقودة والقيمة المالية
+القطر: ${g(inch)} بوصة (${f(mm,2)} ملم) | المساحة: ${f(Amm,2)} ملم²
+السرعة: ${g(v)} م/ث | المدة: ${isH?g(dd.n)+' ساعة':mode==='months'?g(dd.n)+' شهر ('+g(days)+' يوم)':g(days)+' يوم'} | ساعات التدفق: ${g(h)} | السعر: ${g(p)} ريال/م³
+
+`+S.map((s,i)=>`${i+1}) ${s.t}\n   ${s.g}\n   ${s.e.map(x=>x.replace(/<[^>]+>/g,'')).join('\n   ')}`).join('\n\n')
+  +`\n\nكمية المياه المفقودة = ${f(Vol)} م³\nإجمالي القيمة المالية = ${f(C)} ريال`;
+
+  $('ref').innerHTML=SIZES.map(([s,l])=>{const Ds=+s*0.0254,Qs=PI*Ds*Ds/4*v,Vs=Qs*T;
+    return `<tr class="${Math.abs(+s-inch)<1e-6?'cur':''}"><td style="direction:ltr;text-align:right">${l}</td><td class="n">${f(Ds*1000,1)}</td><td class="n">${f(Qs*spd,2)}</td><td class="n">${f(Vs,2)}</td><td class="n">${f(Vs*p,2)}</td></tr>`;}).join('');
+}
+
+$('dIn').addEventListener('input',()=>sync('in'));
+$('dMm').addEventListener('input',()=>sync('mm'));
+['v','days','p'].forEach(i=>$(i).addEventListener('input',calc));
+
+function setH(n){n=Math.min(24,Math.max(1,Math.round(n)));$('hrs').value=n;$('hShow').textContent=n;calc();}
+$('hMinus').onclick=()=>setH(num('hrs')-1);
+$('hPlus').onclick=()=>setH(num('hrs')+1);
+/* عجلة أرقام عامة */
+const wl=$('wlist');let W={max:24,cb:null},wt;
+function wIdx(){return Math.min(W.max-1,Math.max(0,Math.round(wl.scrollTop/44)));}
+function wMark(){const k=wIdx();wl.querySelectorAll('.witem').forEach((e,i)=>e.classList.toggle('on',i===k));}
+wl.addEventListener('scroll',()=>{wMark();clearTimeout(wt);wt=setTimeout(()=>W.cb&&W.cb(wIdx()+1),120);});
+function openWheel(title,max,cur,cb){
+  W={max,cb};$('wTitle').textContent=title;
+  wl.innerHTML='<div class="wpad"></div>'+Array.from({length:max},(_,i)=>`<div class="witem">${i+1}</div>`).join('')+'<div class="wpad"></div>';
+  wl.querySelectorAll('.witem').forEach((e,i)=>e.onclick=()=>wl.scrollTo({top:i*44,behavior:'smooth'}));
+  $('sheetBg').classList.add('open');
+  const c=Math.min(max,Math.max(1,Math.round(isFinite(cur)?cur:1)));
+  requestAnimationFrame(()=>{wl.scrollTop=(c-1)*44;wMark();});
+}
+function closeSheet(){if(W.cb)W.cb(wIdx()+1);W.cb=null;$('sheetBg').classList.remove('open');}
+$('hDone').onclick=closeSheet;
+$('sheetBg').addEventListener('click',e=>{if(e.target===$('sheetBg'))closeSheet();});
+$('hOpen').onclick=()=>openWheel('ساعات التدفق يومياً',24,num('hrs'),setH);
+
+['from','to'].forEach(i=>$(i).addEventListener('change',calc));
+document.querySelectorAll('#mode button').forEach(b=>b.onclick=()=>{
+  mode=b.dataset.m;document.querySelectorAll('#mode button').forEach(x=>x.classList.toggle('on',x===b));
+  const prev=num('days');
+  $('byDays').style.display=mode!=='dates'?'':'none';$('byDates').style.display=mode==='dates'?'':'none';
+  $('durUnit').textContent=mode==='hours'?'ساعة':mode==='months'?'شهر':'يوم';
+  $('durHint').textContent=mode==='months'?'الشهر = 30 يوم':mode==='hours'?'عدد ساعات التسرب الكلي (لا يُستخدم حقل ساعات التدفق يومياً)':'';
+  $('fH').classList.toggle('off',mode==='hours');
+  if(prevMode!==mode&&prevMode!=='dates'&&mode!=='dates'&&prev>0){const dd=prevMode==='hours'?prev/24:prevMode==='months'?prev*30:prev;
+    const nv=mode==='hours'?dd*24:mode==='months'?dd/30:dd;$('days').value=r(nv,4);}
+  prevMode=mode;
+  $('fDays').classList.remove('invalid');$('eDays').textContent='';calc();});
+document.querySelectorAll('input:not([type=date])').forEach(i=>i.addEventListener('focus',()=>setTimeout(()=>{try{i.select()}catch(e){}},0)));
+
+$('copy').onclick=async()=>{if(!lastText)return;
+  try{await navigator.clipboard.writeText(lastText);}catch(e){const t=document.createElement('textarea');t.value=lastText;document.body.appendChild(t);t.select();try{document.execCommand('copy')}catch(_){}t.remove();}
+  $('toast').style.display='inline';setTimeout(()=>$('toast').style.display='none',1800);};
+$('reset').onclick=()=>{$('dIn').value='1';$('dMm').value='25.4';src='in';$('v').value='1.5';$('days').value='180';$('hrs').value='24';$('hShow').textContent='24';$('p').value='6';prevMode='days';
+  document.querySelector('#mode button[data-m=days]').click();};
+calc();
+
+/* ===== الصفحة الثانية: حسب الفئة ===== */
+const RATES=[1.5,1.25,960/360,1191/360];
+const r5=x=>parseFloat(x.toFixed(5));
+const CATS=[{n:'سكني – فيلا',q:270,d:1.5},{n:'سكني – شقة',q:225,d:1.25},{n:'تجاري',q:960,d:960/360},{n:'حكومي',q:1191,d:1191/360}];
+let cat=0,lastText2='',qmode='fixed';
+CATS.forEach((c,i)=>{const b=document.createElement('button');b.type='button';b.className='cat';b.innerHTML=`<b>${c.n}</b><span>${c.q.toLocaleString('en-US')} م³ — يومي ${r5(c.d)} م³</span>`;
+  b.onclick=()=>{cat=i;baseQ=c.q;$('qty').value=c.q;$('drate').value=r5(c.d);calc2();};$('cats').appendChild(b);});
+let baseQ=CATS[0].q;$('qty').value=baseQ;
+$('qty').addEventListener('input',()=>{if(qmode==='fixed')baseQ=num('qty');});
+function renderRef2(o){
+  const {u,q,pw,ps,sew,n2,dr}=o, fixed=qmode==='fixed', days=qmode==='months'?n2*30:n2;
+  if(!fixed&&dr>0)CATS[cat].d=dr;
+  const pW=pw>0?pw:6,pS=ps>0?ps:3,U=u>0?u:1;
+  $('ref2Hint').textContent=fixed?'أقصى استهلاك مفقود لكل فئة حسب الجدول المعتمد':
+    (n2>0?`الكمية لكل فئة لمدة ${qmode==='months'?g(n2)+' شهر':g(n2)+' يوم'} — تزيد وتنقص مع المدة`:'أدخل المدة لعرض الكميات');
+  $('ref2Head').innerHTML=`<tr><th>الفئة</th>${fixed?'':'<th>المعدل اليومي م³</th>'}<th>${fixed?'أقصى استهلاك مفقود م³':'الكمية المفقودة م³'}</th><th>مياه (${g(pW)} ريال)</th>${sew?`<th>صرف صحي (${g(pS)} ريال)</th>`:''}<th>الإجمالي ريال</th></tr>`;
+  $('ref2').innerHTML=CATS.map((c,i)=>{
+    let Q;
+    if(fixed)Q=(i===cat&&q>0?q:c.q)*U;
+    const cd=c.d;
+    if(!fixed)Q=(n2>0)?cd*days*U:NaN;
+    const cells=isFinite(Q)?`<td class="n">${f(Q,2)}</td><td class="n">${f(Q*pW,2)}</td>${sew?`<td class="n">${f(Q*pS,2)}</td>`:''}<td class="n"><b>${f(Q*(pW+(sew?pS:0)),2)}</b></td>`
+      :`<td colspan="${sew?4:3}" style="color:var(--muted);text-align:center">—</td>`;
+    return `<tr class="${i===cat?'cur':''}"><td>${c.n}</td>${fixed?'':`<td class="n">${r5(c.d)}</td>`}${cells}</tr>`;
+  }).join('');
+}
+
+function calc2(){
+  const u=num('units'),q=baseQ,pw=num('pw'),ps=num('ps'),sew=$('sew').checked,n2=num('qdur');let dr=num('drate');{const ex=CATS[cat].d;if(Math.abs(dr-r5(ex))<1e-9)dr=ex;}
+  $('ps').disabled=!sew;$('fPs').style.opacity=sew?1:.45;
+  document.querySelectorAll('.cat').forEach((b,i)=>b.classList.toggle('on',i===cat));
+  const okU=u>0,okQ=q>0,okW=pw>0,okS=!sew||ps>0;
+  setErr('fU','eU',!okU,'أدخل عدداً أكبر من صفر');setErr('fQ','eQ',!okQ,'أدخل كمية أكبر من صفر');
+  setErr('fPw','ePw',!okW,'أدخل سعراً أكبر من صفر');setErr('fPs','ePs',!okS,'أدخل سعراً أكبر من صفر');
+  const okDur=qmode==='fixed'||n2>0, okDr=qmode==='fixed'||dr>0;
+  setErr('fQd','eQd',!okDur,'أدخل مدة أكبر من صفر');
+  setErr('fDr','eDr',!okDr,'أدخل معدلاً أكبر من صفر');
+  $('drHint').textContent=dr>0?`الكمية المفقودة = ${r5(dr)} م³ × عدد الأيام (الشهر = 30 يوم = ${f(dr*30,2)} م³)`:'';
+  const fixedQ=qmode==='fixed';
+  $('qty').readOnly=!fixedQ;$('fQ').classList.toggle('calcd',!fixedQ);
+  $('qSub').textContent=fixedQ?'من الجدول ويمكن تعديلها':'المعدل اليومي × عدد الأيام';
+  renderRef2({u,q,pw,ps,sew,n2,dr});
+  const ok=okU&&okQ&&okW&&okS&&okDur&&okDr;
+  $('r2Box').style.display=ok?'':'none';$('r2Empty').style.display=ok?'none':'';
+  if(!ok){if(!fixedQ)$('qty').value='';$('steps2').innerHTML='<div class="empty">ستظهر المعادلة هنا بعد إكمال المدخلات</div>';lastText2='';return;}
+  const c=CATS[cat],isStd=q===c.q;
+  const dur=qmode==='days'?n2:qmode==='months'?n2*30:null;   // بالأيام
+  const daily=qmode==='fixed'?NaN:dr, base=qmode==='fixed'?q:dr*dur;
+  const Q=base*u, W=Q*pw, S=sew?Q*ps:0, T=W+S;
+  if(qmode!=='fixed'){$('qty').value=r(Q,2);}
+  $('r2W').innerHTML=f(W)+' <small>ريال</small>';
+  $('r2S').innerHTML=sew?f(S)+' <small>ريال</small>':'<small>غير مشمول</small>';
+  $('r2T').innerHTML=f(T)+' <small>ريال</small>';
+  $('k2C').textContent=c.n+(isStd?'':' (معدّلة)');$('k2Q').textContent=f(Q,2);$('k2D').textContent=isFinite(daily)?r5(daily).toString():'—';$('k2T').textContent=qmode==='fixed'?'حسب الجدول':qmode==='days'?g(n2)+' يوم':g(n2)+' شهر';$('k2P').textContent=g(pw+(sew?ps:0))+' SAR';
+  const St=[];
+  if(qmode==='fixed'){
+  St.push({t:'تحديد الكمية المفقودة',g:'الكمية = أقصى استهلاك مفقود للفئة × عدد الوحدات',
+    e:[`Q = ${g(q)} × ${g(u)} = <span class="a">${f(Q,2)} m³</span>`],
+    n:isStd?`أقصى استهلاك مفقود لفئة (${c.n}) حسب الجدول المعتمد = ${c.q} م³.`:`تم تعديل الكمية يدوياً (قيمة الجدول لفئة ${c.n} = ${c.q} م³).`});
+  } else {
+  St.push({t:'المعدل اليومي للفاقد',g:'المعدل اليومي حسب فئة العقار',
+    e:[`Daily = <span class="a">${r5(dr)} m³/day</span>`],
+    n:`المعدل اليومي لفئة (${c.n}) = ${r5(dr)} م³.`});
+  St.push({t:'الكمية المفقودة',g:'الكمية = المعدل اليومي × عدد الأيام × عدد الوحدات',
+    e:(qmode==='months'?[`Days = ${g(n2)} × 30 = <span class="a">${g(dur)}</span>`]:[]).concat([`Q = ${r5(dr)} × ${g(dur)} × ${g(u)} = <span class="a">${f(Q,2)} m³</span>`]),
+    n:(qmode==='months'?`المدة ${g(n2)} شهر × 30 = ${g(dur)} يوم.`:`المدة ${g(n2)} يوم.`)+(base>c.q+1e-6?` ⚠️ الكمية تجاوزت كمية الجدول للفئة (${c.q} م³).`:'')});
+  }
+  St.push({t:'المنفعة المفقودة – مياه',g:'المياه = الكمية × سعر متر المياه',
+    e:[`W = ${f(Q,2)} × ${g(pw)} = <span class="a">${f(W)} SAR</span>`],n:`سعر متر المياه ${g(pw)} ريال.`});
+  if(sew)St.push({t:'المنفعة المفقودة – صرف صحي',g:'الصرف = الكمية × سعر متر الصرف',
+    e:[`S = ${f(Q,2)} × ${g(ps)} = <span class="a">${f(S)} SAR</span>`],n:`سعر متر الصرف الصحي ${g(ps)} ريال.`});
+  St.push({t:'إجمالي المنفعة المفقودة',g:sew?'الإجمالي = المياه + الصرف الصحي':'الإجمالي = المياه',
+    e:[sew?`T = ${f(W)} + ${f(S)} = <span class="a">${f(T)} SAR</span>`:`T = <span class="a">${f(T)} SAR</span>`],
+    n:sew?`أو مباشرة: ${f(Q,2)} × (${g(pw)} + ${g(ps)}) = ${f(Q,2)} × ${g(pw+ps)}.`:'منفعة الصرف الصحي غير مشمولة.'});
+  $('steps2').innerHTML=St.map((s,i)=>`<div class="step"><div class="t"><span class="badge">${i+1}</span>${s.t}</div><div class="eq g">${s.g}</div>${s.e.map(x=>`<div class="eq">${x}</div>`).join('')}<div class="note">${s.n}</div></div>`).join('')
+   +`<div class="final"><div style="font-weight:800;margin-bottom:6px">المعادلة الكاملة</div>
+     <div class="eq g">${sew?'الإجمالي = الكمية × عدد الوحدات × (سعر المياه + سعر الصرف)':'الإجمالي = الكمية × عدد الوحدات × سعر المياه'}</div>
+     <div class="eq">T = ${qmode==='fixed'?g(q):r5(dr)+' × '+g(dur)} × ${g(u)} × ${sew?`(${g(pw)} + ${g(ps)})`:g(pw)} = <span class="a">${f(T)} SAR</span></div></div>`;
+  lastText2=`حساب المنفعة المفقودة حسب الفئة
+الفئة: ${c.n} | ${qmode==='fixed'?'حسب الجدول':'المدة: '+(qmode==='days'?g(n2)+' يوم':g(n2)+' شهر')} | الكمية: ${f(Q,2)} م³ | سعر المياه: ${g(pw)} ريال${sew?` | سعر الصرف: ${g(ps)} ريال`:' | بدون صرف صحي'}
+
+`+St.map((s,i)=>`${i+1}) ${s.t}
+   ${s.g}
+   ${s.e.map(x=>x.replace(/<[^>]+>/g,'')).join('\n   ')}`).join('\n\n')
+  +`
+
+منفعة مفقودة – مياه = ${f(W)} ريال${sew?`
+منفعة مفقودة – صرف صحي = ${f(S)} ريال`:''}
+إجمالي المنفعة المفقودة = ${f(T)} ريال`;
+}
+['units','qty','pw','ps','qdur','drate'].forEach(i=>$(i).addEventListener('input',calc2));
+document.querySelectorAll('#qmode button').forEach(bt=>bt.onclick=()=>{
+  const prev=qmode,pv=num('qdur');qmode=bt.dataset.m;
+  document.querySelectorAll('#qmode button').forEach(x=>x.classList.toggle('on',x===bt));
+  $('qdurBox').style.display=qmode==='fixed'?'none':'';
+  if(qmode==='fixed')$('qty').value=baseQ;
+  $('qdurUnit').textContent=qmode==='months'?'شهر':'يوم';
+  if(prev==='days'&&qmode==='months'&&pv>0)$('qdur').value=r(pv/30,4);
+  if(prev==='months'&&qmode==='days'&&pv>0)$('qdur').value=r(pv*30,4);
+  calc2();});
+$('sew').addEventListener('change',calc2);
+$('copy2').onclick=async()=>{if(!lastText2)return;
+  try{await navigator.clipboard.writeText(lastText2);}catch(e){const t=document.createElement('textarea');t.value=lastText2;document.body.appendChild(t);t.select();try{document.execCommand('copy')}catch(_){}t.remove();}
+  $('toast2').style.display='inline';setTimeout(()=>$('toast2').style.display='none',1800);};
+$('reset2').onclick=()=>{$('qdur').value='30';$('drate').value='1.5';CATS.forEach((c,i)=>c.d=RATES[i]);document.querySelector('#qmode button[data-m=fixed]').click();cat=0;baseQ=CATS[0].q;$('qty').value=CATS[0].q;$('units').value='1';$('pw').value='6';$('ps').value='3';$('sew').checked=true;calc2();};
+calc2();
+
+/* ===== التنقل بين الصفحتين ===== */
+function route(){
+  const pg=location.hash==='#rate'?'rate':'flow';
+  $('pgflow').style.display=pg==='flow'?'':'none';$('pgrate').style.display=pg==='rate'?'':'none';
+  $('sub1').style.display=pg==='flow'?'':'none';$('sub2').style.display=pg==='rate'?'':'none';
+  document.querySelectorAll('.tabs a').forEach(a=>a.classList.toggle('on',a.dataset.p===pg));
+}
+document.querySelectorAll('.tabs a').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();try{history.replaceState(null,'','#'+a.dataset.p)}catch(_){location.hash=a.dataset.p}route();window.scrollTo(0,0);}));
+window.addEventListener('hashchange',route);route();
+
+/* أزرار < و > لحقول المدة */
+function addStepper(id){
+  const inp=$(id),inc=document.createElement('button'),dec=document.createElement('button');
+  inc.type=dec.type='button';inc.className=dec.className='hb sb';inc.textContent='>';dec.textContent='<';
+  inc.setAttribute('aria-label','زيادة');dec.setAttribute('aria-label','إنقاص');
+  inp.parentElement.insertBefore(inc,inp);inp.after(dec);
+  const step=d=>{let x=num(id);x=isFinite(x)?x:0;let n=Number.isInteger(x)?x+d:(d>0?Math.ceil(x):Math.floor(x));n=Math.max(1,n);inp.value=n;inp.dispatchEvent(new Event('input',{bubbles:true}));};
+  inc.onclick=()=>step(1);dec.onclick=()=>step(-1);
+}
+addStepper('days');addStepper('qdur');
+function wheelInput(id,titleFn,maxFn){
+  const inp=$(id);inp.readOnly=true;inp.setAttribute('inputmode','none');inp.style.cursor='pointer';
+  inp.addEventListener('click',()=>{const m=maxFn();if(!m)return;
+    openWheel(titleFn(),m,num(id),n=>{inp.value=n;inp.dispatchEvent(new Event('input',{bubbles:true}));});});
+}
+wheelInput('qdur',()=>qmode==='months'?'المدة بالأشهر':'المدة بالأيام',()=>qmode==='months'?60:365);
+wheelInput('days',()=>mode==='months'?'المدة بالأشهر':mode==='hours'?'المدة بالساعات':'المدة بالأيام',()=>mode==='months'?60:mode==='hours'?720:365);
+</script>
+<script>
+if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{});});}
+</script>
+</body>
+</html>
